@@ -18,4 +18,4 @@ df.to_csv("output.csv", index=False)
 with open("size.txt", "w") as f:
     f.write(f"{width},{height}")
 
-print(f"✅ Immagine salvata in output.csv - Dimensioni: {width}x{height}")
+print(f"Immagine salvata in output.csv - Dimensioni: {width}x{height}")
