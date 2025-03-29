@@ -1,0 +1,3 @@
+C:/Users/marti/mean_shift_segmentation/cmake-build-debug/CMakeFiles/mean_shift_segmentation.dir
+C:/Users/marti/mean_shift_segmentation/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/marti/mean_shift_segmentation/cmake-build-debug/CMakeFiles/rebuild_cache.dir

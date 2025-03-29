@@ -1,0 +1,17 @@
+# ninja log v6
+27	1297	7648705497908236	CMakeFiles/mean_shift_segmentation.dir/main.cpp.obj	129503720d3584e8
+1298	1695	7648705510620225	mean_shift_segmentation.exe	b5323603623d8910
+105	1538	7648746347633411	CMakeFiles/mean_shift_segmentation.dir/src/main.cpp.obj	457c7a56bf2ebd6b
+1541	2076	7648746361984545	mean_shift_segmentation.exe	f4732fa331d2876
+25	1235	7648747733884904	CMakeFiles/mean_shift_segmentation.dir/src/main.cpp.obj	457c7a56bf2ebd6b
+1236	1418	7648747745998428	mean_shift_segmentation.exe	f4732fa331d2876
+63	1508	7648747857127390	CMakeFiles/mean_shift_segmentation.dir/src/main.cpp.obj	457c7a56bf2ebd6b
+1543	1707	7648747871928977	mean_shift_segmentation.exe	f4732fa331d2876
+42	1139	7648748051865247	CMakeFiles/mean_shift_segmentation.dir/src/main.cpp.obj	457c7a56bf2ebd6b
+1140	1319	7648748062854692	mean_shift_segmentation.exe	f4732fa331d2876
+46	1105	7648748817741362	CMakeFiles/mean_shift_segmentation.dir/src/main.cpp.obj	457c7a56bf2ebd6b
+1106	1249	7648748828352225	mean_shift_segmentation.exe	f4732fa331d2876
+42	1203	7648749253892289	CMakeFiles/mean_shift_segmentation.dir/src/main.cpp.obj	457c7a56bf2ebd6b
+1204	1397	7648749265506914	mean_shift_segmentation.exe	f4732fa331d2876
+48	1273	7648749760901178	CMakeFiles/mean_shift_segmentation.dir/src/main.cpp.obj	457c7a56bf2ebd6b
+1274	1460	7648749773158178	mean_shift_segmentation.exe	f4732fa331d2876
