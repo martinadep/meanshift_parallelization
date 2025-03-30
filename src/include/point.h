@@ -1,5 +1,5 @@
 //
-// Created by martina de piccoli on 28/03/2025.
+// Created by marti on 28/03/2025.
 //
 
 #ifndef __POINT_H__
@@ -85,6 +85,15 @@ class Point {
             }
             return os << endl;
         }
+        void writeToFile(std::ofstream& file) const {
+            for (unsigned int i = 0; i < dim; i++) {
+                file << coords[i];
+                if (i < dim - 1) {
+                    file << ",";
+                }
+            }
+            file << "\n";
+        }
 };
 
-#endif //POINT_H
+#endif //__POINT_H__
