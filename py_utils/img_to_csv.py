@@ -2,20 +2,29 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-# Carica l'immagine
-image = Image.open("../dataset/flowers.jpg")
-image = image.convert("RGB")  # Assicura che sia in formato RGB
+from config import in_img_path, original_csv_path
+
+# load image
+image = Image.open(in_img_path)
+image = image.convert("RGB")
 width, height = image.size
 
-# Converte in un array NumPy
-pixels = np.array(image).reshape(-1, 3)  # Converti in lista di pixel (R,G,B)
 
-# Salva il CSV
-df = pd.DataFrame(pixels, columns=["R", "G", "B"])
-df.to_csv("output.csv", index=False)
+pixels = np.array(image).reshape(-1, 3)  # flatten pixels (R,G,B)
+
+data = [
+    ["width", "height"],  # first line
+    [width, height],
+    ["R", "G", "B"] # pixel header
+]
+data.extend(pixels.tolist())  # add pixels
+
+# save CSV
+df = pd.DataFrame(data)
+df.to_csv(original_csv_path, index=False, header=False)
 
 # Salva anche la dimensione dell'immagine
-with open("size.txt", "w") as f:
-    f.write(f"{width},{height}")
+#with open("size.txt", "w") as f:
+#    f.write(f"{width},{height}")
 
-print(f"Immagine salvata in output.csv - Dimensioni: {width}x{height}")
+print(f"\"{in_img_path}\" converted in \"{original_csv_path}\" - size: {width}x{height}")
