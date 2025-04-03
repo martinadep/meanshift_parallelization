@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 import matplotlib as mpl
 from scipy.stats import gaussian_kde
+import argparse
 
-# Generate a dataset with distinct clusters
 def generate_data(n_samples=300, centers=3, std=1.0):
     np.random.seed(42)
     points = []
@@ -14,20 +14,25 @@ def generate_data(n_samples=300, centers=3, std=1.0):
         points.append(cluster)
     return np.vstack(points)
 
-# Gaussian Kernel function
 def gaussian_kernel(distances, bandwidth):
-    return np.exp(- (distances ** 2) / (2 * bandwidth ** 2))
+    return np.exp(- (distances ** 2) / (2 * bandwidth))
 
-# Mean-Shift Algorithm
-def mean_shift(data, bandwidth=2.0, max_iter=50, tol=1e-3):
+def epanechnikov_kernel(distances, bandwidth):
+    k = 0.75 * (1 - (distances / bandwidth) ** 2)
+    k[distances > bandwidth] = 0
+    return k
+
+def mean_shift(data, bandwidth=2.0, max_iter=50, tol=1e-3, kernel='gaussian'):
     points = data.copy()
     trajectories = [points.copy()]
+    
+    kernel_function = gaussian_kernel if kernel == 'gaussian' else epanechnikov_kernel
     
     for _ in range(max_iter):
         new_points = []
         for point in points:
             distances = cdist([point], points)[0]
-            weights = gaussian_kernel(distances, bandwidth)
+            weights = kernel_function(distances, bandwidth)
             new_point = np.sum(points * weights[:, None], axis=0) / np.sum(weights)
             new_points.append(new_point)
         
@@ -41,7 +46,36 @@ def mean_shift(data, bandwidth=2.0, max_iter=50, tol=1e-3):
     
     return points, trajectories
 
-# Visualization with user interaction
+def mean_shift_matrix(data, bandwidth=2.0, max_iter=50, tol=1e-3, kernel='gaussian'):
+    points = data.copy()
+    trajectories = [points.copy()]
+    
+    for _ in range(max_iter):
+        distances = cdist(points, points)
+        print("DISTANCES")
+        print(distances)
+        kernel_function = gaussian_kernel if kernel == 'gaussian' else epanechnikov_kernel
+        weights = kernel_function(distances, bandwidth)
+        print("WEIGHTS")
+        print(weights)
+        
+        W1 = np.sum(weights, axis=1, keepdims=True)
+        print("W1")
+        print(W1)
+        new_points = (weights @ points) / W1
+        print("NEW POINTS")
+        print(new_points)
+        
+        trajectories.append(new_points.copy())
+        
+        if np.linalg.norm(new_points - points) < tol:
+            break
+        
+        points = new_points
+    
+    return points, trajectories
+
+
 def plot_evolution_interactive(data, trajectories):
     fig, ax = plt.subplots(figsize=(8, 6))
     index = [0]  # Mutable list to hold iteration index
@@ -81,7 +115,31 @@ def plot_evolution_interactive(data, trajectories):
     update_plot(mpl.backend_bases.KeyEvent(name='key_press_event', canvas=fig.canvas, key='right'))  # Simulate right key event
     plt.show()
 
-# Run the mean-shift clustering and visualize evolution
-data = generate_data()
-final_points, trajectories = mean_shift(data, bandwidth=2.0)
-plot_evolution_interactive(data, trajectories)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Mean-Shift Clustering with Visualization")
+    parser.add_argument('--bandwidth', '-b', type=float, default=2.0, help='Bandwidth for the kernel function')
+    parser.add_argument('--max_iter', '-m', type=int, default=50, help='Maximum number of iterations')
+    parser.add_argument('--tol', '-t', type=float, default=1e-3, help='Convergence tolerance')
+    parser.add_argument('--kernel', '-k', type=str, choices=['gaussian', 'epanechnikov'], default='epanechnikov', help='Kernel function')
+    parser.add_argument('--method', '-M', type=str, choices=['loop', 'matrix'], default='matrix', help='Mean-shift implementation method')
+    parser.add_argument('--n_samples', '-n', type=int, default=300, help='Number of samples to generate')
+    parser.add_argument('--centers', '-c', type=int, default=3, help='Number of centers for data generation')
+    parser.add_argument('--std', '-s', type=float, default=1.0, help='Standard deviation for data generation')
+    args = parser.parse_args()
+
+    np.set_printoptions(precision=4, linewidth=200)
+    data = generate_data(args.n_samples, args.centers, args.std)
+
+    if args.method == 'loop':
+        final_points, trajectories = mean_shift(data, bandwidth=args.bandwidth, max_iter=args.max_iter, tol=args.tol, kernel=args.kernel)
+    else:
+        final_points, trajectories = mean_shift_matrix(data, bandwidth=args.bandwidth, max_iter=args.max_iter, tol=args.tol, kernel=args.kernel)
+
+    print('========================== final_points ==========================')
+    print(final_points)
+    print('========================== trajectories ==========================')
+    for i in range(len(trajectories)):
+        print(f'\nIteration {i}:')
+        print(trajectories[i])
+
+    plot_evolution_interactive(data, trajectories)
