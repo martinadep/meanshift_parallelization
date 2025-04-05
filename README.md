@@ -18,7 +18,6 @@ processing while maintaining the quality of segmentation results.
 ![asto](examples/sample_astro.jpg)
 ![astoB10](docs/astro_B10.jpg)
 ![astoB30](docs/astro_B30.jpg)
-
 ![flower](examples/sample_flower.jpg)
 ![flowerB10](docs/flower_B10.jpg)
 ![flowerB40](docs/flower_B40.jpg)
@@ -32,13 +31,13 @@ processing while maintaining the quality of segmentation results.
 ## Complete Workflow
 1. Clone the repository:
    ```bash
-   git clone https://github.com/username/mean-shift-parallel.git
+   git clone https://github.com/martinadep/meanshift_parallelization
    cd mean-shift-parallel
    ```
 
 2. Convert input image to CSV format using the first Python script:
    ```bash
-   python img_to_csv.py (input_image.jpg)
+   python .\py_utils\img_to_csv.py (input_image.jpg)
    ```
    This will generate a CSV file that will be processed by the C++ program.
 
@@ -54,7 +53,7 @@ processing while maintaining the quality of segmentation results.
 
 4. Convert the output CSV back to an image using the second Python script:
    ```bash
-   python csv_to_img.py (output_csv_file.csv output_image.jpg)
+   python .\py_utils\csv_to_img.py (output_csv_file.csv output_image.jpg)
    ```
    This will transform the processed data back into a **segmented image**.
 
