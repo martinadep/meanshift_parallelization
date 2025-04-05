@@ -24,7 +24,6 @@ public:
 
     vector<Cluster<T> > clusters;
     T bandwidth;
-    //T(*kernel)(T);
 
     MeanShift() = default;
 
@@ -36,14 +35,6 @@ public:
     }
 
     ~MeanShift() = default;
-
-    int get_dataset_size() {
-        return dataset.size();
-    }
-
-    int get_clusters_num() {
-        return clusters.size();
-    }
 
     // Gaussian Kernel
     T kernelFunction(T distance) {
@@ -64,7 +55,7 @@ public:
         int iter = 0;
         for (int i = 0; i < dataset.size(); i++) {
             // xi
-            point_i.coords = dataset[i].coords;
+            point_i = dataset[i];
             // x - xi
             double distance = point.euclidean_distance(point_i);
 
@@ -107,7 +98,7 @@ public:
             if(i % 500 == 0) {
                 cout << "point[" << i << "] ..." << endl;
             }
-            prev_point.coords = dataset[i].coords;
+            prev_point = dataset[i];
             next_point.coords.resize(dim_coords);
 
             // shift till convergence
@@ -117,10 +108,11 @@ public:
                 if (shift_distance <= EPSILON) {
                     stop_moving[i] = true;
                 }
-                prev_point.coords = next_point.coords;
+                prev_point = next_point;
                 iter++;
             }
-            shifted_dataset[i].coords = next_point.coords;
+            shifted_dataset[i] = next_point;
+            
             assign_clusters(shifted_dataset[i]);
         }
     }
@@ -130,7 +122,7 @@ public:
         for (; c < clusters.size(); c++) {
             clusters[c].mode.coords.resize(dim_coords);
             if (shifted_point.euclidean_distance(clusters[c].mode) <= EPSILON_MODE) {
-                shifted_point.coords = clusters[c].mode.coords;
+                shifted_point = clusters[c].mode;
                 break;
             }
         }

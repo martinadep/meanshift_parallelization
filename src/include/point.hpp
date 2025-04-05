@@ -39,7 +39,7 @@ public:
 
     // operators
     Point& operator=(const Point &p) {
-        if (this == &p) {
+        if (this != &p) {
             coords = p.coords;
         }
         return *this;
