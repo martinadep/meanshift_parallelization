@@ -6,7 +6,7 @@
 #define __CLUSTER_H__
 #include <vector>
 
-#include "point.h"
+#include "point.hpp"
 
 using namespace std;
 

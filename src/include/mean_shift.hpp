@@ -4,8 +4,8 @@
 
 #ifndef __MEAN_SHIFT_H__
 #define __MEAN_SHIFT_H__
-#include "point.h"
-#include "cluster.h"
+#include "point.hpp"
+#include "cluster.hpp"
 
 using namespace std;
 

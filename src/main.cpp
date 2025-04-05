@@ -1,18 +1,17 @@
 #include <fstream>
 #include <iostream>
-#include "include/point.h"
-#include "include/cluster.h"
-#include "include/mean_shift.h"
+#include "include/point.hpp"
+#include "include/cluster.hpp"
+#include "include/mean_shift.hpp"
 using namespace std;
 
 string input_csv_path = "../data/original.csv";
 string output_csv_path = "../data/modified.csv";
 
-#define BANDWIDTH 40.0
+#define BANDWIDTH 10.0
 
 int main() {
     cout << endl;
-
     ifstream filein(input_csv_path);
     if (!filein) {
         cerr << "Error opening CSV file\n";
@@ -21,24 +20,23 @@ int main() {
 
     string line;
 
-    // get width and heigth
+    // get width, height and pixel_count
     getline(filein, line); // skip first line "width, height"
     getline(filein, line); // get dimensions values
     stringstream ss(line);
     string width_str, height_str;
     getline(ss, width_str, ',');
     getline(ss, height_str, ',');
-    //cout << "width,height" << endl << width_str<<","<<height_str;
+
     int width = stoi(width_str);
     int height = stoi(height_str);
-
-    // get pixel count
     int pixel_count = width * height;
+
     getline(filein, line); // skip the third line "R,G,B"
-    Point<double>* dataset = new Point<double>[pixel_count];
-    vector<Point<double>> points;
+    vector<Point<double>> dataset;
     unsigned int index = 0;
-    // read each row and converts in number
+
+    // read each row (pixel) and convert in doubles
     while (getline(filein, line) && index < pixel_count) {
         stringstream ss(line);
         string r, g, b;
@@ -50,15 +48,19 @@ int main() {
         // append each pixel in the dataset
         vector pixel = {double(stoi(r)), double(stoi(g)), double(stoi(b))};
         Point<double> point = Point(pixel);
-        points.push_back(point);
-        dataset[index] = point;
+        dataset.push_back(point);
         index++;
     }
     filein.close();
 
-    MeanShift<double> ms = MeanShift(points, BANDWIDTH, 3);
+    // -------- MEAN-SHIFT ----------
+    int num_of_dimensions = dataset[0].coords.size();
+    // initialize mean shift with dataset and bandwidth
+    MeanShift<double> ms = MeanShift(dataset, BANDWIDTH, num_of_dimensions);
+
     ms.mean_shift();
 
+    // write to csv file
     ofstream fileout(output_csv_path);
     if (!fileout) {
         cerr << "Error opening " << output_csv_path;
@@ -73,7 +75,7 @@ int main() {
     }
 
     fileout.close();
-    cout << output_csv_path << " successfully created\n";
+    cout <<"\"data/modified.csv"<< "\" successfully created\n";
 
     return 0;
 }
