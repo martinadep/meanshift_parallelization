@@ -11,51 +11,85 @@
 #include <vector>
 
 using namespace std;
-
-template<typename T> // like java's generics
+template<typename T>
 
 class Point {
-
+private: vector<T> coords;
 public:
-    vector<T> coords;
+    //vector<T> coords;
 
     /// default constructor
-    Point() {}
-
-    /// parametric constructor, given coordinates and dimensions number
-    Point(vector<T> _coords) {
-        for (unsigned int i = 0; i < _coords.size(); i++) {
-            coords.push_back(_coords[i]);
+    Point() = default;
+    Point(int dim) {
+        coords.resize(dim);
+        for (int i = 0; i < dim; i++) {
+            coords[i] = 0;
         }
     }
-    /// copy constructor
-    Point(const Point &p)  {
-        coords = p.coords;
+
+    /// constructor given coordinates
+    Point(vector<T> _coords) {
+        coords.resize(_coords.size());
+        for (unsigned int i = 0; i < _coords.size(); i++) {
+            coords[i] = _coords[i];
+        }
     }
 
     /// distructor
-    ~Point() {
+    ~Point() = default;
+
+    T getSingleCoord(int i) const {
+        if (i >= coords.size()) {
+            printf("getSingleCoord: Coordinate index is out of range");
+            exit(-1); // TODO: implement errors
+        }
+        return coords[i];
+    }
+    void setSingleCoord(int i, T value) {
+        if (i >= coords.size()) {
+            printf("setSingleCoord: Coordinate index is out of range");
+            exit(-1);
+        }
+        coords[i] = value;
+    }
+    unsigned int size() const {
+        return coords.size();
+    }
+    void resize(unsigned int new_size) {
+        coords.resize(new_size);
     }
 
     // operators
+    // copy
     Point& operator=(const Point &p) {
         if (this != &p) {
             coords = p.coords;
         }
         return *this;
     }
-
-    bool operator==(const Point<T> &p) const {
+    // comparison
+    bool operator==(const Point &p) const {
         if (coords.size() != p.coords.size()) return false;
         for (unsigned int i = 0; i < coords.size(); i++) {
-            if (coords[i] != p.coords[i]) return false;
+            if (fabs(coords[i] - p.coords[i]) > 0.001) return false;
         }
         return true;
     }
 
-    Point operator+(const Point<T> &p) const {
+    void operator/=(T scalar) {
+        if (scalar == 0) {
+            throw std::invalid_argument("Division by zero");
+        }
+        for (unsigned int i = 0; i < coords.size(); i++) {
+             coords[i] /= scalar;
+        }
+    }
+
+    /*
+    // addition
+    Point operator+(const Point &p) const {
         if (coords.size() != p.coords.size()) {
-            throw invalid_argument("Points must have the same dimension");
+            throw invalid_argument("ADDITION: Points must have the same dimension");
         }
         vector<T> newCoords;
         for (unsigned int i = 0; i < coords.size(); i++) {
@@ -63,6 +97,18 @@ public:
         }
         return Point(newCoords, coords.size());
     }
+    // subtraction
+    Point operator-(const Point<T> &p) const {
+        if (coords.size() != p.coords.size()) {
+            throw invalid_argument("SUBTRACTION: Points must have the same dimension");
+        }
+        vector<T> newCoords;
+        for (unsigned int i = 0; i < coords.size(); i++) {
+            newCoords[i] = coords[i] - p.coords[i];
+        }
+        return Point(newCoords, coords.size());
+    }
+    // division
     Point operator/(T scalar) const {
         if (scalar == 0) {
             throw std::invalid_argument("Division by zero");
@@ -73,25 +119,14 @@ public:
         }
         return Point(newCoords, coords.size());
     }
+    */
 
     // first parameter is not Point itself, hence it's an external function that requires 'friend'
     friend ostream &operator<<(ostream &os, Point const &p) {
-        //os << setw(9) << "cluster:" << p.cluster << " | ";
         for (unsigned int i = 0; i < p.coords.size(); i++) {
             os << setw(9) << setprecision(5) << p.coords[i];
         }
         return os << endl;
-    }
-
-    T getSingleCoord(int i) const {
-        if (i >= coords.size()) {
-            printf("Coordinate index is out of range");
-            exit(-1); // TODO: implement errors
-        }
-        return coords[i];
-    }
-    unsigned int getDimension() const {
-        return coords.size();
     }
 
     void writeToFile(std::ofstream &file) const {
@@ -104,10 +139,10 @@ public:
         file << "\n";
     }
 
-    T euclidean_distance(const Point<T> &p) const {
-        if (coords.size() != p.getDimension()) {
-            cout << "couldn't compute distance between different dimensions points" << endl;
-            cout << "p1:" << coords.size() << ", p2:" << p.getDimension() << endl;
+    T euclidean_distance(const Point &p) const {
+        if (coords.size() != p.size()) {
+            cout << "Couldn't compute distance between different dimensions points" << endl;
+            cout << "p1 dim:" << coords.size() << ", p2 dim:" << p.size() << endl;
             exit(-1);
         }
         T sum = 0;

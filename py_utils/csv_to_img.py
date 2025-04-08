@@ -11,6 +11,7 @@ from config import modified_csv_path, out_img_path
 # read csv
 df = pd.read_csv(modified_csv_path, header=None)
 #print(df.head())
+print("Clusters found:")
 print(df.iloc[3:].drop_duplicates())  # Print clusters
 
 width, height = int(df.iloc[1,0],), int(df.iloc[1,1])

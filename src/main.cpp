@@ -1,16 +1,34 @@
 #include <fstream>
 #include <iostream>
 #include "include/point.hpp"
-#include "include/cluster.hpp"
 #include "include/mean_shift.hpp"
-using namespace std;
+#include "include/utils.hpp"
 
-string input_csv_path = "../data/original.csv";
-string output_csv_path = "../data/modified.csv";
 
-#define BANDWIDTH 10.0
+int main(int argc, char *argv[]) {
+    unsigned int bandwidth = BANDWIDTH;
+    const char *input_csv_path = CSV_IN;
+    const char *output_csv_path = CSV_OUT;
 
-int main() {
+    switch (argc) {
+        case 4:
+            output_csv_path = argv[3];
+            [[fallthrough]];
+        case 3:
+            input_csv_path = argv[2];
+            [[fallthrough]];
+        case 2:
+            bandwidth = atoi(argv[1]);
+            break;
+        default:
+            cout << "Usage: " << argv[0] << " [bandwidth] [input_csv] [output_csv]" << endl;
+    }
+
+    cout << endl << endl << "================= Mean-Shift ===============" << endl;
+    cout << "Bandwidth: " << bandwidth << endl;
+    cout << "Input: \"" << input_csv_path << "\"" << endl;
+    cout << "Output: \"" << output_csv_path << "\"" << endl;
+
     cout << endl;
     ifstream filein(input_csv_path);
     if (!filein) {
@@ -33,7 +51,7 @@ int main() {
     int pixel_count = width * height;
 
     getline(filein, line); // skip the third line "R,G,B"
-    vector<Point<double>> dataset;
+    vector<Point<double> > dataset;
     unsigned int index = 0;
 
     // read each row (pixel) and convert in doubles
@@ -53,12 +71,20 @@ int main() {
     }
     filein.close();
 
-    // -------- MEAN-SHIFT ----------
-    int num_of_dimensions = dataset[0].coords.size();
+    // ------------------ MEAN-SHIFT ----------------------
+    unsigned int num_of_dimensions = dataset[0].size();
     // initialize mean shift with dataset and bandwidth
-    MeanShift<double> ms = MeanShift(dataset, BANDWIDTH, num_of_dimensions);
+    MeanShift<double> ms = MeanShift<double>(dataset, bandwidth, num_of_dimensions);
+
+#ifdef TIMING
+    START_TIME(mean_shift)
+#endif
 
     ms.mean_shift();
+
+#ifdef TIMING
+    END_TIME(mean_shift)
+#endif
 
     // write to csv file
     ofstream fileout(output_csv_path);
@@ -75,7 +101,8 @@ int main() {
     }
 
     fileout.close();
-    cout <<"\"data/modified.csv"<< "\" successfully created\n";
+    cout << "===================================" << endl << endl;
+    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"";
 
     return 0;
 }
