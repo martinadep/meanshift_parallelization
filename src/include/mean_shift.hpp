@@ -9,7 +9,7 @@ using namespace std;
 template<typename T>
 
 #define EPSILON 2.0
-#define EPSILON_MODE 50.0 // suggested: bandwidth * 1.5
+#define CLUSTER_EPSILON 50.0 // suggested: bandwidth * 1.5
 #define MAX_ITER 50
 
 #define DEBUG
@@ -17,28 +17,32 @@ template<typename T>
 
 class MeanShift {
 public:
-    const vector<Point<T> > dataset;
-    vector<Point<T> > shifted_dataset;
+    const vector<Point<T>> dataset;
+    vector<Point<T>> shifted_dataset;
+    vector<Point<T>> cluster_modes;
+
+    T bandwidth;
     unsigned int dim_coords;
     unsigned int dataset_size;
-
-    vector<Point<T> > clusters;
-    T bandwidth;
+    T (*kernel_func)(T, unsigned int);
 
     MeanShift() = default;
 
-    MeanShift(vector<Point<T> > dataset, T _bandwidth, unsigned int _dim_coords) : dataset(dataset) {
+    MeanShift(vector<Point<T>> dataset, T _bandwidth) : dataset(dataset) {
         dataset_size = dataset.size();
         bandwidth = _bandwidth;
-        dim_coords = _dim_coords;
+        dim_coords = dataset[0].size();
         shifted_dataset.resize(dataset_size);
     }
 
     ~MeanShift() = default;
 
-    // Gaussian Kernel
-    T kernelFunction(T distance) {
-        return exp(-0.5 * (distance * distance) / (bandwidth * bandwidth));
+    void set_kernel(T (*_kernel_func)(T, unsigned int)) {
+        if(!_kernel_func){
+            kernel_func = gaussian_kernel;
+        } else {
+            kernel_func = _kernel_func;
+        }
     }
 
     // Move a single point towards maximum density area
@@ -53,7 +57,7 @@ public:
 
             double distance = point.euclidean_distance(point_i); //x-xi
 
-            double weight = kernelFunction(distance); // K(x-xi/h)
+            double weight = kernel_func(distance, bandwidth); // K(x-xi/h)
 
             // x' = x + xi * K(x-xi/h)
             for (int j = 0; j < dim_coords; j++) {
@@ -112,21 +116,21 @@ public:
 
     void assign_clusters(Point<T> &shifted_point) {
         int c = 0;
-        for (; c < clusters.size(); c++) {
-            clusters[c].resize(dim_coords);
-            if (shifted_point.euclidean_distance(clusters[c]) <= EPSILON_MODE) {
-                shifted_point = clusters[c];
+        for (; c < cluster_modes.size(); c++) {
+            cluster_modes[c].resize(dim_coords);
+            if (shifted_point.euclidean_distance(cluster_modes[c]) <= CLUSTER_EPSILON) {
+                shifted_point = cluster_modes[c];
                 break;
             }
         }
         // whenever [shifted_point] doesn't belong to any cluster:
         // --> create cluster with mode in [shifted_point]
-        if (c == clusters.size()) {
+        if (c == cluster_modes.size()) {
             Point<T> new_cluster;
             new_cluster = shifted_point;
-            clusters.push_back(new_cluster);
+            cluster_modes.push_back(new_cluster);
 #ifdef DEBUG
-            cout << "Cluster found! \t\t Number of clusters: " << clusters.size() << endl;
+            cout << "Cluster found! \t\t Number of clusters: " << cluster_modes.size() << endl;
 #endif
         }
     }

@@ -26,7 +26,7 @@ processing while maintaining the quality of segmentation results.
 ## Prerequisites
 - [CMake](https://cmake.org/download/) (version 3.10 or higher)
 - A C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
-- Python 3.12 with required packages (Pillow, NumPy, pandas)
+- Python 3.12 with required packages (NumPy, pandas)
 
 ## Complete Workflow
 1. Clone the repository:

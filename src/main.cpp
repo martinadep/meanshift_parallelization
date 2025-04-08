@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <sys/time.h>
 #include "include/point.hpp"
 #include "include/mean_shift.hpp"
 #include "include/utils.hpp"
@@ -21,15 +22,9 @@ int main(int argc, char *argv[]) {
             bandwidth = atoi(argv[1]);
             break;
         default:
-            cout << "Usage: " << argv[0] << " [bandwidth] [input_csv] [output_csv]" << endl;
+            cout << endl << "Usage: main.cpp [bandwidth] [input_csv] [output_csv]" << endl;
     }
 
-    cout << endl << endl << "================= Mean-Shift ===============" << endl;
-    cout << "Bandwidth: " << bandwidth << endl;
-    cout << "Input: \"" << input_csv_path << "\"" << endl;
-    cout << "Output: \"" << output_csv_path << "\"" << endl;
-
-    cout << endl;
     ifstream filein(input_csv_path);
     if (!filein) {
         cerr << "Error opening CSV file\n";
@@ -72,9 +67,15 @@ int main(int argc, char *argv[]) {
     filein.close();
 
     // ------------------ MEAN-SHIFT ----------------------
-    unsigned int num_of_dimensions = dataset[0].size();
-    // initialize mean shift with dataset and bandwidth
-    MeanShift<double> ms = MeanShift<double>(dataset, bandwidth, num_of_dimensions);
+    cout << endl << "==================== Mean-Shift ==================" << endl;
+    cout << "Input: \"" << input_csv_path << "\"" << endl;
+    cout << "Output: \"" << output_csv_path << "\"" << endl;
+    cout << "Bandwidth: " << bandwidth << endl;
+    cout << "Dataset size: " << dataset.size() << " elements" << endl << endl;
+
+    // initialize mean shift
+    MeanShift<double> ms = MeanShift<double>(dataset, bandwidth);
+    ms.set_kernel(uniform_kernel);
 
 #ifdef TIMING
     START_TIME(mean_shift)
