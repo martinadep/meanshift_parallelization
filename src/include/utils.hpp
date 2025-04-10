@@ -2,8 +2,8 @@
 #define __UTILS_HPP__
 
 #define BANDWIDTH 10.0
-#define CSV_IN "../data/original.csv";
-#define CSV_OUT "../data/modified.csv";
+#define CSV_IN "/data/original.csv";
+#define CSV_OUT "/data/modified.csv";
 #define TIMING
 
 using namespace std;
