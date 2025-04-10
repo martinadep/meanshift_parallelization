@@ -1,4 +1,15 @@
-/cmake-build-debug
-.idea
-/data
-.venv
+# IDEs
+.idea/
+.vscode/
+
+# CMake
+cmake-build-debug/
+build/
+
+# Python
+venv/
+.venv/
+
+# Output files
+data/*
+!data/.gitkeep
