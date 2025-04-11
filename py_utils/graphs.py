@@ -18,6 +18,15 @@ timing_labels = [
     "distance_cluster"
 ]
 
+# Colori per le esecuzioni
+colors = {
+    "coords_update": "blue",
+    "kernel": "orange",
+    "distance_shift": "green",
+    "distance_iter": "red",
+    "distance_cluster": "purple"
+}
+
 # Struttura per salvare i dati
 data = {kernel: {bw: {label: 0.0 for label in timing_labels} for bw in bandwidths} for kernel in kernels}
 
@@ -29,55 +38,52 @@ with open(input_file, "r", encoding="utf-16") as file:
 
     for line in lines:
         line = line.strip()  # Rimuovi spazi iniziali e finali
-        
+
         # Trova il kernel
         kernel_match = re.search(r"Kernel: (\w+)", line)
         if kernel_match:
             current_kernel = kernel_match.group(1)
-            print(f"Trovato kernel: {current_kernel}")  # Debug
 
         # Trova il bandwidth
         bandwidth_match = re.search(r"Bandwidth: (\d+)", line)
         if bandwidth_match:
             current_bandwidth = int(bandwidth_match.group(1))
-            print(f"Trovato bandwidth: {current_bandwidth}")  # Debug
 
         # Trova i tempi di esecuzione
         for label in timing_labels:
             time_match = re.search(rf"{label} total execution time: ([\d.]+) s", line)
             if time_match and current_kernel and current_bandwidth:
                 data[current_kernel][current_bandwidth][label] = float(time_match.group(1))
-                print(f"Trovato {label}: {time_match.group(1)} s")  # Debug
 
-# Debug: stampa i dati estratti
-print("Dati estratti:")
-print(data)
+# Genera un unico grafico
+fig, ax = plt.subplots(figsize=(12, 8))
+bar_width = 0.2
+x = np.arange(len(kernels))  # Posizioni dei kernel sull'asse X
+x_offset = 0.25  # Margine tra i gruppi di colonne
 
-# Genera i grafici
-for kernel in kernels:
-    fig, ax = plt.subplots(figsize=(10, 6))
-    bar_width = 0.5
-    x = np.arange(len(bandwidths))  # Posizioni delle barre
-
-    # Prepara i dati per le barre
-    bottom = np.zeros(len(bandwidths))
+# Prepara i dati per le barre
+for i, bw in enumerate(bandwidths):
+    offset = (i - 1) * bar_width  # Offset per posizionare le colonne della bandwidth
+    bottom = np.zeros(len(kernels))
     for label in timing_labels:
-        heights = [data[kernel][bw][label] for bw in bandwidths]
-        print(f"Altezze per {label} ({kernel}): {heights}")  # Debug
-        ax.bar(x, heights, bar_width, label=label, bottom=bottom)
+        heights = [data[kernel][bw][label] for kernel in kernels]
+        ax.bar(x + offset + x_offset, heights, bar_width, label=label if i == 0 else "", bottom=bottom, color=colors[label])
         bottom += heights
 
-    # Configura il grafico
-    ax.set_title(f"Execution Time Breakdown for {kernel.capitalize()} Kernel")
-    ax.set_xlabel("Bandwidth")
-    ax.set_ylabel("Execution Time (s)")
-    ax.set_xticks(x)
-    ax.set_xticklabels(bandwidths)
-    ax.legend()
-    ax.grid(axis="y", linestyle="--", alpha=0.7)
+    # Aggiungi etichette delle bandwidth sotto ogni colonna
+    for j, kernel in enumerate(kernels):
+        ax.text(x[j] + offset + x_offset, -2, f"{bw}", ha="center", va="top", fontsize=10, color="black")
 
-    # Salva il grafico
-    plt.savefig(f"./test/{kernel}_execution_time.png")
-    plt.close()
+# Configura il grafico
+ax.set_title("Execution Time Breakdown by Kernel and Bandwidth")
+ax.set_xlabel("Kernel")
+ax.set_ylabel("Execution Time (s)")
+ax.set_xticks(x + x_offset)
+ax.set_xticklabels(kernels)
+ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
+ax.grid(axis="y", linestyle="--", alpha=0.7)
 
-print("Grafici generati e salvati nella directory './test'.")
+# Salva il grafico
+plt.tight_layout()
+plt.savefig("./test/combined_execution_time.png")
+plt.show()

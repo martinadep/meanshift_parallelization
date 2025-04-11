@@ -38,6 +38,10 @@ public:
     /// distructor
     ~Point() = default;
 
+    // PER RIDURRE OVERHEAD: 
+    // + INLINE e il compilatore sostituirà il codice direttamente
+    // ++ PUBLIC su vettore delle coordinate 
+
     T getSingleCoord(int i) const {
         if (i >= coords.size()) {
             printf("getSingleCoord: Coordinate index is out of range");

@@ -70,7 +70,6 @@ public:
         Point<T> point_i;
         next_pos_point = Point<T>(dim_coords); // set next_pos_point to 0
 
-        point_i.resize(dim_coords);
         for (int i = 0; i < dataset_size; i++) {
             point_i = dataset[i]; //xi
 #ifdef TIMING
@@ -143,7 +142,7 @@ public:
                 prev_point = next_point;
                 iter++;
             }
-            shifted_dataset[i] = next_point;
+            shifted_dataset[i] = move(next_point);
 
             assign_clusters(shifted_dataset[i]);
         }
@@ -175,9 +174,7 @@ public:
         // whenever [shifted_point] doesn't belong to any cluster:
         // --> create cluster with mode in [shifted_point]
         if (c == cluster_modes.size()) {
-            Point<T> new_cluster;
-            new_cluster = shifted_point;
-            cluster_modes.push_back(new_cluster);
+            cluster_modes.push_back(move(shifted_point));
 #ifdef DEBUG
             cout << "Cluster found! \t\t Number of clusters: " << cluster_modes.size() << endl;
 #endif
