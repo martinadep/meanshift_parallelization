@@ -4,6 +4,8 @@
 #define BANDWIDTH 10.0
 #define CSV_IN "./data/original.csv";
 #define CSV_OUT "./data/modified.csv";
+#define KERNEL "uniform"
+
 #define TIMING
 
 using namespace std;

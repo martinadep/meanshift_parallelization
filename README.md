@@ -54,14 +54,14 @@ However, arguments can be configured to customize the execution as shown [below]
      ```bash
      cmake -G "MinGW Makefiles" -B build
      cmake --build build
-     ./mean_shift_segmentation.exe
+     ./build/main
      ```
 
       On Linux/macOS:
      ```bash
      cmake -B build
      cmake --build build
-     ./mean_shift_segmentation.exe
+     ./build/main
      ```
 
    This will process the CSV file and generate a new output CSV file.
@@ -96,6 +96,17 @@ The following steps allows to configure the input image path and enables Mean-Sh
    This will generate a CSV file that will be processed by the C++ program.
 
 3. **Run the Mean-Shift algorithm**:
+   - **Using GCC from command line**:
+      
+     ```bash
+     g++ src/main.cpp -o mean_shift
+     ./mean_shift
+     ```
+
+   You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
+   ```bash
+   ./mean_shift [bandwidth] [input.csv] [output.csv]
+     ```
    - **Using CMake from command line**:
       
       On Windows using MinGW:
@@ -112,7 +123,7 @@ The following steps allows to configure the input image path and enables Mean-Sh
 
    You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
    ```bash
-   ./mean_shift_segmentation.exe [bandwidth] [input.csv] [output.csv]
+   ./build/main [bandwidth] [input.csv] [output.csv]
      ```
 
    This will process the CSV file and generate a new output CSV file.
