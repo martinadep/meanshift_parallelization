@@ -19,8 +19,10 @@ int main(int argc, char *argv[]) {
     const char *input_csv_path = CSV_IN;
     const char *output_csv_path = CSV_OUT;
 
-    cout << "Usage: main.exe [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]" << endl;
-
+    if (argc < 2) {
+        cout << "No arguments provided. Using default values." << endl;
+        cout << "Usage: main.exe [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]" << endl;
+    }
     // Parse command-line arguments
     map<string, string> args;
     map<string, string> short_to_long = {
@@ -124,18 +126,18 @@ int main(int argc, char *argv[]) {
     MeanShift<double> ms = MeanShift<double>(dataset, bandwidth);
     ms.set_kernel(kernel_map[kernel]);
 
-#ifdef TIMING
-    START_TIME(mean_shift)
+#ifdef MS_TIMING
+    TIMER_START(mean_shift)
 #endif
 
     ms.mean_shift();
 
-#ifdef TIMING
-    END_TIME(mean_shift)
+#ifdef MS_TIMING
+    TIMER_STOP(mean_shift)
 #endif
     cout << "Mean-Shift completed." << endl;
     cout << "Clusters found: " << ms.get_clusters_count() << endl << endl;
-    cout << "=================================================" << endl;
+    
     cout << "Saving data to CSV file..." << endl;
 
     // write to csv file

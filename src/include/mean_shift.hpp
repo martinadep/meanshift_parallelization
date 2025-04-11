@@ -8,10 +8,12 @@
 #define MAX_ITER 50
 
 #ifdef TIMING
-double total_kernel_time = 0.0;
-double total_distance_time = 0.0;
+        TIMER_SUM_DEF(kernel)
+        TIMER_SUM_DEF(distance_shift)
+        TIMER_SUM_DEF(coords_update)
+        TIMER_SUM_DEF(distance_iter)
+        TIMER_SUM_DEF(distance_cluster)
 #endif
-
 
 using namespace std;
 template<typename T>
@@ -43,20 +45,14 @@ public:
 
     T euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
         if (point1.size() != point2.size()) {
-            cout << "Couldn't compute distance between different dimensions points" << endl;
-            cout << "p1 dim:" << point1.size() << ", p2 dim:" << point2.size() << endl;
-            exit(-1);
+            cout << "Error: points have different dimensions." << endl;
+            return -1;
         }
-#ifdef TIMING
-        START_TIME(distance)
-#endif
         T distance = 0;
         for (unsigned int i = 0; i < dim_coords; i++) {
-            distance += pow(point1.getSingleCoord(i) - point2.getSingleCoord(i), 2);
+            distance += (point1.getSingleCoord(i) - point2.getSingleCoord(i)) *
+                        (point1.getSingleCoord(i) - point2.getSingleCoord(i));
         }
-#ifdef TIMING
-        SUM_TIME(distance)
-#endif
         return sqrt(distance);
     }
 
@@ -77,20 +73,26 @@ public:
         point_i.resize(dim_coords);
         for (int i = 0; i < dataset_size; i++) {
             point_i = dataset[i]; //xi
-
+#ifdef TIMING
+            TIMER_START(distance_shift)
+#endif
             double distance = euclidean_distance(point, point_i); //x-xi
 #ifdef TIMING
-            START_TIME(kernel)
+            TIMER_SUM(distance_shift)
+            TIMER_START(kernel)
 #endif
             double weight = kernel_func(distance, bandwidth); // K(x-xi/h)
 #ifdef TIMING
-            SUM_TIME(kernel)
+            TIMER_SUM(kernel)
+            TIMER_START(coords_update)
 #endif
             // x' = x + xi * K(x-xi/h)
             for (int j = 0; j < dim_coords; j++) {
-                next_pos_point.setSingleCoord(j,
-                                              next_pos_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
+                next_pos_point.setSingleCoord(j, next_pos_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
             }
+#ifdef TIMING
+            TIMER_SUM(coords_update)
+#endif
 
 #ifdef WEIGHT_DEBUG
             cout << "weight " << weight << endl;
@@ -128,7 +130,13 @@ public:
             while (!stop_moving[i] && iter < MAX_ITER) {
                 shift_single_point(prev_point, next_point);
 
+#ifdef TIMING
+                TIMER_START(distance_iter)
+#endif
                 double shift_distance = euclidean_distance(prev_point, next_point);
+#ifdef TIMING
+                TIMER_SUM(distance_iter)
+#endif
                 if (shift_distance <= EPSILON) {
                     stop_moving[i] = true;
                 }
@@ -139,10 +147,12 @@ public:
 
             assign_clusters(shifted_dataset[i]);
         }
-
 #ifdef TIMING
-    cout << "Total time spent in kernel_func: " << total_kernel_time << " s" << endl;
-    cout << "Total time spent in euclidean_distance: " << total_distance_time << " s" << endl;
+        TIMER_SUM_PRINT(coords_update)
+        TIMER_SUM_PRINT(kernel)
+        TIMER_SUM_PRINT(distance_shift)
+        TIMER_SUM_PRINT(distance_iter)
+        TIMER_SUM_PRINT(distance_cluster)
 #endif
     }
 
@@ -150,7 +160,14 @@ public:
         int c = 0;
         for (; c < cluster_modes.size(); c++) {
             cluster_modes[c].resize(dim_coords);
-            if (euclidean_distance(shifted_point, cluster_modes[c]) <= CLUSTER_EPSILON) {
+#ifdef TIMING
+            TIMER_START(distance_cluster)
+#endif
+            double distance_from_cluster = euclidean_distance(shifted_point, cluster_modes[c]);
+#ifdef TIMING
+            TIMER_SUM(distance_cluster)
+#endif         
+            if (distance_from_cluster <= CLUSTER_EPSILON) {
                 shifted_point = cluster_modes[c];
                 break;
             }

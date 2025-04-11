@@ -37,21 +37,28 @@ T epanechnikov_kernel(T distance, unsigned int bandwidth) {
 #ifdef TIMING
 
 #include <chrono>
-#define START_TIME(label) auto start_##label = std::chrono::high_resolution_clock::now();
-
-#define END_TIME(label)                                                                 \
-    auto end_##label = std::chrono::high_resolution_clock::now();                      \
-    auto duration_##label = std::chrono::duration<double>(end_##label - start_##label).count(); \
+#define TIMER_DEF(label) \
+    std::chrono::high_resolution_clock::time_point start_##label, end_##label; \
+    double duration_##label = 0.0;
+#define TIMER_START(label) start_##label = std::chrono::high_resolution_clock::now();   
+#define TIMER_ELAPSED(label)                  \
+    end_##label = std::chrono::high_resolution_clock::now(); \
+    duration_##label = std::chrono::duration<double>(end_##label - start_##label).count();
+#define TIMER_PRINT(label)                    \
     std::cout << #label << " execution time: " << duration_##label << " s" << std::endl;
 
-#define SUM_TIME(label)                                                                 \
-    auto end_##label = std::chrono::high_resolution_clock::now();                      \
-    auto duration_##label = std::chrono::duration<double>(end_##label - start_##label).count(); \
-    total_##label##_time += duration_##label; \
+#define TIMER_SUM_DEF(label)                  \
+    TIMER_DEF(label)                          \
+    double total_##label##_time = 0.0;
+#define TIMER_SUM(label)                      \
+    TIMER_ELAPSED(label)                      \
+    total_##label##_time += duration_##label; 
+#define TIMER_SUM_PRINT(label)                \
+    std::cout << #label << " total execution time: " << total_##label##_time << " s" << std::endl;
 
 #else
-#define START_TIME(label)
-#define END_TIME(label)
+#define TIMER_DEF(label)
+#define TIMER_START(label)
 #endif
 
 #endif //__UTILS_HPP__
