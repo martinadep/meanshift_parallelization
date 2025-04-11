@@ -4,7 +4,7 @@ to image segmentation. This project optimizes the performance
 of the Mean-Shift algorithm through parallelization techniques, 
 enabling more efficient and scalable image segmentation.
 
-## Technical Background
+#### Technical Background
 Mean-Shift is a non-parametric density-based clustering algorithm 
 used in computer vision and machine learning. In this project, the 
 algorithm is applied to image segmentation, a process that divides 
@@ -14,7 +14,7 @@ The parallel version implemented in this project leverages
 modern multi-core architectures to significantly accelerate 
 processing while maintaining the quality of segmentation results.
 
-## Examples
+#### Examples
 ![asto](examples/sample_astro.jpg)
 ![astoB10](docs/astro_B10.jpg)
 ![astoB30](docs/astro_B30.jpg)
@@ -22,6 +22,14 @@ processing while maintaining the quality of segmentation results.
 ![flowerB10](docs/flower_B10.jpg)
 ![flowerB40](docs/flower_B40.jpg)
 
+## Table of Contents
+
+1. [Introduction](#mean-shift-parallelization)
+2. [Prerequisites](#prerequisites)
+3. [Complete Workflow - Example](#complete-workflow---example)
+4. [Complete Workflow - Custom](#complete-workflow---custom)
+5. [Project Structure](#project-structure)
+6. [Performance](#performance)
 
 ## Prerequisites
 - A C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
@@ -48,6 +56,13 @@ However, arguments can be configured to customize the execution as shown [below]
    This will generate a CSV file that will be processed by the C++ program.
 
 3. **Run the Mean-Shift algorithm**:
+   - **Using GCC from command line**:
+      
+     ```bash
+     g++ src/main.cpp -o mean_shift
+     ./mean_shift
+     ```
+     
    - **Using CMake from command line**:
       
       On Windows (MinGW):
@@ -103,10 +118,10 @@ The following steps allows to configure the input image path and enables Mean-Sh
      ./mean_shift
      ```
 
-   You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
-   ```bash
-   ./mean_shift [bandwidth] [input.csv] [output.csv]
-     ```
+      You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
+      ```bash
+      ./mean_shift [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]
+      ```
    - **Using CMake from command line**:
       
       On Windows using MinGW:
@@ -121,11 +136,17 @@ The following steps allows to configure the input image path and enables Mean-Sh
      cmake --build build
      ```
 
-   You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
+      You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
+      ```bash
+      ./build/main [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]
+      ```
+   **Example**
+   
+   Selecting kernel function and bandwidth
    ```bash
-   ./build/main [bandwidth] [input.csv] [output.csv]
-     ```
-
+   ./build/main -k gaussian -b 20
+   ```
+   
    This will process the CSV file and generate a new output CSV file.
 
 4. **Convert the output CSV** back to an image:
@@ -157,7 +178,11 @@ The following steps allows to configure the input image path and enables Mean-Sh
 │   ├── csv_to_img.py
 │   └── img_to_csv.py
 ├── data/
-├── docs/ 
+├── docs/
+│   ├── astro_B10.jpg
+│   ├── astro_B30.jpg
+│   ├── flower_B10.jpg
+│   └── flower_B40.jpg
 └── README.md
 ```
 
