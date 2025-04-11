@@ -85,42 +85,6 @@ public:
         }
     }
 
-    /*
-    // addition
-    Point operator+(const Point &p) const {
-        if (coords.size() != p.coords.size()) {
-            throw invalid_argument("ADDITION: Points must have the same dimension");
-        }
-        vector<T> newCoords;
-        for (unsigned int i = 0; i < coords.size(); i++) {
-            newCoords[i] = coords[i] + p.coords[i];
-        }
-        return Point(newCoords, coords.size());
-    }
-    // subtraction
-    Point operator-(const Point<T> &p) const {
-        if (coords.size() != p.coords.size()) {
-            throw invalid_argument("SUBTRACTION: Points must have the same dimension");
-        }
-        vector<T> newCoords;
-        for (unsigned int i = 0; i < coords.size(); i++) {
-            newCoords[i] = coords[i] - p.coords[i];
-        }
-        return Point(newCoords, coords.size());
-    }
-    // division
-    Point operator/(T scalar) const {
-        if (scalar == 0) {
-            throw std::invalid_argument("Division by zero");
-        }
-        vector<T> newCoords;
-        for (unsigned int i = 0; i < coords.size(); i++) {
-            newCoords[i] = coords[i] / scalar;
-        }
-        return Point(newCoords, coords.size());
-    }
-    */
-
     // first parameter is not Point itself, hence it's an external function that requires 'friend'
     friend ostream &operator<<(ostream &os, Point const &p) {
         for (unsigned int i = 0; i < p.coords.size(); i++) {
@@ -137,19 +101,6 @@ public:
             }
         }
         file << "\n";
-    }
-
-    T euclidean_distance(const Point &p) const {
-        if (coords.size() != p.size()) {
-            cout << "Couldn't compute distance between different dimensions points" << endl;
-            cout << "p1 dim:" << coords.size() << ", p2 dim:" << p.size() << endl;
-            exit(-1);
-        }
-        T sum = 0;
-        for (unsigned int i = 0; i < coords.size(); i++) {
-            sum += pow(p.coords[i] - coords[i], 2);
-        }
-        return sqrt(sum);
     }
 };
 

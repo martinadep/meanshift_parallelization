@@ -32,8 +32,8 @@ processing while maintaining the quality of segmentation results.
 6. [Performance](#performance)
 
 ## Prerequisites
-- A C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
-- Python 3.12 with required packages (NumPy, pandas)
+- C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
+- Python 3.12 with required packages (NumPy, pandas and pillow)
 - Optional, [CMake](https://cmake.org/download/) (version 3.10 or higher)
 
 ## Complete Workflow - example
@@ -62,7 +62,7 @@ However, arguments can be configured to customize the execution as shown [below]
      g++ src/main.cpp -o mean_shift
      ./mean_shift
      ```
-     
+
    - **Using CMake from command line**:
       
       On Windows (MinGW):

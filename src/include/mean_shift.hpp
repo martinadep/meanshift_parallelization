@@ -2,19 +2,19 @@
 #define __MEAN_SHIFT_H__
 #include "point.hpp"
 #include "utils.hpp"
-#include "timing.hpp"
-
-using namespace std;
-
-template<typename T>
 
 #define EPSILON 2.0
-#define CLUSTER_EPSILON 50.0 // suggested: bandwidth * 1.5
+#define CLUSTER_EPSILON 50 // suggested: bandwidth * 1.5
 #define MAX_ITER 50
 
-#define DEBUG
-//#define WEIGHT_DEBUG
+#ifdef TIMING
+double total_kernel_time = 0.0;
+double total_distance_time = 0.0;
+#endif
 
+
+using namespace std;
+template<typename T>
 class MeanShift {
 public:
     const vector<Point<T>> dataset;
@@ -37,6 +37,29 @@ public:
 
     ~MeanShift() = default;
 
+    unsigned int get_clusters_count() const {
+        return cluster_modes.size();
+    }
+
+    T euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
+        if (point1.size() != point2.size()) {
+            cout << "Couldn't compute distance between different dimensions points" << endl;
+            cout << "p1 dim:" << point1.size() << ", p2 dim:" << point2.size() << endl;
+            exit(-1);
+        }
+#ifdef TIMING
+        START_TIME(distance)
+#endif
+        T distance = 0;
+        for (unsigned int i = 0; i < dim_coords; i++) {
+            distance += pow(point1.getSingleCoord(i) - point2.getSingleCoord(i), 2);
+        }
+#ifdef TIMING
+        SUM_TIME(distance)
+#endif
+        return sqrt(distance);
+    }
+
     void set_kernel(T (*_kernel_func)(T, unsigned int)) {
         if(!_kernel_func){
             kernel_func = gaussian_kernel;
@@ -55,10 +78,14 @@ public:
         for (int i = 0; i < dataset_size; i++) {
             point_i = dataset[i]; //xi
 
-            double distance = point.euclidean_distance(point_i); //x-xi
-
+            double distance = euclidean_distance(point, point_i); //x-xi
+#ifdef TIMING
+            START_TIME(kernel)
+#endif
             double weight = kernel_func(distance, bandwidth); // K(x-xi/h)
-
+#ifdef TIMING
+            SUM_TIME(kernel)
+#endif
             // x' = x + xi * K(x-xi/h)
             for (int j = 0; j < dim_coords; j++) {
                 next_pos_point.setSingleCoord(j,
@@ -101,7 +128,7 @@ public:
             while (!stop_moving[i] && iter < MAX_ITER) {
                 shift_single_point(prev_point, next_point);
 
-                double shift_distance = prev_point.euclidean_distance(next_point);
+                double shift_distance = euclidean_distance(prev_point, next_point);
                 if (shift_distance <= EPSILON) {
                     stop_moving[i] = true;
                 }
@@ -112,13 +139,18 @@ public:
 
             assign_clusters(shifted_dataset[i]);
         }
+
+#ifdef TIMING
+    cout << "Total time spent in kernel_func: " << total_kernel_time << " s" << endl;
+    cout << "Total time spent in euclidean_distance: " << total_distance_time << " s" << endl;
+#endif
     }
 
     void assign_clusters(Point<T> &shifted_point) {
         int c = 0;
         for (; c < cluster_modes.size(); c++) {
             cluster_modes[c].resize(dim_coords);
-            if (shifted_point.euclidean_distance(cluster_modes[c]) <= CLUSTER_EPSILON) {
+            if (euclidean_distance(shifted_point, cluster_modes[c]) <= CLUSTER_EPSILON) {
                 shifted_point = cluster_modes[c];
                 break;
             }

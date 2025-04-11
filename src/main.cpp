@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <map>
 
+
 int main(int argc, char *argv[]) {
     // Set the working directory to the project root
     std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path().parent_path());
@@ -78,7 +79,6 @@ int main(int argc, char *argv[]) {
     }
 
     string line;
-
     // get width, height and pixel_count
     getline(filein, line); // skip first line "width, height"
     getline(filein, line); // get dimensions values
@@ -133,6 +133,10 @@ int main(int argc, char *argv[]) {
 #ifdef TIMING
     END_TIME(mean_shift)
 #endif
+    cout << "Mean-Shift completed." << endl;
+    cout << "Clusters found: " << ms.get_clusters_count() << endl << endl;
+    cout << "=================================================" << endl;
+    cout << "Saving data to CSV file..." << endl;
 
     // write to csv file
     ofstream fileout(output_csv_path);
@@ -149,8 +153,8 @@ int main(int argc, char *argv[]) {
     }
 
     fileout.close();
-    cout << "=================================================" << endl << endl;
-    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"";
+    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
+    cout << "=================================================" << endl;
 
     return 0;
 }

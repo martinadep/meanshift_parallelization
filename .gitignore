@@ -11,5 +11,10 @@ venv/
 .venv/
 
 # Output files
+test/
 data/*
 !data/.gitkeep
+*.exe
+*.o
+*.a
+*.txt
