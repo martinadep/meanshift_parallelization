@@ -14,9 +14,8 @@ using namespace std;
 template<typename T>
 
 class Point {
-private: vector<T> coords;
 public:
-    //vector<T> coords;
+    vector<T> coords;
 
     /// default constructor
     Point() = default;
@@ -37,31 +36,6 @@ public:
 
     /// distructor
     ~Point() = default;
-
-    // PER RIDURRE OVERHEAD: 
-    // + INLINE e il compilatore sostituirà il codice direttamente
-    // ++ PUBLIC su vettore delle coordinate 
-
-    T getSingleCoord(int i) const {
-        if (i >= coords.size()) {
-            printf("getSingleCoord: Coordinate index is out of range");
-            exit(-1); // TODO: implement errors
-        }
-        return coords[i];
-    }
-    void setSingleCoord(int i, T value) {
-        if (i >= coords.size()) {
-            printf("setSingleCoord: Coordinate index is out of range");
-            exit(-1);
-        }
-        coords[i] = value;
-    }
-    unsigned int size() const {
-        return coords.size();
-    }
-    void resize(unsigned int new_size) {
-        coords.resize(new_size);
-    }
 
     // operators
     // copy

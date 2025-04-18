@@ -33,7 +33,7 @@ public:
     MeanShift(vector<Point<T>> dataset, T _bandwidth) : dataset(dataset) {
         dataset_size = dataset.size();
         bandwidth = _bandwidth;
-        dim_coords = dataset[0].size();
+        dim_coords = dataset[0].coords.size();
         shifted_dataset.resize(dataset_size);
     }
 
@@ -44,14 +44,14 @@ public:
     }
 
     T euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
-        if (point1.size() != point2.size()) {
+        if (point1.coords.size() != point2.coords.size()) {
             cout << "Error: points have different dimensions." << endl;
             return -1;
         }
         T distance = 0;
         for (unsigned int i = 0; i < dim_coords; i++) {
-            distance += (point1.getSingleCoord(i) - point2.getSingleCoord(i)) *
-                        (point1.getSingleCoord(i) - point2.getSingleCoord(i));
+            distance += (point1.coords[i] - point2.coords[i]) *
+                        (point1.coords[i] - point2.coords[i]);
         }
         return sqrt(distance);
     }
@@ -87,7 +87,8 @@ public:
 #endif
             // x' = x + xi * K(x-xi/h)
             for (int j = 0; j < dim_coords; j++) {
-                next_pos_point.setSingleCoord(j, next_pos_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
+                //next_pos_point.setSingleCoord(j, next_pos_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
+                next_pos_point.coords[j] = next_pos_point.coords[j] + point_i.coords[j] * weight;
             }
 #ifdef TIMING
             TIMER_SUM(coords_update)
@@ -123,7 +124,7 @@ public:
 #endif
 
             prev_point = dataset[i];
-            next_point.resize(dim_coords);
+            next_point.coords.resize(dim_coords);
 
             // shift till convergence
             while (!stop_moving[i] && iter < MAX_ITER) {
@@ -158,7 +159,7 @@ public:
     void assign_clusters(Point<T> &shifted_point) {
         int c = 0;
         for (; c < cluster_modes.size(); c++) {
-            cluster_modes[c].resize(dim_coords);
+            cluster_modes[c].coords.resize(dim_coords);
 #ifdef TIMING
             TIMER_START(distance_cluster)
 #endif

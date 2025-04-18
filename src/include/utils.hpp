@@ -6,9 +6,9 @@
 #define CSV_OUT "./data/modified.csv";
 #define KERNEL "uniform"
 
-//#define DEBUG
+#define DEBUG
 //#define WEIGHT_DEBUG
-#define TIMING
+//#define TIMING
 
 using namespace std;
 
