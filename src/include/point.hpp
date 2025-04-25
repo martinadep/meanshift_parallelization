@@ -13,8 +13,9 @@
 using namespace std;
 template<typename T>
 
-class Point {
-public:
+
+
+struct Point {
     vector<T> coords;
 
     /// default constructor

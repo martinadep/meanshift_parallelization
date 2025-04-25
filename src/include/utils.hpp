@@ -7,6 +7,7 @@
 #define KERNEL "uniform"
 
 #define DEBUG
+#define MS_TIMING
 //#define WEIGHT_DEBUG
 //#define TIMING
 
@@ -30,6 +31,34 @@ template<typename T>
 T epanechnikov_kernel(T distance, unsigned int bandwidth) {
     T norm_dist = distance / bandwidth;
     return (norm_dist <= 1.0) ? (1.0 - norm_dist * norm_dist) : 0.0;
+}
+
+// ---------- distances ------------
+template<typename T>
+T euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
+    if (point1.coords.size() != point2.coords.size()) {
+        cout << "Error: points have different dimensions." << endl;
+        return -1;
+    }
+    T distance = 0;
+    for (unsigned int i = 0; i < point1.coords.size(); i++) {
+        distance += (point1.coords[i] - point2.coords[i]) *
+                    (point1.coords[i] - point2.coords[i]);
+    }
+    return sqrt(distance);
+}
+template<typename T>
+T sqrd_euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
+    if (point1.coords.size() != point2.coords.size()) {
+        cout << "Error: points have different dimensions." << endl;
+        return -1;
+    }
+    T distance = 0;
+    for (unsigned int i = 0; i < point1.coords.size(); i++) {
+        distance += (point1.coords[i] - point2.coords[i]) *
+                    (point1.coords[i] - point2.coords[i]);
+    }
+    return distance;
 }
 
 // ---------- timing -----------
@@ -59,6 +88,18 @@ T epanechnikov_kernel(T distance, unsigned int bandwidth) {
 #else
 #define TIMER_DEF(label)
 #define TIMER_START(label)
+#endif
+
+#ifdef MS_TIMING
+#define TIMER_START(label) \
+    std::chrono::high_resolution_clock::time_point start_##label, end_##label; \
+    double duration_##label = 0.0; \
+    start_##label = std::chrono::high_resolution_clock::now();  
+    
+#define TIMER_STOP(label)                  \
+    end_##label = std::chrono::high_resolution_clock::now(); \
+    duration_##label = std::chrono::duration<double>(end_##label - start_##label).count(); \
+    std::cout << #label << " execution time: " << duration_##label << " s" << std::endl;
 #endif
 
 #endif //__UTILS_HPP__

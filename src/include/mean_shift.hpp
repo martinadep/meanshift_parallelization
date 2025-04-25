@@ -15,6 +15,8 @@
         TIMER_SUM_DEF(distance_cluster)
 #endif
 
+#define DEBUG
+
 using namespace std;
 template<typename T>
 class MeanShift {
@@ -41,19 +43,6 @@ public:
 
     unsigned int get_clusters_count() const {
         return cluster_modes.size();
-    }
-
-    T euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
-        if (point1.coords.size() != point2.coords.size()) {
-            cout << "Error: points have different dimensions." << endl;
-            return -1;
-        }
-        T distance = 0;
-        for (unsigned int i = 0; i < dim_coords; i++) {
-            distance += (point1.coords[i] - point2.coords[i]) *
-                        (point1.coords[i] - point2.coords[i]);
-        }
-        return sqrt(distance);
     }
 
     void set_kernel(T (*_kernel_func)(T, unsigned int)) {
