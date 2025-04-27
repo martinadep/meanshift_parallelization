@@ -2,6 +2,7 @@
 #define __MEAN_SHIFT_H__
 #include "point.hpp"
 #include "utils.hpp"
+#include <vector>
 
 #define EPSILON 2.0
 #define CLUSTER_EPSILON 50 // suggested: bandwidth * 1.5
@@ -18,24 +19,22 @@
 #define DEBUG
 
 using namespace std;
-template<typename T>
+
 class MeanShift {
 public:
-    const vector<Point<T>> dataset;
-    vector<Point<T>> shifted_dataset;
-    vector<Point<T>> cluster_modes;
+    const vector<Point> dataset;
+    vector<Point> shifted_dataset;
+    vector<Point> cluster_modes;
 
     T bandwidth;
-    unsigned int dim_coords;
     unsigned int dataset_size;
     T (*kernel_func)(T, unsigned int);
 
     MeanShift() = default;
 
-    MeanShift(vector<Point<T>> dataset, T _bandwidth) : dataset(dataset) {
+    MeanShift(vector<Point> dataset, T _bandwidth) : dataset(dataset) {
         dataset_size = dataset.size();
         bandwidth = _bandwidth;
-        dim_coords = dataset[0].coords.size();
         shifted_dataset.resize(dataset_size);
     }
 
@@ -54,13 +53,14 @@ public:
     }
 
     // Move a single point towards maximum density area
-    void shift_single_point(const Point<T> &point, Point<T> &next_pos_point) {
+    void shift_single_point(const Point &point, Point &next_pos_point) {
         double total_weight = 0;
-        Point<T> point_i;
-        next_pos_point = Point<T>(dim_coords); // set next_pos_point to 0
+        Point point_i;
+        init_point(next_pos_point); // set next_pos_point to 0
 
         for (int i = 0; i < dataset_size; i++) {
-            point_i = dataset[i]; //xi
+            //point_i = dataset[i]; //xi
+            copy_point(dataset[i], point_i); // xi = dataset[i]
 #ifdef TIMING
             TIMER_START(distance_shift)
 #endif
@@ -75,7 +75,7 @@ public:
             TIMER_START(coords_update)
 #endif
             // x' = x + xi * K(x-xi/h)
-            for (int j = 0; j < dim_coords; j++) {
+            for (int j = 0; j < DIM; j++) {
                 //next_pos_point.setSingleCoord(j, next_pos_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
                 next_pos_point.coords[j] = next_pos_point.coords[j] + point_i.coords[j] * weight;
             }
@@ -91,7 +91,7 @@ public:
         }
         if (total_weight > 0) {
             // normalization
-            next_pos_point /= total_weight;
+            divide_point(next_pos_point, total_weight); // x' = x' / sum(K(x-xi/h))
         } else {
             cout << "Error: total_weight == 0, couldn't normalize." << endl;
         }
@@ -99,8 +99,8 @@ public:
 
     void mean_shift() {
         vector stop_moving(dataset_size, false);
-        Point<T> prev_point;
-        Point<T> next_point;
+        Point prev_point;
+        Point next_point;
         unsigned int iter;
 
         // shift each point
@@ -112,9 +112,9 @@ public:
             }
 #endif
 
-            prev_point = dataset[i];
-            next_point.coords.resize(dim_coords);
-
+            //prev_point = dataset[i];
+            copy_point(dataset[i], prev_point);
+            
             // shift till convergence
             while (!stop_moving[i] && iter < MAX_ITER) {
                 shift_single_point(prev_point, next_point);
@@ -129,10 +129,12 @@ public:
                 if (shift_distance <= EPSILON) {
                     stop_moving[i] = true;
                 }
-                prev_point = next_point;
+                //prev_point = next_point;
+                copy_point(next_point, prev_point); 
                 iter++;
             }
-            shifted_dataset[i] = move(next_point);
+            //shifted_dataset[i] = move(next_point);
+            copy_point(next_point, shifted_dataset[i]);
 
             assign_clusters(shifted_dataset[i]);
         }
@@ -145,10 +147,9 @@ public:
 #endif
     }
 
-    void assign_clusters(Point<T> &shifted_point) {
+    void assign_clusters(Point &shifted_point) {
         int c = 0;
         for (; c < cluster_modes.size(); c++) {
-            cluster_modes[c].coords.resize(dim_coords);
 #ifdef TIMING
             TIMER_START(distance_cluster)
 #endif
@@ -157,7 +158,8 @@ public:
             TIMER_SUM(distance_cluster)
 #endif         
             if (distance_from_cluster <= CLUSTER_EPSILON) {
-                shifted_point = cluster_modes[c];
+                //shifted_point = cluster_modes[c];
+                copy_point(cluster_modes[c], shifted_point); // assign cluster mode to shifted point
                 break;
             }
         }

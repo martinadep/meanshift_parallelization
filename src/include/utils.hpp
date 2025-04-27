@@ -5,6 +5,7 @@
 #define CSV_IN "./data/original.csv";
 #define CSV_OUT "./data/modified.csv";
 #define KERNEL "uniform"
+#define DIM 3 // RGB
 
 #define DEBUG
 #define MS_TIMING
@@ -12,8 +13,10 @@
 //#define TIMING
 
 using namespace std;
-
-template<typename T>
+#define T double
+struct Point {
+    T coords [DIM];
+};
 
 // ------- kernel functions ---------
 T gaussian_kernel(T distance, unsigned int bandwidth) {
@@ -21,40 +24,34 @@ T gaussian_kernel(T distance, unsigned int bandwidth) {
     return exp(-0.5 * norm_distance * norm_distance);
 }
 
-template<typename T>
+
 T uniform_kernel(T distance, unsigned int bandwidth) {
     T norm_dist = distance / bandwidth;
     return (norm_dist <= 1.0) ? 1.0 : 0.0;
 }
 
-template<typename T>
+
 T epanechnikov_kernel(T distance, unsigned int bandwidth) {
     T norm_dist = distance / bandwidth;
     return (norm_dist <= 1.0) ? (1.0 - norm_dist * norm_dist) : 0.0;
 }
 
 // ---------- distances ------------
-template<typename T>
-T euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
-    if (point1.coords.size() != point2.coords.size()) {
-        cout << "Error: points have different dimensions." << endl;
-        return -1;
-    }
+
+T euclidean_distance(const Point &point1, const Point &point2) {
+
     T distance = 0;
-    for (unsigned int i = 0; i < point1.coords.size(); i++) {
+    for (unsigned int i = 0; i < DIM; i++) {
         distance += (point1.coords[i] - point2.coords[i]) *
                     (point1.coords[i] - point2.coords[i]);
     }
     return sqrt(distance);
 }
-template<typename T>
-T sqrd_euclidean_distance(const Point<T> &point1, const Point<T> &point2) {
-    if (point1.coords.size() != point2.coords.size()) {
-        cout << "Error: points have different dimensions." << endl;
-        return -1;
-    }
+
+T sqrd_euclidean_distance(const Point &point1, const Point &point2) {
+    
     T distance = 0;
-    for (unsigned int i = 0; i < point1.coords.size(); i++) {
+    for (unsigned int i = 0; i < DIM; i++) {
         distance += (point1.coords[i] - point2.coords[i]) *
                     (point1.coords[i] - point2.coords[i]);
     }

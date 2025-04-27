@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     int pixel_count = width * height;
 
     getline(filein, line); // skip the third line "R,G,B"
-    vector<Point<double> > dataset;
+    vector<Point> dataset;
     unsigned int index = 0;
 
     // read each row (pixel) and convert in doubles
@@ -107,8 +107,11 @@ int main(int argc, char *argv[]) {
         getline(ss, b, ',');
 
         // append each pixel in the dataset
-        vector pixel = {double(stoi(r)), double(stoi(g)), double(stoi(b))};
-        Point<double> point = Point(pixel);
+        Point point;
+        point.coords[0] = T(stoi(r));
+        point.coords[1] = T(stoi(g));
+        point.coords[2] = T(stoi(b));
+        
         dataset.push_back(point);
         index++;
     }
@@ -123,7 +126,7 @@ int main(int argc, char *argv[]) {
     cout << "Dataset size: " << dataset.size() << " elements" << endl << endl;
 
     // initialize mean shift
-    MeanShift<double> ms = MeanShift<double>(dataset, bandwidth);
+    MeanShift ms = MeanShift(dataset, bandwidth);
     ms.set_kernel(kernel_map[kernel]);
 
 #ifdef MS_TIMING
@@ -141,20 +144,22 @@ int main(int argc, char *argv[]) {
     cout << "Saving data to CSV file..." << endl;
 
     // write to csv file
-    ofstream fileout(output_csv_path);
+    //ofstream fileout(output_csv_path);
+    FILE *fileout = fopen(output_csv_path, "w");
     if (!fileout) {
         cerr << "Error opening " << output_csv_path;
         exit(-1);
     }
-    fileout << "width,height,\n";
-    fileout << width << "," << height << ",\n";
-    fileout << "R,G,B\n";
-
+    fprintf(fileout, "width,height,\n");
+    fprintf(fileout, "%d,%d,\n", width, height);
+    fprintf(fileout, "R,G,B\n");
     for (int i = 0; i < pixel_count; i++) {
-        ms.shifted_dataset[i].writeToFile(fileout);
+        //ms.shifted_dataset[i].writeToFile(fileout);
+        write_point_to_file(ms.shifted_dataset[i], fileout);
     }
 
-    fileout.close();
+    //fileout.close();
+    fclose(fileout);
     cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
     cout << "=================================================" << endl;
 

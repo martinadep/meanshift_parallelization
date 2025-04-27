@@ -8,79 +8,55 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
-#include <vector>
+#include "utils.hpp"
 
 using namespace std;
-template<typename T>
 
 
+void init_point(Point &p) {
+    for(unsigned int i = 0; i < DIM; i++) {
+        p.coords[i] = 0.0;
+    }
+}
 
-struct Point {
-    vector<T> coords;
+void copy_point(const Point &source, Point &dest) {
+    for(unsigned int i = 0; i < DIM; i++) {
+        dest.coords[i] = source.coords[i];
+    }
+}
 
-    /// default constructor
-    Point() = default;
-    Point(int dim) {
-        coords.resize(dim);
-        for (int i = 0; i < dim; i++) {
-            coords[i] = 0;
+bool compare_points(const Point &p1, const Point &p2) {
+    for (unsigned int i = 0; i < DIM; i++) {
+        if (fabs(p1.coords[i] - p2.coords[i]) > 0.001) {
+            return false;
         }
     }
+    return true;
+}
 
-    /// constructor given coordinates
-    Point(vector<T> _coords) {
-        coords.resize(_coords.size());
-        for (unsigned int i = 0; i < _coords.size(); i++) {
-            coords[i] = _coords[i];
+void divide_point(Point &p1, T scalar) {
+    if (scalar == 0) {
+        throw std::invalid_argument("Division by zero");
+    }
+    for (unsigned int i = 0; i < DIM; i++) {
+        p1.coords[i] /= scalar;
+    }
+}
+
+void print_point(const Point &p) {
+    for (unsigned int i = 0; i < DIM; i++) {
+        cout << setw(9) << setprecision(5) << p.coords[i];
+    }
+}
+    
+void write_point_to_file(const Point &p, FILE *file) {
+    for (unsigned int i = 0; i < DIM; i++) {
+        fprintf(file, "%d", (int)p.coords[i]);
+        if (i < DIM - 1) {
+            fprintf(file, ",");
         }
     }
-
-    /// distructor
-    ~Point() = default;
-
-    // operators
-    // copy
-    Point& operator=(const Point &p) {
-        if (this != &p) {
-            coords = p.coords;
-        }
-        return *this;
-    }
-    // comparison
-    bool operator==(const Point &p) const {
-        if (coords.size() != p.coords.size()) return false;
-        for (unsigned int i = 0; i < coords.size(); i++) {
-            if (fabs(coords[i] - p.coords[i]) > 0.001) return false;
-        }
-        return true;
-    }
-
-    void operator/=(T scalar) {
-        if (scalar == 0) {
-            throw std::invalid_argument("Division by zero");
-        }
-        for (unsigned int i = 0; i < coords.size(); i++) {
-             coords[i] /= scalar;
-        }
-    }
-
-    // first parameter is not Point itself, hence it's an external function that requires 'friend'
-    friend ostream &operator<<(ostream &os, Point const &p) {
-        for (unsigned int i = 0; i < p.coords.size(); i++) {
-            os << setw(9) << setprecision(5) << p.coords[i];
-        }
-        return os << endl;
-    }
-
-    void writeToFile(std::ofstream &file) const {
-        for (unsigned int i = 0; i < coords.size(); i++) {
-            file << int(coords[i]);
-            if (i < coords.size() - 1) {
-                file << ",";
-            }
-        }
-        file << "\n";
-    }
-};
+    fprintf(file, "\n");
+}
 
 #endif //__POINT_H__
