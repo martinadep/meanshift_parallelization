@@ -7,7 +7,7 @@
 #define KERNEL "uniform"
 #define DIM 3 // RGB
 
-#define DEBUG
+//#define DEBUG
 #define MS_TIMING
 //#define WEIGHT_DEBUG
 //#define TIMING
@@ -88,12 +88,12 @@ T sqrd_euclidean_distance(const Point &point1, const Point &point2) {
 #endif
 
 #ifdef MS_TIMING
-#define TIMER_START(label) \
+#define TOTAL_TIMER_START(label) \
     std::chrono::high_resolution_clock::time_point start_##label, end_##label; \
     double duration_##label = 0.0; \
     start_##label = std::chrono::high_resolution_clock::now();  
     
-#define TIMER_STOP(label)                  \
+#define TOTAL_TIMER_STOP(label)                  \
     end_##label = std::chrono::high_resolution_clock::now(); \
     duration_##label = std::chrono::duration<double>(end_##label - start_##label).count(); \
     std::cout << #label << " execution time: " << duration_##label << " s" << std::endl;

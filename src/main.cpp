@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <map>
 
+#include "include/prova_mean_shift.hpp"
 
 int main(int argc, char *argv[]) {
     // Set the working directory to the project root
@@ -95,6 +96,9 @@ int main(int argc, char *argv[]) {
 
     getline(filein, line); // skip the third line "R,G,B"
     vector<Point> dataset;
+
+    Point prova_dataset[pixel_count]; // allocate memory for dataset
+    
     unsigned int index = 0;
 
     // read each row (pixel) and convert in doubles
@@ -113,6 +117,7 @@ int main(int argc, char *argv[]) {
         point.coords[2] = T(stoi(b));
         
         dataset.push_back(point);
+        copy_point(point, prova_dataset[index]); // copy to prova_dataset
         index++;
     }
     filein.close();
@@ -130,13 +135,13 @@ int main(int argc, char *argv[]) {
     ms.set_kernel(kernel_map[kernel]);
 
 #ifdef MS_TIMING
-    TIMER_START(mean_shift)
+    TOTAL_TIMER_START(mean_shift)
 #endif
 
     ms.mean_shift();
 
 #ifdef MS_TIMING
-    TIMER_STOP(mean_shift)
+    TOTAL_TIMER_STOP(mean_shift)
 #endif
     cout << "Mean-Shift completed." << endl;
     cout << "Clusters found: " << ms.get_clusters_count() << endl << endl;
@@ -162,6 +167,47 @@ int main(int argc, char *argv[]) {
     fclose(fileout);
     cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
     cout << "=================================================" << endl;
+// ---------------------------------------------
+// ------------------ MEAN-SHIFT ----------------------
+cout << endl << "==================== Mean-Shift prova ==================" << endl;
+Point prova_shifted_dataset[pixel_count]; // allocate memory for shifted dataset prova
+Point cluster_modes[1000]; // allocate memory for cluster modes prova
+unsigned int clusters_count = 0; // number of clusters prova
 
-    return 0;
+#ifdef MS_TIMING
+TOTAL_TIMER_START(prova_mean_shift)
+#endif
+
+prova_mean_shift(pixel_count, prova_dataset, prova_shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, clusters_count);
+
+#ifdef MS_TIMING
+TOTAL_TIMER_STOP(prova_mean_shift)
+#endif
+cout << "Mean-Shift completed." << endl;
+cout << "Clusters found: " << clusters_count << endl << endl;
+
+cout << "Saving data to CSV file..." << endl;
+
+// write to csv file
+//ofstream fileout(output_csv_path);
+FILE *fileout1 = fopen("./data/prova_modified.csv", "w");
+if (!fileout1) {
+    cerr << "Error opening " << output_csv_path;
+    exit(-1);
 }
+fprintf(fileout1, "width,height,\n");
+fprintf(fileout1, "%d,%d,\n", width, height);
+fprintf(fileout1, "R,G,B\n");
+for (int i = 0; i < pixel_count; i++) {
+    //ms.shifted_dataset[i].writeToFile(fileout);
+    write_point_to_file(prova_shifted_dataset[i], fileout1);
+}
+
+//fileout.close();
+fclose(fileout1);
+cout << "All data successfully saved inside " << "\"data/prova_modified.csv" << "\"." << endl;
+cout << "=================================================" << endl;
+
+return 0;
+}
+
