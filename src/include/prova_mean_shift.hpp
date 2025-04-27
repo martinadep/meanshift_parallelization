@@ -8,11 +8,12 @@
 #define CLUSTER_EPSILON 50 // suggested: bandwidth * 1.5
 #define MAX_ITER 50
 
+
 #ifdef TIMING
         TIMER_SUM_DEF(kernel)
         TIMER_SUM_DEF(distance_shift)
         TIMER_SUM_DEF(coords_update)
-        TIMER_SUM_DEF(distance_iter)
+        TIMER_SUM_DEF(distance_mode_find)
         TIMER_SUM_DEF(distance_cluster)
 #endif
 
@@ -22,25 +23,23 @@
 using namespace std;
 
 // Move a single point towards maximum density area
-Point prova_shift_single_point(const Point &point, 
+void prova_shift_single_point(const Point &point, Point &next_point,
                         const Point dataset[], unsigned int dataset_size,
                         double bandwidth, T (*kernel_func)(T, unsigned int)) {
         double total_weight = 0;
         Point point_i;
         init_point(point_i); // xi
-
-        Point next_pos_point;
-        init_point(next_pos_point); // x'
+        init_point(next_point); // x'
 
         for (int i = 0; i < dataset_size; i++) {
             //point_i = dataset[i]; //xi
             copy_point(dataset[i], point_i); // xi = dataset[i]
 #ifdef TIMING
-            TIMER_START(distance_shift)
+            TIMER_START(distance_mode_find)
 #endif
             double distance = euclidean_distance(point, point_i); //x-xi
 #ifdef TIMING
-            TIMER_SUM(distance_shift)
+            TIMER_SUM(distance_mode_find)
             TIMER_START(kernel)
 #endif
             double weight = kernel_func(distance, bandwidth); // K(x-xi/h)
@@ -50,8 +49,8 @@ Point prova_shift_single_point(const Point &point,
 #endif
             // x' = x + xi * K(x-xi/h)
             for (int j = 0; j < DIM; j++) {
-                //next_pos_point.setSingleCoord(j, next_pos_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
-                next_pos_point.coords[j] = next_pos_point.coords[j] + point_i.coords[j] * weight;
+                //next_point.setSingleCoord(j, next_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
+                next_point[j] = next_point[j] + point_i[j] * weight;
             }
 #ifdef TIMING
             TIMER_SUM(coords_update)
@@ -65,11 +64,10 @@ Point prova_shift_single_point(const Point &point,
         }
         if (total_weight > 0) {
             // normalization
-            divide_point(next_pos_point, total_weight); // x' = x' / sum(K(x-xi/h))
+            divide_point(next_point, total_weight); // x' = x' / sum(K(x-xi/h))
         } else {
             cout << "Error: total_weight == 0, couldn't normalize." << endl;
         }
-    return next_pos_point;
 }
 
 
@@ -87,7 +85,7 @@ void prova_assign_clusters(Point &shifted_point, Point cluster_modes[],
         TIMER_SUM(distance_cluster)
         #endif         
         if (distance_from_cluster <= CLUSTER_EPSILON) {
-            shifted_point = cluster_modes[c];
+            //shifted_point = cluster_modes[c];
             copy_point(cluster_modes[c], shifted_point); // assign cluster mode to shifted point
             break;
         }
@@ -129,14 +127,14 @@ void prova_mean_shift(unsigned int dataset_size, const Point dataset[],
             
             // shift till convergence
             while (!stop_moving && iter < MAX_ITER) {
-                copy_point(prova_shift_single_point(prev_point, dataset, dataset_size, bandwidth, kernel_func), next_point); // x' = x
+                prova_shift_single_point(prev_point, next_point, dataset, dataset_size, bandwidth, kernel_func); // x' = x
 
 #ifdef TIMING
-                TIMER_START(distance_iter)
+                TIMER_START(distance_shift)
 #endif
                 double shift_distance = euclidean_distance(prev_point, next_point);
 #ifdef TIMING
-                TIMER_SUM(distance_iter)
+                TIMER_SUM(distance_shift)
 #endif
                 if (shift_distance <= EPSILON) {
                     stop_moving = true;
@@ -154,7 +152,7 @@ void prova_mean_shift(unsigned int dataset_size, const Point dataset[],
         TIMER_SUM_PRINT(coords_update)
         TIMER_SUM_PRINT(kernel)
         TIMER_SUM_PRINT(distance_shift)
-        TIMER_SUM_PRINT(distance_iter)
+        TIMER_SUM_PRINT(distance_mode_find)
         TIMER_SUM_PRINT(distance_cluster)
 #endif
 }

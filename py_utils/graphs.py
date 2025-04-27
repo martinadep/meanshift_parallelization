@@ -14,7 +14,7 @@ timing_labels = [
     "coords_update",
     "kernel",
     "distance_shift",
-    "distance_iter",
+    "distance_mode_find",
     "distance_cluster"
 ]
 
@@ -22,8 +22,8 @@ timing_labels = [
 colors = {
     "coords_update": "blue",
     "kernel": "orange",
-    "distance_shift": "green",
-    "distance_iter": "red",
+    "distance_shift": "red",
+    "distance_mode_find": "green",
     "distance_cluster": "purple"
 }
 

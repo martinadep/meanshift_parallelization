@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sys/time.h>
 #include "include/point.hpp"
-#include "include/mean_shift.hpp"
+//#include "include/mean_shift.hpp"
 #include "include/utils.hpp"
 #include <unordered_map>
 #include <map>
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     int pixel_count = width * height;
 
     getline(filein, line); // skip the third line "R,G,B"
-    vector<Point> dataset;
+    //vector<Point> dataset;
 
     Point prova_dataset[pixel_count]; // allocate memory for dataset
     
@@ -112,17 +112,18 @@ int main(int argc, char *argv[]) {
 
         // append each pixel in the dataset
         Point point;
-        point.coords[0] = T(stoi(r));
-        point.coords[1] = T(stoi(g));
-        point.coords[2] = T(stoi(b));
+        point[0] = T(stoi(r));
+        point[1] = T(stoi(g));
+        point[2] = T(stoi(b));
         
-        dataset.push_back(point);
+        //dataset.push_back(point);
         copy_point(point, prova_dataset[index]); // copy to prova_dataset
         index++;
     }
     filein.close();
 
     // ------------------ MEAN-SHIFT ----------------------
+    /*
     cout << endl << "==================== Mean-Shift ==================" << endl;
     cout << "Input: \"" << input_csv_path << "\"" << endl;
     cout << "Output: \"" << output_csv_path << "\"" << endl;
@@ -167,9 +168,17 @@ int main(int argc, char *argv[]) {
     fclose(fileout);
     cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
     cout << "=================================================" << endl;
+    */
 // ---------------------------------------------
 // ------------------ MEAN-SHIFT ----------------------
 cout << endl << "==================== Mean-Shift prova ==================" << endl;
+cout << "Input: \"" << input_csv_path << "\"" << endl;
+cout << "Output: \"" << output_csv_path << "\"" << endl;
+cout << "Bandwidth: " << bandwidth << endl;
+cout << "Kernel: " << kernel << endl;
+cout << "Dataset size: " << pixel_count << " elements" << endl << endl;
+
+
 Point prova_shifted_dataset[pixel_count]; // allocate memory for shifted dataset prova
 Point cluster_modes[1000]; // allocate memory for cluster modes prova
 unsigned int clusters_count = 0; // number of clusters prova

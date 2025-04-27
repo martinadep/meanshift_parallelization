@@ -8,15 +8,17 @@
 #define DIM 3 // RGB
 
 //#define DEBUG
-#define MS_TIMING
+//#define MS_TIMING
 //#define WEIGHT_DEBUG
-//#define TIMING
+#define TIMING
 
 using namespace std;
 #define T double
-struct Point {
+/*struct Point {
     T coords [DIM];
-};
+};*/
+
+typedef T Point[DIM];
 
 // ------- kernel functions ---------
 T gaussian_kernel(T distance, unsigned int bandwidth) {
@@ -42,8 +44,8 @@ T euclidean_distance(const Point &point1, const Point &point2) {
 
     T distance = 0;
     for (unsigned int i = 0; i < DIM; i++) {
-        distance += (point1.coords[i] - point2.coords[i]) *
-                    (point1.coords[i] - point2.coords[i]);
+        distance += (point1[i] - point2[i]) *
+                    (point1[i] - point2[i]);
     }
     return sqrt(distance);
 }
@@ -52,8 +54,8 @@ T sqrd_euclidean_distance(const Point &point1, const Point &point2) {
     
     T distance = 0;
     for (unsigned int i = 0; i < DIM; i++) {
-        distance += (point1.coords[i] - point2.coords[i]) *
-                    (point1.coords[i] - point2.coords[i]);
+        distance += (point1[i] - point2[i]) *
+                    (point1[i] - point2[i]);
     }
     return distance;
 }

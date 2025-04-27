@@ -77,7 +77,7 @@ public:
             // x' = x + xi * K(x-xi/h)
             for (int j = 0; j < DIM; j++) {
                 //next_pos_point.setSingleCoord(j, next_pos_point.getSingleCoord(j) + point_i.getSingleCoord(j) * weight);
-                next_pos_point.coords[j] = next_pos_point.coords[j] + point_i.coords[j] * weight;
+                next_pos_point[j] = next_pos_point[j] + point_i[j] * weight;
             }
 #ifdef TIMING
             TIMER_SUM(coords_update)
