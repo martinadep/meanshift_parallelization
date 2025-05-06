@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Map kernel names to functions
-    unordered_map<string, double (*)(double, unsigned int)> kernel_map = {
+    unordered_map<string, T (*)(T, unsigned int)> kernel_map = {
         {"gaussian", gaussian_kernel},
         {"uniform", uniform_kernel},
         {"epanechnikov", epanechnikov_kernel}

@@ -25,7 +25,7 @@ using namespace std;
 // Move a single point towards maximum density area
 void prova_shift_single_point(const Point &point, Point &next_point,
                         const Point dataset[], unsigned int dataset_size,
-                        double bandwidth, T (*kernel_func)(T, unsigned int)) {
+                        unsigned int bandwidth, T (*kernel_func)(T, unsigned int)) {
         double total_weight = 0;
         Point point_i;
         init_point(point_i); // xi
@@ -103,7 +103,7 @@ void prova_assign_clusters(Point &shifted_point, Point cluster_modes[],
 
 
 void prova_mean_shift(unsigned int dataset_size, const Point dataset[], 
-                Point shifted_dataset[], double bandwidth,
+                Point shifted_dataset[], unsigned int bandwidth,
                 T (*kernel_func)(T, unsigned int), Point cluster_modes[],
                 unsigned int &cluster_count) {
 

@@ -8,16 +8,12 @@
 #define DIM 3 // RGB
 
 //#define DEBUG
-//#define MS_TIMING
+#define MS_TIMING
 //#define WEIGHT_DEBUG
-#define TIMING
+//#define TIMING
 
 using namespace std;
 #define T double
-/*struct Point {
-    T coords [DIM];
-};*/
-
 typedef T Point[DIM];
 
 // ------- kernel functions ---------
