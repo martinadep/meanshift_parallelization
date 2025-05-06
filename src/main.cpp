@@ -2,13 +2,13 @@
 #include <filesystem>
 #include <iostream>
 #include <sys/time.h>
-#include "include/point.hpp"
-//#include "include/mean_shift.hpp"
+#include "include/point.h"
+#include "include/mean_shift.h"
 #include "include/utils.hpp"
 #include <unordered_map>
 #include <map>
 
-#include "include/prova_mean_shift.hpp"
+
 
 int main(int argc, char *argv[]) {
     // Set the working directory to the project root
@@ -95,7 +95,6 @@ int main(int argc, char *argv[]) {
     int pixel_count = width * height;
 
     getline(filein, line); // skip the third line "R,G,B"
-    //vector<Point> dataset;
 
     Point prova_dataset[pixel_count]; // allocate memory for dataset
     
@@ -116,60 +115,11 @@ int main(int argc, char *argv[]) {
         point[1] = T(stoi(g));
         point[2] = T(stoi(b));
         
-        //dataset.push_back(point);
-        copy_point(point, prova_dataset[index]); // copy to prova_dataset
+        copy_point(&point, &prova_dataset[index]); // copy to prova_dataset
         index++;
     }
     filein.close();
 
-    // ------------------ MEAN-SHIFT ----------------------
-    /*
-    cout << endl << "==================== Mean-Shift ==================" << endl;
-    cout << "Input: \"" << input_csv_path << "\"" << endl;
-    cout << "Output: \"" << output_csv_path << "\"" << endl;
-    cout << "Bandwidth: " << bandwidth << endl;
-    cout << "Kernel: " << kernel << endl;
-    cout << "Dataset size: " << dataset.size() << " elements" << endl << endl;
-
-    // initialize mean shift
-    MeanShift ms = MeanShift(dataset, bandwidth);
-    ms.set_kernel(kernel_map[kernel]);
-
-#ifdef MS_TIMING
-    TOTAL_TIMER_START(mean_shift)
-#endif
-
-    ms.mean_shift();
-
-#ifdef MS_TIMING
-    TOTAL_TIMER_STOP(mean_shift)
-#endif
-    cout << "Mean-Shift completed." << endl;
-    cout << "Clusters found: " << ms.get_clusters_count() << endl << endl;
-    
-    cout << "Saving data to CSV file..." << endl;
-
-    // write to csv file
-    //ofstream fileout(output_csv_path);
-    FILE *fileout = fopen(output_csv_path, "w");
-    if (!fileout) {
-        cerr << "Error opening " << output_csv_path;
-        exit(-1);
-    }
-    fprintf(fileout, "width,height,\n");
-    fprintf(fileout, "%d,%d,\n", width, height);
-    fprintf(fileout, "R,G,B\n");
-    for (int i = 0; i < pixel_count; i++) {
-        //ms.shifted_dataset[i].writeToFile(fileout);
-        write_point_to_file(ms.shifted_dataset[i], fileout);
-    }
-
-    //fileout.close();
-    fclose(fileout);
-    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
-    cout << "=================================================" << endl;
-    */
-// ---------------------------------------------
 // ------------------ MEAN-SHIFT ----------------------
 cout << endl << "==================== Mean-Shift prova ==================" << endl;
 cout << "Input: \"" << input_csv_path << "\"" << endl;
@@ -187,7 +137,7 @@ unsigned int clusters_count = 0; // number of clusters prova
 TOTAL_TIMER_START(prova_mean_shift)
 #endif
 
-prova_mean_shift(pixel_count, prova_dataset, prova_shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, clusters_count);
+prova_mean_shift(pixel_count, prova_dataset, prova_shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
 
 #ifdef MS_TIMING
 TOTAL_TIMER_STOP(prova_mean_shift)
@@ -198,22 +148,19 @@ cout << "Clusters found: " << clusters_count << endl << endl;
 cout << "Saving data to CSV file..." << endl;
 
 // write to csv file
-//ofstream fileout(output_csv_path);
-FILE *fileout1 = fopen("./data/prova_modified.csv", "w");
-if (!fileout1) {
+FILE *fileout = fopen("./data/prova_modified.csv", "w");
+if (!fileout) {
     cerr << "Error opening " << output_csv_path;
     exit(-1);
 }
-fprintf(fileout1, "width,height,\n");
-fprintf(fileout1, "%d,%d,\n", width, height);
-fprintf(fileout1, "R,G,B\n");
+fprintf(fileout, "width,height,\n");
+fprintf(fileout, "%d,%d,\n", width, height);
+fprintf(fileout, "R,G,B\n");
 for (int i = 0; i < pixel_count; i++) {
-    //ms.shifted_dataset[i].writeToFile(fileout);
-    write_point_to_file(prova_shifted_dataset[i], fileout1);
+    write_point_to_file(&prova_shifted_dataset[i], fileout);
 }
 
-//fileout.close();
-fclose(fileout1);
+fclose(fileout);
 cout << "All data successfully saved inside " << "\"data/prova_modified.csv" << "\"." << endl;
 cout << "=================================================" << endl;
 
