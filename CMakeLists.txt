@@ -6,3 +6,6 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(main 
                src/main.cpp)
+
+# Compilation flags
+target_compile_definitions(main PRIVATE TOTAL_TIMING)

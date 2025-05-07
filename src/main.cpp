@@ -4,11 +4,11 @@
 #include <sys/time.h>
 #include "include/point.h"
 #include "include/mean_shift.h"
-#include "include/utils.hpp"
+#include "include/utils.h"
 #include <unordered_map>
 #include <map>
 
-
+using namespace std;  
 
 int main(int argc, char *argv[]) {
     // Set the working directory to the project root
@@ -133,13 +133,13 @@ Point prova_shifted_dataset[pixel_count]; // allocate memory for shifted dataset
 Point cluster_modes[1000]; // allocate memory for cluster modes prova
 unsigned int clusters_count = 0; // number of clusters prova
 
-#ifdef MS_TIMING
+#ifdef TOTAL_TIMING
 TOTAL_TIMER_START(prova_mean_shift)
 #endif
 
 prova_mean_shift(pixel_count, prova_dataset, prova_shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
 
-#ifdef MS_TIMING
+#ifdef TOTAL_TIMING
 TOTAL_TIMER_STOP(prova_mean_shift)
 #endif
 cout << "Mean-Shift completed." << endl;
