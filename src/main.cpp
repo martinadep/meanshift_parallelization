@@ -8,6 +8,10 @@
 #include <unordered_map>
 #include <map>
 
+#ifdef TOTAL_TIMING
+#include "timing/timing.h"
+#endif
+
 using namespace std;  
 
 int main(int argc, char *argv[]) {
@@ -96,7 +100,7 @@ int main(int argc, char *argv[]) {
 
     getline(filein, line); // skip the third line "R,G,B"
 
-    Point prova_dataset[pixel_count]; // allocate memory for dataset
+    Point dataset[pixel_count]; // allocate memory for dataset
     
     unsigned int index = 0;
 
@@ -115,55 +119,55 @@ int main(int argc, char *argv[]) {
         point[1] = T(stoi(g));
         point[2] = T(stoi(b));
         
-        copy_point(&point, &prova_dataset[index]); // copy to prova_dataset
+        copy_point(&point, &dataset[index]); // copy to dataset
         index++;
     }
     filein.close();
 
-// ------------------ MEAN-SHIFT ----------------------
-cout << endl << "==================== Mean-Shift prova ==================" << endl;
-cout << "Input: \"" << input_csv_path << "\"" << endl;
-cout << "Output: \"" << output_csv_path << "\"" << endl;
-cout << "Bandwidth: " << bandwidth << endl;
-cout << "Kernel: " << kernel << endl;
-cout << "Dataset size: " << pixel_count << " elements" << endl << endl;
+    // ------------------ MEAN-SHIFT ----------------------
+    cout << endl << "==================== Mean-Shift ==================" << endl;
+    cout << "Input: \"" << input_csv_path << "\"" << endl;
+    cout << "Output: \"" << output_csv_path << "\"" << endl;
+    cout << "Bandwidth: " << bandwidth << endl;
+    cout << "Kernel: " << kernel << endl;
+    cout << "Dataset size: " << pixel_count << " elements" << endl << endl;
 
 
-Point prova_shifted_dataset[pixel_count]; // allocate memory for shifted dataset prova
-Point cluster_modes[1000]; // allocate memory for cluster modes prova
-unsigned int clusters_count = 0; // number of clusters prova
-
-#ifdef TOTAL_TIMING
-TOTAL_TIMER_START(prova_mean_shift)
-#endif
-
-prova_mean_shift(pixel_count, prova_dataset, prova_shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+    Point shifted_dataset[pixel_count]; // allocate memory for shifted dataset 
+    Point cluster_modes[1000]; // allocate memory for cluster modes 
+    unsigned int clusters_count = 0; // number of clusters 
 
 #ifdef TOTAL_TIMING
-TOTAL_TIMER_STOP(prova_mean_shift)
+    TOTAL_TIMER_START(mean_shift)
 #endif
-cout << "Mean-Shift completed." << endl;
-cout << "Clusters found: " << clusters_count << endl << endl;
 
-cout << "Saving data to CSV file..." << endl;
+    mean_shift(pixel_count, dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
 
-// write to csv file
-FILE *fileout = fopen("./data/prova_modified.csv", "w");
-if (!fileout) {
-    cerr << "Error opening " << output_csv_path;
-    exit(-1);
-}
-fprintf(fileout, "width,height,\n");
-fprintf(fileout, "%d,%d,\n", width, height);
-fprintf(fileout, "R,G,B\n");
-for (int i = 0; i < pixel_count; i++) {
-    write_point_to_file(&prova_shifted_dataset[i], fileout);
-}
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(mean_shift)
+#endif
+    cout << "Mean-Shift completed." << endl;
+    cout << "Clusters found: " << clusters_count << endl << endl;
 
-fclose(fileout);
-cout << "All data successfully saved inside " << "\"data/prova_modified.csv" << "\"." << endl;
-cout << "=================================================" << endl;
+    cout << "Saving data to CSV file..." << endl;
 
-return 0;
+    // write to csv file
+    FILE *fileout = fopen("./data/modified.csv", "w");
+    if (!fileout) {
+        cerr << "Error opening " << output_csv_path;
+        exit(-1);
+    }
+    fprintf(fileout, "width,height,\n");
+    fprintf(fileout, "%d,%d,\n", width, height);
+    fprintf(fileout, "R,G,B\n");
+    for (int i = 0; i < pixel_count; i++) {
+        write_point_to_file(&shifted_dataset[i], fileout);
+    }
+
+    fclose(fileout);
+    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
+    cout << "=================================================" << endl;
+
+    return 0;
 }
 
