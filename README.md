@@ -33,12 +33,24 @@ processing while maintaining the quality of segmentation results.
 
 ## Prerequisites
 - C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
+- [CMake](https://cmake.org/download/) (version 3.10 or higher), optional but highly recommended
 - Python 3.12 with required packages (NumPy, pandas, and pillow)
+  - Create and activate a virtual environment (optional but recommended):
+    ```bash
+    python -m venv venv
+    ```
+    - On Windows:
+      ```bash
+      venv\Scripts\activate
+      ```
+    - On Linux/macOS:
+      ```bash
+      source venv/bin/activate
+      ```
   - Install the required Python packages using `requirements.txt`:
     ```bash
     pip install -r requirements.txt
     ```
-- Optional, [CMake](https://cmake.org/download/) (version 3.10 or higher)
 
 ## Complete Workflow - example
 The following steps use default example configurations defined in `config.py`.
