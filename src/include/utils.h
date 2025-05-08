@@ -5,10 +5,10 @@
 #define T double
 typedef T Point[DIM];
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 // ------------ src/kernels.c ------------
 T gaussian_kernel(T distance, unsigned int bandwidth);
@@ -19,8 +19,10 @@ T epanechnikov_kernel(T distance, unsigned int bandwidth);
 T euclidean_distance(const Point *point1, const Point *point2);
 T sqrd_euclidean_distance(const Point *point1, const Point *point2);
 
-
 #ifdef __cplusplus
 }
 #endif
+
+
+
 #endif // __UTILS_H__

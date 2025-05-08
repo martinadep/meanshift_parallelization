@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
     }
     filein.close();
 
-    // ------------------ MEAN-SHIFT ----------------------
+    // ------------------------- MEAN-SHIFT ----------------------------
     cout << endl << "==================== Mean-Shift ==================" << endl;
     cout << "Input: \"" << input_csv_path << "\"" << endl;
     cout << "Output: \"" << output_csv_path << "\"" << endl;
@@ -149,8 +149,9 @@ int main(int argc, char *argv[]) {
     cout << "Mean-Shift completed." << endl;
     cout << "Clusters found: " << clusters_count << endl << endl;
 
-    cout << "Saving data to CSV file..." << endl;
+    // ------------------------------------------------------------------
 
+    cout << "Saving data to CSV file..." << endl;
     // write to csv file
     FILE *fileout = fopen("./data/modified.csv", "w");
     if (!fileout) {

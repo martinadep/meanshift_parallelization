@@ -33,7 +33,11 @@ processing while maintaining the quality of segmentation results.
 
 ## Prerequisites
 - C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
-- Python 3.12 with required packages (NumPy, pandas and pillow)
+- Python 3.12 with required packages (NumPy, pandas, and pillow)
+  - Install the required Python packages using `requirements.txt`:
+    ```bash
+    pip install -r requirements.txt
+    ```
 - Optional, [CMake](https://cmake.org/download/) (version 3.10 or higher)
 
 ## Complete Workflow - example
@@ -48,9 +52,10 @@ However, arguments can be configured to customize the execution as shown [below]
    ```
 
 2. **Convert input image to CSV** format:
+   
 
    ```bash
-   python .\py_utils\img_to_csv.py
+   python ./py_utils/img_to_csv.py
    ```
   
    This will generate a CSV file that will be processed by the C++ program.
@@ -84,7 +89,7 @@ However, arguments can be configured to customize the execution as shown [below]
 4. **Convert the output CSV** back to an image:
 
    ```bash
-   python .\py_utils\csv_to_img.py
+   python ./py_utils/csv_to_img.py
    ```
 
    This will transform the processed data back into a ***segmented image***.
@@ -105,7 +110,7 @@ The following steps allows to configure the input image path and enables Mean-Sh
    You can specify the input image and output CSV file paths by providing arguments in the command line:
 
    ```bash
-   python .\py_utils\img_to_csv.py -i image.jpg -o output.csv
+   python ./py_utils/img_to_csv.py -i image.jpg -o output.csv
    ```
 
    This will generate a CSV file that will be processed by the C++ program.
@@ -154,7 +159,7 @@ The following steps allows to configure the input image path and enables Mean-Sh
    You can specify the output image and input CSV file paths by providing arguments in the command line:
 
    ```bash
-   python .\py_utils\img_to_csv.py -i input.csv -o image.jpg
+   python ./py_utils/img_to_csv.py -i input.csv -o image.jpg
    ```
 
    This will transform the processed data back into your ***segmented image***.
@@ -183,6 +188,7 @@ The following steps allows to configure the input image path and enables Mean-Sh
 │   ├── astro_B30.jpg
 │   ├── flower_B10.jpg
 │   └── flower_B40.jpg
+├── requirements.txt
 └── README.md
 ```
 
