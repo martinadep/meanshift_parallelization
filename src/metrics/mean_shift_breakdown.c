@@ -8,8 +8,8 @@
 // Move a single point towards the maximum density area
 void shift_single_point(const Point *point, Point *next_point,
                               const Point dataset[], unsigned int dataset_size,
-                              unsigned int bandwidth, double (*kernel_func)(double, unsigned int)) {
-    double total_weight = 0;
+                              unsigned int bandwidth, T (*kernel_func)(T, unsigned int)) {
+    T total_weight = 0;
     Point point_i;
     init_point(&point_i); // xi
     init_point(next_point); // x'
@@ -19,12 +19,12 @@ void shift_single_point(const Point *point, Point *next_point,
 #ifdef TIMING_BREAKDOWN
         TIMER_START(distance_mode_find)
 #endif
-        double distance = euclidean_distance(point, &point_i); // x - xi
+        T distance = euclidean_distance(point, &point_i); // x - xi
 #ifdef TIMING_BREAKDOWN
         TIMER_SUM(distance_mode_find)
         TIMER_START(kernel)
 #endif
-        double weight = kernel_func(distance, bandwidth); // K(x - xi / h)
+        T weight = kernel_func(distance, bandwidth); // K(x - xi / h)
 #ifdef TIMING_BREAKDOWN
         TIMER_SUM(kernel)
         TIMER_START(coords_update)
@@ -55,7 +55,7 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
 #ifdef TIMING_BREAKDOWN
         TIMER_START(distance_cluster)
 #endif
-        double distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
+        T distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
 #ifdef TIMING_BREAKDOWN
         TIMER_SUM(distance_cluster)
 #endif
@@ -78,7 +78,7 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
 // Perform the mean shift clustering
 void mean_shift(unsigned int dataset_size, const Point dataset[],
                       Point shifted_dataset[], unsigned int bandwidth,
-                      double (*kernel_func)(double, unsigned int), Point cluster_modes[],
+                      T (*kernel_func)(T, unsigned int), Point cluster_modes[],
                       unsigned int *cluster_count) {
     Point prev_point;
     Point next_point;
@@ -97,13 +97,13 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         copy_point(&dataset[i], &prev_point);
 
         // Shift until convergence
-        while (!stop_moving && iter < MAX_ITER) {
+        while (!stop_moving) {
             shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
 
 #ifdef TIMING_BREAKDOWN
             TIMER_START(distance_shift)
 #endif
-            double shift_distance = euclidean_distance(&prev_point, &next_point);
+            T shift_distance = euclidean_distance(&prev_point, &next_point);
 #ifdef TIMING_BREAKDOWN
             TIMER_SUM(distance_shift)
 #endif

@@ -9,7 +9,7 @@
 #include <map>
 
 #ifdef TOTAL_TIMING
-#include "timing/timing.h"
+#include "metrics/timing.h"
 #endif
 
 using namespace std;  
@@ -131,6 +131,7 @@ int main(int argc, char *argv[]) {
     cout << "Bandwidth: " << bandwidth << endl;
     cout << "Kernel: " << kernel << endl;
     cout << "Dataset size: " << pixel_count << " elements" << endl << endl;
+    cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
 
 
     Point shifted_dataset[pixel_count]; // allocate memory for shifted dataset 

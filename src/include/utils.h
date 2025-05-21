@@ -2,7 +2,10 @@
 #define __UTILS_H__
 
 #include <math.h>
-#define T double
+#ifndef T
+#define T float
+#define TYPENAME "float"
+#endif
 typedef T Point[DIM];
 
 

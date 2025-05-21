@@ -1,30 +1,19 @@
-#include "include/point.h"
-#include "include/utils.h"
-#include "include/mean_shift.h"
+#include "../include/point.h"
+#include "../include/utils.h"
+#include "../include/mean_shift.h"
+#include "metrics.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-void mean_shift(unsigned int dataset_size, const Point dataset[],
-                Point shifted_dataset[], unsigned int bandwidth,
-                T (*kernel_func)(T, unsigned int), Point cluster_modes[],
-                unsigned int *cluster_count)
-{
+unsigned int *point_iterations = NULL;
+unsigned int total_iterations = 0;
+unsigned int min_iterations = UINT_MAX;
+unsigned int max_iterations = 0;
+double sum_iterations = 0.0;
+double sum_sq_iterations = 0.0;
+clock_t timing_start, timing_end;
+double elapsed_seconds = 0.0;
 
-    // Phase 1: Independent point shifting - parallelizable
-    for (int i = 0; i < dataset_size; i++){
-        shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
-                                      dataset, dataset_size, bandwidth, kernel_func);
-#ifdef DEBUG
-        if (i % 500 == 0)
-            printf("Shifted %d/%d points... \n", i, dataset_size);
-#endif
-    }
-
-    // Phase 2: Cluster assignment - requires synchronization when parallelized
-    for (int i = 0; i < dataset_size; i++){
-        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
-    }
-}
 
 // Convergence loop for a single point
 unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
@@ -42,13 +31,8 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
     while (!stop_moving)
     {
         shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
-
         T shift_distance = euclidean_distance(&prev_point, &next_point);
-
-        if (shift_distance <= EPSILON)
-        {
-            stop_moving = 1;
-        }
+        if (shift_distance <= EPSILON) stop_moving = 1;
         copy_point(&next_point, &prev_point);
         iter++;
     }
@@ -119,4 +103,36 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
         printf("Cluster found! \t\t Number of clusters: %u\n", *cluster_count);
 #endif
     }
+}
+
+
+
+
+
+void mean_shift(unsigned int dataset_size, const Point dataset[],
+                Point shifted_dataset[], unsigned int bandwidth,
+                T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+                unsigned int *cluster_count)
+{
+    METRICS_INIT(dataset_size);
+    METRICS_START_TIMER();
+    // Phase 1: Independent point shifting - parallelizable
+    for (int i = 0; i < dataset_size; i++){
+        unsigned int iters = shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
+                                      dataset, dataset_size, bandwidth, kernel_func);
+        METRICS_RECORD(i, iters);
+#ifdef DEBUG
+        if (i % 500 == 0)
+            printf("Shifted %d/%d points... \n", i, dataset_size);
+#endif
+    }
+
+    // Phase 2: Cluster assignment - requires synchronization when parallelized
+    for (int i = 0; i < dataset_size; i++){
+        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
+    }
+
+    METRICS_STOP_TIMER();
+    METRICS_WRITE_TO_FILE("./data/perf_results.txt", dataset_size, bandwidth, CLUSTER_EPSILON, EPSILON, TYPENAME);
+    free(point_iterations);
 }
