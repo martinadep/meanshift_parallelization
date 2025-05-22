@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
     const char *output_csv_path = CSV_OUT;
 
     if (argc < 2) {
-        cout << "No arguments provided. Using default values." << endl;
-        cout << "Usage: main.exe [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]" << endl;
+        std::cout << "No arguments provided. Using default values." << endl;
+        std::cout << "Usage: main.exe [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]" << endl;
     }
     // Parse command-line arguments
     map<string, string> args;
@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
     ifstream filein(input_csv_path);
     if (!filein) {
         cerr << "Error opening CSV file\n";
-        cout << "Current working directory: " << filesystem::current_path() << endl;
-        cout << "Input_csv_path: " << input_csv_path << endl;
+        std::cout << "Current working directory: " << filesystem::current_path() << endl;
+        std::cout << "Input_csv_path: " << input_csv_path << endl;
         return 1;
     }
 
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 
     getline(filein, line); // skip the third line "R,G,B"
 
-    Point dataset[pixel_count]; // allocate memory for dataset
+    Point* dataset = new Point[pixel_count];
     
     unsigned int index = 0;
 
@@ -129,49 +129,90 @@ int main(int argc, char *argv[]) {
     filein.close();
 
     // ------------------------- MEAN-SHIFT ----------------------------
-    cout << endl << "==================== Mean-Shift ==================" << endl;
-    cout << "Input: \"" << input_csv_path << "\"" << endl;
-    cout << "Output: \"" << output_csv_path << "\"" << endl;
-    cout << "Bandwidth: " << bandwidth << endl;
-    cout << "Kernel: " << kernel << endl;
-    cout << "Dataset size: " << width << "x" << height << " - " << pixel_count << " elements" << endl << endl;
-    cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
+    std::cout << endl << "==================== Mean-Shift ==================" << endl;
+    std::cout << "Input: \"" << input_csv_path << "\"" << endl;
+    std::cout << "Output: \"" << output_csv_path << "\"" << endl;
+    std::cout << "Bandwidth: " << bandwidth << endl;
+    std::cout << "Kernel: " << kernel << endl;
+    std::cout << "Dataset size: " << width << "x" << height << " - " << pixel_count << " elements" << endl << endl;
+    std::cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
+    
+    Point* shifted_dataset = new Point[pixel_count];
+    Point cluster_modes[1000]; // allocate memory for cluster modes 
+    unsigned int clusters_count = 0; // number of clusters 
+    printf("Memory allocated for shifted dataset and cluster modes.\n");
 
 #ifdef PREPROCESSING
      // SLIC parameters
-    int num_superpixels = 50;
     double m = 10.0; // compactness parameter
-    cout << endl << "Superpixels: " << num_superpixels << endl;
-    cout << "Compactness: " << m << endl;
-    cout << "Preprocessing dataset..." << endl;
-    Point processed_dataset[pixel_count];
-    preprocess_dataset(pixel_count, dataset, processed_dataset, width, height, num_superpixels, m);
+    std::cout << endl << "Superpixels: " << NUM_SUPERPIXELS << endl;
+    std::cout << "Compactness: " << m << endl;
+    
+    // Use heap allocation for large arrays
+    Point* superpixel_dataset = new Point[NUM_SUPERPIXELS];
+    Point* shifted_superpixels = new Point[NUM_SUPERPIXELS];
+    int* dataset_labels = new int[pixel_count];
 #endif
 
-    Point shifted_dataset[pixel_count]; // allocate memory for shifted dataset 
-    Point cluster_modes[1000]; // allocate memory for cluster modes 
-    unsigned int clusters_count = 0; // number of clusters 
+
+#ifdef PREPROCESSING
+    std::cout << "Preprocessing dataset (SLIC)..." << endl;
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_START(slic)
+#endif
+    preprocess_dataset(pixel_count, dataset, dataset_labels, superpixel_dataset, width, height, NUM_SUPERPIXELS, m);
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(slic)
+#endif
+    printf("SLIC completed.\n");
+
+    FILE *fileout_slic = fopen("./data/slic_output.csv", "w");
+    if (!fileout_slic) {
+        cerr << "Error opening ./data/slic_output.csv";
+        exit(-1);
+    }
+    fprintf(fileout_slic, "width,height,\n");
+    fprintf(fileout_slic, "%d,%d,\n", width, height);
+    fprintf(fileout_slic, "R,G,B\n");
+    for (int i = 0; i < pixel_count; i++) {
+        int label = dataset_labels[i];
+        write_point_to_file(&superpixel_dataset[label], fileout_slic);
+    }
+    fclose(fileout_slic);
+    std::cout << "--> SLIC result saved in ./data/slic_output.csv" << endl;
+    std::cout << "Mean-Shift on superpixels..." << endl;
 
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(mean_shift)
 #endif
-
-#ifdef PREPROCESSING
-    preprocess_dataset(pixel_count, dataset, processed_dataset, width, height, num_superpixels, m);
-    mean_shift(pixel_count, processed_dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
-#else
-    mean_shift(pixel_count, dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+    mean_shift(NUM_SUPERPIXELS, superpixel_dataset, shifted_superpixels, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+    for(unsigned int i = 0; i < pixel_count; i++) {
+        int label = dataset_labels[i]; 
+        copy_point(&shifted_superpixels[label], &shifted_dataset[i]);
+    }
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(mean_shift)
 #endif
+    printf("Shifted dataset completed.\n\n");
+    // Free heap memory
+    delete[] superpixel_dataset;
+    delete[] shifted_superpixels;
+    delete[] dataset_labels;
+#else
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_START(mean_shift)
+#endif
+    mean_shift(pixel_count, dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
 
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(mean_shift)
 #endif
-    cout << "Mean-Shift completed." << endl;
-    cout << "Clusters found: " << clusters_count << endl << endl;
+#endif
+    std::cout << "Clusters found: " << clusters_count << endl << endl;
 
     // ------------------------------------------------------------------
 
-    cout << "Saving data to CSV file..." << endl;
+    std::cout << "Saving data to CSV file..." << endl;
     // write to csv file
     FILE *fileout_prep = fopen("./data/modified.csv", "w");
     if (!fileout_prep) {
@@ -186,27 +227,11 @@ int main(int argc, char *argv[]) {
     }
 
     fclose(fileout_prep);
-    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
-    cout << "=================================================" << endl;
-
-#ifdef PREPROCESSING
-    cout << "Saving processed dataset to CSV file..." << endl;
-    FILE *fileout = fopen("./data/preprocessed.csv", "w");
-    if (!fileout) {
-        cerr << "Error opening " << output_csv_path;
-        exit(-1);
-    }
-    fprintf(fileout, "width,height,\n");
-    fprintf(fileout, "%d,%d,\n", width, height);
-    fprintf(fileout, "R,G,B\n");
-    for (int i = 0; i < pixel_count; i++) {
-        write_point_to_file(&processed_dataset[i], fileout);
-    }
-
-    fclose(fileout);
-    cout << "All data successfully saved inside " << "\"data/preprocessed.csv" << "\"." << endl;
-    cout << "=================================================" << endl;
-#endif
+    std::cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
+    std::cout << "=================================================" << endl;
+    
+    delete[] dataset;
+    delete[] shifted_dataset;
     return 0;
 }
 

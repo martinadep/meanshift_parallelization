@@ -33,7 +33,10 @@ add_executable(slic
                ${COMMON_SOURCES}
                src/mean_shift.c
                src/preprocessing/slic.c)
-target_compile_definitions(slic PRIVATE PREPROCESSING TOTAL_TIMING)
+target_compile_definitions(slic PRIVATE 
+                PREPROCESSING 
+                TOTAL_TIMING
+                NUM_SUPERPIXELS=1000)
 
 # Prepare for future parallel version
 # (Uncomment when ready to parallelize)
