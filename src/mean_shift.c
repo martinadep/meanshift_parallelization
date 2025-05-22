@@ -43,7 +43,7 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
     {
         shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
 
-        T shift_distance = lab_distance(&prev_point, &next_point);
+        T shift_distance = euclidean_distance(&prev_point, &next_point);
 
         if (shift_distance <= EPSILON)
         {
@@ -69,7 +69,7 @@ void shift_single_point(const Point *point, Point *next_point,
     for (int i = 0; i < dataset_size; i++)
     {
         copy_point(&dataset[i], &point_i);                     // xi = dataset[i]
-        T distance = lab_distance(point, &point_i); // x - xi
+        T distance = euclidean_distance(point, &point_i); // x - xi
 
         T weight = kernel_func(distance, bandwidth); // K(x - xi / h)
 
@@ -101,7 +101,7 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
     for (; c < *cluster_count; c++)
     {
 
-        T distance_from_cluster = lab_distance(shifted_point, &cluster_modes[c]);
+        T distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
 
         if (distance_from_cluster <= CLUSTER_EPSILON)
         {
