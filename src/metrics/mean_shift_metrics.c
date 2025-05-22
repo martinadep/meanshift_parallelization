@@ -99,9 +99,6 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
     {
         copy_point(shifted_point, &cluster_modes[c]); // assign cluster mode to shifted point
         (*cluster_count)++;
-#ifdef DEBUG
-        printf("Cluster found! \t\t Number of clusters: %u\n", *cluster_count);
-#endif
     }
 }
 
@@ -110,9 +107,9 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
 
 
 void mean_shift(unsigned int dataset_size, const Point dataset[],
-                Point shifted_dataset[], unsigned int bandwidth,
-                T (*kernel_func)(T, unsigned int), Point cluster_modes[],
-                unsigned int *cluster_count)
+                      Point shifted_dataset[], unsigned int bandwidth,
+                      T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+                      unsigned int *cluster_count)
 {
     METRICS_INIT(dataset_size);
     METRICS_START_TIMER();

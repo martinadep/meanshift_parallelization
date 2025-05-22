@@ -15,7 +15,7 @@ set(COMMON_SOURCES
 add_executable(main 
                ${COMMON_SOURCES}
                src/mean_shift.c)
-target_compile_definitions(main PRIVATE TOTAL_TIMING DEBUG)
+target_compile_definitions(main PRIVATE TOTAL_TIMING) #DEBUG)
 
 # Breakdown version
 add_executable(breakdown 
@@ -23,9 +23,17 @@ add_executable(breakdown
                src/metrics/mean_shift_breakdown.c)
 target_compile_definitions(breakdown PRIVATE TIMING_BREAKDOWN)
 
+# Metrics version
 add_executable(metrics 
                ${COMMON_SOURCES}
                src/metrics/mean_shift_metrics.c)
+
+# SLIC version
+add_executable(slic
+               ${COMMON_SOURCES}
+               src/mean_shift.c
+               src/preprocessing/slic.c)
+target_compile_definitions(slic PRIVATE PREPROCESSING TOTAL_TIMING)
 
 # Prepare for future parallel version
 # (Uncomment when ready to parallelize)

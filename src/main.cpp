@@ -8,6 +8,10 @@
 #include <unordered_map>
 #include <map>
 
+#ifdef PREPROCESSING
+#include "preprocessing/preprocessing.h"
+#endif
+
 #ifdef TOTAL_TIMING
 #include "metrics/timing.h"
 #endif
@@ -130,9 +134,19 @@ int main(int argc, char *argv[]) {
     cout << "Output: \"" << output_csv_path << "\"" << endl;
     cout << "Bandwidth: " << bandwidth << endl;
     cout << "Kernel: " << kernel << endl;
-    cout << "Dataset size: " << pixel_count << " elements" << endl << endl;
+    cout << "Dataset size: " << width << "x" << height << " - " << pixel_count << " elements" << endl << endl;
     cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
 
+#ifdef PREPROCESSING
+     // SLIC parameters
+    int num_superpixels = 50;
+    double m = 10.0; // compactness parameter
+    cout << endl << "Superpixels: " << num_superpixels << endl;
+    cout << "Compactness: " << m << endl;
+    cout << "Preprocessing dataset..." << endl;
+    Point processed_dataset[pixel_count];
+    preprocess_dataset(pixel_count, dataset, processed_dataset, width, height, num_superpixels, m);
+#endif
 
     Point shifted_dataset[pixel_count]; // allocate memory for shifted dataset 
     Point cluster_modes[1000]; // allocate memory for cluster modes 
@@ -142,7 +156,12 @@ int main(int argc, char *argv[]) {
     TOTAL_TIMER_START(mean_shift)
 #endif
 
+#ifdef PREPROCESSING
+    preprocess_dataset(pixel_count, dataset, processed_dataset, width, height, num_superpixels, m);
+    mean_shift(pixel_count, processed_dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+#else
     mean_shift(pixel_count, dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+#endif
 
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(mean_shift)
@@ -154,7 +173,25 @@ int main(int argc, char *argv[]) {
 
     cout << "Saving data to CSV file..." << endl;
     // write to csv file
-    FILE *fileout = fopen("./data/modified.csv", "w");
+    FILE *fileout_prep = fopen("./data/modified.csv", "w");
+    if (!fileout_prep) {
+        cerr << "Error opening " << output_csv_path;
+        exit(-1);
+    }
+    fprintf(fileout_prep, "width,height,\n");
+    fprintf(fileout_prep, "%d,%d,\n", width, height);
+    fprintf(fileout_prep, "R,G,B\n");
+    for (int i = 0; i < pixel_count; i++) {
+        write_point_to_file(&shifted_dataset[i], fileout_prep);
+    }
+
+    fclose(fileout_prep);
+    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
+    cout << "=================================================" << endl;
+
+#ifdef PREPROCESSING
+    cout << "Saving processed dataset to CSV file..." << endl;
+    FILE *fileout = fopen("./data/preprocessed.csv", "w");
     if (!fileout) {
         cerr << "Error opening " << output_csv_path;
         exit(-1);
@@ -163,13 +200,13 @@ int main(int argc, char *argv[]) {
     fprintf(fileout, "%d,%d,\n", width, height);
     fprintf(fileout, "R,G,B\n");
     for (int i = 0; i < pixel_count; i++) {
-        write_point_to_file(&shifted_dataset[i], fileout);
+        write_point_to_file(&processed_dataset[i], fileout);
     }
 
     fclose(fileout);
-    cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
+    cout << "All data successfully saved inside " << "\"data/preprocessed.csv" << "\"." << endl;
     cout << "=================================================" << endl;
-
+#endif
     return 0;
 }
 
