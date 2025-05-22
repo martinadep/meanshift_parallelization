@@ -10,6 +10,7 @@
 
 #ifdef PREPROCESSING
 #include "preprocessing/preprocessing.h"
+#include "include/color_conversion.h"
 #endif
 
 #ifdef TOTAL_TIMING
@@ -108,6 +109,10 @@ int main(int argc, char *argv[]) {
     
     unsigned int index = 0;
 
+    #ifdef PREPROCESSING
+    Point rgb_point;
+    Point lab_point;
+    #endif
     // read each row (pixel) and convert in doubles
     while (getline(filein, line) && index < pixel_count) {
         stringstream ss(line);
@@ -118,12 +123,24 @@ int main(int argc, char *argv[]) {
         getline(ss, b, ',');
 
         // append each pixel in the dataset
+#ifdef PREPROCESSING
+        rgb_point[0] = T(stoi(r));
+        rgb_point[1] = T(stoi(g));
+        rgb_point[2] = T(stoi(b));
+        
+        // Convert to LAB
+        rgb_to_lab(rgb_point, lab_point);
+        
+        // Store LAB values in the dataset
+        copy_point(&lab_point, &dataset[index]);
+#else
         Point point;
         point[0] = T(stoi(r));
         point[1] = T(stoi(g));
         point[2] = T(stoi(b));
         
         copy_point(&point, &dataset[index]); // copy to dataset
+#endif
         index++;
     }
     filein.close();
@@ -174,13 +191,18 @@ int main(int argc, char *argv[]) {
     fprintf(fileout_slic, "width,height,\n");
     fprintf(fileout_slic, "%d,%d,\n", width, height);
     fprintf(fileout_slic, "R,G,B\n");
+    
     for (int i = 0; i < pixel_count; i++) {
         int label = dataset_labels[i];
-        write_point_to_file(&superpixel_dataset[label], fileout_slic);
+        copy_point(&superpixel_dataset[label], &lab_point);
+        lab_to_rgb(lab_point, rgb_point);
+        write_point_to_file(&rgb_point, fileout_slic);
     }
     fclose(fileout_slic);
     std::cout << "--> SLIC result saved in ./data/slic_output.csv" << endl;
     std::cout << "Mean-Shift on superpixels..." << endl;
+
+
 
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(mean_shift)
@@ -222,10 +244,18 @@ int main(int argc, char *argv[]) {
     fprintf(fileout_prep, "width,height,\n");
     fprintf(fileout_prep, "%d,%d,\n", width, height);
     fprintf(fileout_prep, "R,G,B\n");
+
+#ifdef PREPROCESSING
+    for (int i = 0; i < pixel_count; i++) {
+        copy_point(&shifted_dataset[i], &lab_point);
+        lab_to_rgb(lab_point, rgb_point);
+        write_point_to_file(&rgb_point, fileout_prep);
+    }
+#else
     for (int i = 0; i < pixel_count; i++) {
         write_point_to_file(&shifted_dataset[i], fileout_prep);
     }
-
+#endif
     fclose(fileout_prep);
     std::cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
     std::cout << "=================================================" << endl;

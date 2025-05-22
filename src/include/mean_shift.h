@@ -19,10 +19,20 @@
     #define BANDWIDTH 10
 #endif
 #ifndef EPSILON
+#ifdef PREPROCESSING
+    #define EPSILON 0.5
+#else
     #define EPSILON 2.0
 #endif
+#endif
+
+
 #ifndef CLUSTER_EPSILON
-    #define CLUSTER_EPSILON 50 // suggested: bandwidth * 1.5
+#ifdef PREPROCESSING
+    #define CLUSTER_EPSILON 4.5
+#else
+    #define CLUSTER_EPSILON 20 // suggested: bandwidth * 1.5
+#endif
 #endif
 #define MAX_CLUSTERS 1000 // maximum number of clusters
 

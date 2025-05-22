@@ -21,6 +21,8 @@ T epanechnikov_kernel(T distance, unsigned int bandwidth);
 // ---------- src/distances.c ------------
 T euclidean_distance(const Point *point1, const Point *point2);
 T sqrd_euclidean_distance(const Point *point1, const Point *point2);
+T lab_distance(const Point *p1, const Point *p2);
+T calc_distance(const Point *p1, const Point *p2);
 
 #ifdef __cplusplus
 }
