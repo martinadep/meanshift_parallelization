@@ -6,6 +6,8 @@
 cmake-build-debug/
 build/
 
+dataset/
+
 # Python
 venv/
 .venv/

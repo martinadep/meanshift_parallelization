@@ -147,25 +147,20 @@ int main(int argc, char *argv[]) {
 
     // ------------------------- MEAN-SHIFT ----------------------------
     std::cout << endl << "==================== Mean-Shift ==================" << endl;
-    std::cout << "Input: \"" << input_csv_path << "\"" << endl;
-    std::cout << "Output: \"" << output_csv_path << "\"" << endl;
-    std::cout << "Bandwidth: " << bandwidth << endl;
-    std::cout << "Kernel: " << kernel << endl;
-    std::cout << "Dataset size: " << width << "x" << height << " - " << pixel_count << " elements" << endl << endl;
+    std::cout << "Dataset: [" << input_csv_path  << "]\t "<< width << "x" << height << " (" << pixel_count << " elements)" << endl << endl;
     std::cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
+    std::cout << "\t- Bandwidth: " << bandwidth << endl;
+    std::cout << "\t- Kernel: " << kernel << endl;
     
     Point* shifted_dataset = new Point[pixel_count];
-    Point cluster_modes[1000]; // allocate memory for cluster modes 
+    Point cluster_modes[1000]; 
     unsigned int clusters_count = 0; // number of clusters 
-    printf("Memory allocated for shifted dataset and cluster modes.\n");
 
 #ifdef PREPROCESSING
-     // SLIC parameters
     double m = 10.0; // compactness parameter
-    std::cout << endl << "Superpixels: " << NUM_SUPERPIXELS << endl;
-    std::cout << "Compactness: " << m << endl;
+    std::cout <<"Preprocessing (SLIC)"<< endl << "\t- Superpixels: " << NUM_SUPERPIXELS << endl;
+    std::cout << "\t- Compactness: " << m << endl <<endl;
     
-    // Use heap allocation for large arrays
     Point* superpixel_dataset = new Point[NUM_SUPERPIXELS];
     Point* shifted_superpixels = new Point[NUM_SUPERPIXELS];
     int* dataset_labels = new int[pixel_count];
@@ -173,7 +168,6 @@ int main(int argc, char *argv[]) {
 
 
 #ifdef PREPROCESSING
-    std::cout << "Preprocessing dataset (SLIC)..." << endl;
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(slic)
 #endif
@@ -181,7 +175,6 @@ int main(int argc, char *argv[]) {
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(slic)
 #endif
-    printf("SLIC completed.\n");
 
     FILE *fileout_slic = fopen("./data/slic_output.csv", "w");
     if (!fileout_slic) {
@@ -199,11 +192,7 @@ int main(int argc, char *argv[]) {
         write_point_to_file(&rgb_point, fileout_slic);
     }
     fclose(fileout_slic);
-    std::cout << "--> SLIC result saved in ./data/slic_output.csv" << endl;
-    std::cout << "Mean-Shift on superpixels..." << endl;
-
-
-
+ 
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(mean_shift)
 #endif
@@ -215,7 +204,6 @@ int main(int argc, char *argv[]) {
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(mean_shift)
 #endif
-    printf("Shifted dataset completed.\n\n");
     // Free heap memory
     delete[] superpixel_dataset;
     delete[] shifted_superpixels;
@@ -230,11 +218,8 @@ int main(int argc, char *argv[]) {
     TOTAL_TIMER_STOP(mean_shift)
 #endif
 #endif
-    std::cout << "Clusters found: " << clusters_count << endl << endl;
+    std::cout << "\n\n>>> Clusters found: " << clusters_count << "\n\n";
 
-    // ------------------------------------------------------------------
-
-    std::cout << "Saving data to CSV file..." << endl;
     // write to csv file
     FILE *fileout_prep = fopen("./data/modified.csv", "w");
     if (!fileout_prep) {
@@ -257,7 +242,11 @@ int main(int argc, char *argv[]) {
     }
 #endif
     fclose(fileout_prep);
-    std::cout << "All data successfully saved inside " << "\"data/modified.csv" << "\"." << endl;
+    
+    #ifdef PREPROCESSING
+    std::cout << ">>>> SLIC results saved in: [./data/slic_output.csv] <<<<" << endl;
+    #endif
+    std::cout << ">>>> Mean-Shift results saved in: [./data/modified.csv] <<<<" << endl;
     std::cout << "=================================================" << endl;
     
     delete[] dataset;
