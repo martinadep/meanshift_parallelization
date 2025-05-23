@@ -34,7 +34,7 @@ for kernel in "${KERNELS[@]}"; do
                 slic_csv="$DATA_DIR/slic_outputB${bandwidth}_${run}.csv"
                 
                 echo "    Running mean-shift: img=$img_base, K=$kernel, B=$bandwidth, run=$run"
-                ./build/slic_metrics_double.exe --kernel "$kernel" --bandwidth "$bandwidth" --input "$csv_path" --output "$out_csv" --slic_out "$slic_csv"
+                ./build/slic_metrics_double --kernel "$kernel" --bandwidth "$bandwidth" --input "$csv_path" --output "$out_csv" --slic_out "$slic_csv"
                 if [ $? -ne 0 ]; then
                     echo "Errore nell'esecuzione di slic_metrics_float.exe per $img_base, kernel $kernel, bandwidth $bandwidth, run $run"
                 fi
