@@ -8,9 +8,14 @@
 #endif
 typedef T Point[DIM];
 
-
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+// ------------ src/main.c ------------
+int main_std(int argc, char *argv[]);
+#ifdef PREPROCESSING
+int main_preprocessing(int argc, char *argv[]);
 #endif
 
 // ------------ src/kernels.c ------------
@@ -21,8 +26,6 @@ T epanechnikov_kernel(T distance, unsigned int bandwidth);
 // ---------- src/distances.c ------------
 T euclidean_distance(const Point *point1, const Point *point2);
 T sqrd_euclidean_distance(const Point *point1, const Point *point2);
-T lab_distance(const Point *p1, const Point *p2);
-T calc_distance(const Point *p1, const Point *p2);
 
 #ifdef __cplusplus
 }

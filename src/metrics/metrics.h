@@ -61,7 +61,7 @@ extern double elapsed_seconds;
             printf( "Cluster Epsilon: %f\n", (float)cluster_epsilon); \
             printf( "Iteration Epsilon: %f\n", (float)epsilon); \
             printf( "DataType: %s\n", dtype); \
-            printf( "Iterations/sec: %.2f\n iter/sec", total_iterations / elapsed_seconds); \
+            printf( "Iterations/sec: %.2f iter/sec\n", total_iterations / elapsed_seconds); \
             printf( "Min Iterations: %u\n", min_iterations); \
             printf( "Max Iterations: %u\n", max_iterations); \
             printf( "Mean Iterations: %.2f\n", mean); \

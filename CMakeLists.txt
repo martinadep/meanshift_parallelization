@@ -39,11 +39,11 @@ target_compile_definitions(slic PRIVATE
                 NUM_SUPERPIXELS=1000)
 
 # SLIC with metrics
-add_executable(slic_metrics_double
+add_executable(slic_metrics
                ${COMMON_SOURCES}
                src/metrics/mean_shift_metrics.c
                src/preprocessing/slic.c)
-target_compile_definitions(slic_metrics_double PRIVATE 
+target_compile_definitions(slic_metrics PRIVATE 
                 PREPROCESSING 
                 TOTAL_TIMING
                 NUM_SUPERPIXELS=1000)
