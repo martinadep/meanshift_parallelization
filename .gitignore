@@ -6,7 +6,12 @@
 cmake-build-debug/
 build/
 
-dataset/
+dataset/*
+!dataset/12003.jpg
+!dataset/35010.jpg
+!dataset/65010.jpg
+!dataset/118035.jpg
+!dataset/124084.jpg
 
 # Python
 venv/

@@ -23,6 +23,7 @@ def parse_perf_file(filename):
             d['Total Points'] = int(re.search(r'Total Points: (\d+)', run).group(1))
             d['Total Iterations'] = int(re.search(r'Total Iterations: (\d+)', run).group(1))
             d['Iterations/sec'] = float(re.search(r'Iterations/sec: ([\d.]+)', run).group(1))
+            d['Elapsed Time'] = float(re.search(r'Elapsed Time: ([\d.]+)', run).group(1))
             d['Min Iterations'] = int(re.search(r'Min Iterations: (\d+)', run).group(1))
             d['Max Iterations'] = int(re.search(r'Max Iterations: (\d+)', run).group(1))
             d['Mean Iterations'] = float(re.search(r'Mean Iterations: ([\d.]+)', run).group(1))
