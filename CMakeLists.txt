@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.12)
 project(mean_shift_segmentation)
 
 set(CMAKE_CXX_STANDARD 20)
