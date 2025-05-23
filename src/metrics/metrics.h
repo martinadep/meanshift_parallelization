@@ -5,6 +5,7 @@
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
+#include <limits.h>
 
 extern unsigned int *point_iterations;
 extern unsigned int total_iterations;
