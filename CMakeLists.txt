@@ -38,19 +38,23 @@ target_compile_definitions(slic PRIVATE
                 TOTAL_TIMING
                 NUM_SUPERPIXELS=1000)
 
-# Prepare for future parallel version
-# (Uncomment when ready to parallelize)
-#add_executable(parallel_main
-#               ${COMMON_SOURCES}
-#               src/parallel/mean_shift_parallel.c)
-#target_compile_definitions(parallel_main PRIVATE TOTAL_TIMING PARALLEL)
+# SLIC with metrics
+add_executable(slic_metrics_double
+               ${COMMON_SOURCES}
+               src/metrics/mean_shift_metrics.c
+               src/preprocessing/slic.c)
+target_compile_definitions(slic_metrics_double PRIVATE 
+                PREPROCESSING 
+                TOTAL_TIMING
+                NUM_SUPERPIXELS=1000)
 
 add_compile_definitions( 
     BANDWIDTH=10.0
     CSV_IN="./data/original.csv"
     CSV_OUT="./data/modified.csv"
+    CSV_OUT_SLIC="./data/modified_slic.csv"
     KERNEL="uniform"
     DIM=3
-    T=float
-    TYPENAME="float"
+    T=double
+    TYPENAME="double"
 )

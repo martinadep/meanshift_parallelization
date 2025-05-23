@@ -12,6 +12,8 @@ dataset/
 venv/
 .venv/
 
+run_experiments.*
+
 # Output files
 test/
 data/*

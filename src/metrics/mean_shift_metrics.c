@@ -14,6 +14,30 @@ double sum_sq_iterations = 0.0;
 clock_t timing_start, timing_end;
 double elapsed_seconds = 0.0;
 
+void mean_shift(unsigned int dataset_size, const Point dataset[],
+                      Point shifted_dataset[], unsigned int bandwidth,
+                      T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+                      unsigned int *cluster_count)
+{
+    METRICS_INIT(dataset_size);
+    METRICS_START_TIMER();
+    // Phase 1: Independent point shifting - parallelizable
+    for (int i = 0; i < dataset_size; i++){
+        unsigned int iters = shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
+                                      dataset, dataset_size, bandwidth, kernel_func);
+        METRICS_RECORD(i, iters);
+    }
+
+    // Phase 2: Cluster assignment - requires synchronization when parallelized
+    for (int i = 0; i < dataset_size; i++){
+        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
+    }
+
+    METRICS_STOP_TIMER();
+    METRICS_WRITE_TO_FILE("./data/perf_results.txt", dataset_size, bandwidth, CLUSTER_EPSILON, EPSILON, TYPENAME);
+    free(point_iterations);
+}
+
 
 // Convergence loop for a single point
 unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
@@ -52,24 +76,23 @@ void shift_single_point(const Point *point, Point *next_point,
 
     for (int i = 0; i < dataset_size; i++)
     {
-        copy_point(&dataset[i], &point_i);                     // xi = dataset[i]
+        copy_point(&dataset[i], &point_i);                // xi = dataset[i]
         T distance = euclidean_distance(point, &point_i); // x - xi
 
-        T weight = kernel_func(distance, bandwidth); // K(x - xi / h)
+        T weight = kernel_func(distance, bandwidth);      // K(x - xi / h)
 
-        // x' = x' + xi * K(x - xi / h)
-        for (int j = 0; j < DIM; j++)
+        for (int j = 0; j < DIM; j++)                     
         {
-            (*next_point)[j] += point_i[j] * weight;
+            (*next_point)[j] += point_i[j] * weight;      // x' = x' + xi * K(x - xi / h)
         }
 
-        total_weight += weight; // total weight of all points with respect to [point]
+        total_weight += weight;                           // total weight of all points with respect to [point]
     }
 
     if (total_weight > 0)
     {
         // normalization
-        divide_point(next_point, total_weight); // x' = x' / sum(K(x - xi / h))
+        divide_point(next_point, total_weight);           // x' = x' / sum(K(x - xi / h))
     }
     else
     {
@@ -101,36 +124,4 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
         (*cluster_count)++;
 
     }
-}
-
-
-
-
-
-void mean_shift(unsigned int dataset_size, const Point dataset[],
-                      Point shifted_dataset[], unsigned int bandwidth,
-                      T (*kernel_func)(T, unsigned int), Point cluster_modes[],
-                      unsigned int *cluster_count)
-{
-    METRICS_INIT(dataset_size);
-    METRICS_START_TIMER();
-    // Phase 1: Independent point shifting - parallelizable
-    for (int i = 0; i < dataset_size; i++){
-        unsigned int iters = shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
-                                      dataset, dataset_size, bandwidth, kernel_func);
-        METRICS_RECORD(i, iters);
-#ifdef DEBUG
-        if (i % 500 == 0)
-            printf("Shifted %d/%d points... \n", i, dataset_size);
-#endif
-    }
-
-    // Phase 2: Cluster assignment - requires synchronization when parallelized
-    for (int i = 0; i < dataset_size; i++){
-        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
-    }
-
-    METRICS_STOP_TIMER();
-    METRICS_WRITE_TO_FILE("./data/perf_results.txt", dataset_size, bandwidth, CLUSTER_EPSILON, EPSILON, TYPENAME);
-    free(point_iterations);
 }

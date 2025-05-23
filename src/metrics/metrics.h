@@ -45,27 +45,28 @@ extern double elapsed_seconds;
             double mean = sum_iterations / n_points; \
             double stddev = sqrt(sum_sq_iterations / n_points - mean * mean); \
             fprintf(f, "Bandwidth: %u\n", bandwidth); \
-            fprintf(f, "Cluster Epsilon: %u\n", cluster_epsilon); \
-            fprintf(f, "Iteration Epsilon: %g\n", epsilon); \
+            fprintf(f, "Cluster Epsilon: %f\n", cluster_epsilon); \
+            fprintf(f, "Iteration Epsilon: %f\n", epsilon); \
             fprintf(f, "DataType: %s\n", dtype); \
             fprintf(f, "Total Points: %u\n", n_points); \
             fprintf(f, "Total Iterations: %u\n", total_iterations); \
-            fprintf(f, "Iterations/sec: %.2f\n", total_iterations / elapsed_seconds); \
+            fprintf(f, "Iterations/sec: %.2f iter/sec\n", total_iterations / elapsed_seconds); \
+            fprintf(f, "Elapsed Time: %.2f sec\n", elapsed_seconds); \
             fprintf(f, "Min Iterations: %u\n", min_iterations); \
             fprintf(f, "Max Iterations: %u\n", max_iterations); \
             fprintf(f, "Mean Iterations: %.2f\n", mean); \
             fprintf(f, "Stddev Iterations: %.2f\n", stddev); \
             printf( "Bandwidth: %u\n", bandwidth); \
-            printf( "Cluster Epsilon: %u\n", cluster_epsilon); \
-            printf( "Iteration Epsilon: %g\n", epsilon); \
+            printf( "Cluster Epsilon: %f\n", cluster_epsilon); \
+            printf( "Iteration Epsilon: %f\n", epsilon); \
             printf( "DataType: %s\n", dtype); \
-            printf( "Iterations/sec: %.2f\n", total_iterations / elapsed_seconds); \
+            printf( "Iterations/sec: %.2f\n iter/sec", total_iterations / elapsed_seconds); \
             printf( "Min Iterations: %u\n", min_iterations); \
             printf( "Max Iterations: %u\n", max_iterations); \
             printf( "Mean Iterations: %.2f\n", mean); \
             fprintf(f, "Iterations per point: "); \
             for (unsigned int i = 0; i < n_points; ++i) fprintf(f, "%u ", point_iterations[i]); \
-            fprintf(f, "\n----------------\n"); \
+            fprintf(f, "\n---------------------------------------\n"); \
             fclose(f); \
             printf("Metrics written to %s\n", filename); \
         } \

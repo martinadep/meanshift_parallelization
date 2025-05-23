@@ -17,6 +17,10 @@
 #include "metrics/timing.h"
 #endif
 
+#ifndef CSV_SLIC_OUT
+#define CSV_SLIC_OUT "./data/slic_output.csv"
+#endif
+
 using namespace std;  
 
 int main(int argc, char *argv[]) {
@@ -28,6 +32,9 @@ int main(int argc, char *argv[]) {
     unsigned int bandwidth = BANDWIDTH;
     const char *input_csv_path = CSV_IN;
     const char *output_csv_path = CSV_OUT;
+#ifdef PREPROCESSING
+    const char *output_slic_path = CSV_SLIC_OUT;
+#endif
 
     if (argc < 2) {
         std::cout << "No arguments provided. Using default values." << endl;
@@ -39,7 +46,8 @@ int main(int argc, char *argv[]) {
         {"-k", "--kernel"},
         {"-b", "--bandwidth"},
         {"-i", "--input"},
-        {"-o", "--output"}
+        {"-o", "--output"},
+        {"-s", "--slic_out"}
     };
     for (int i = 1; i < argc; i += 2) {
         string key = argv[i];
@@ -67,6 +75,11 @@ int main(int argc, char *argv[]) {
     if (args.find("--output") != args.end()) {
         output_csv_path = args["--output"].c_str();
     }
+#ifdef PREPROCESSING
+    if (args.find("--slic_out") != args.end()) {
+        output_slic_path = args["--slic_out"].c_str();
+    }
+#endif
 
     // Map kernel names to functions
     unordered_map<string, T (*)(T, unsigned int)> kernel_map = {
@@ -176,9 +189,9 @@ int main(int argc, char *argv[]) {
     TOTAL_TIMER_STOP(slic)
 #endif
 
-    FILE *fileout_slic = fopen("./data/slic_output.csv", "w");
+    FILE *fileout_slic = fopen(output_slic_path, "w");
     if (!fileout_slic) {
-        cerr << "Error opening ./data/slic_output.csv";
+        cerr << "Error opening " << output_slic_path;
         exit(-1);
     }
     fprintf(fileout_slic, "width,height,\n");
@@ -221,7 +234,7 @@ int main(int argc, char *argv[]) {
     std::cout << "\n\n>>> Clusters found: " << clusters_count << "\n\n";
 
     // write to csv file
-    FILE *fileout_prep = fopen("./data/modified.csv", "w");
+    FILE *fileout_prep = fopen(output_csv_path, "w");
     if (!fileout_prep) {
         cerr << "Error opening " << output_csv_path;
         exit(-1);
@@ -244,9 +257,9 @@ int main(int argc, char *argv[]) {
     fclose(fileout_prep);
     
     #ifdef PREPROCESSING
-    std::cout << ">>>> SLIC results saved in: [./data/slic_output.csv] <<<<" << endl;
+    std::cout << ">>>> SLIC results saved in: [" << output_slic_path << "] <<<<" << endl;
     #endif
-    std::cout << ">>>> Mean-Shift results saved in: [./data/modified.csv] <<<<" << endl;
+    std::cout << ">>>> Mean-Shift results saved in: [" << output_csv_path << "] <<<<" << endl;
     std::cout << "=================================================" << endl;
     
     delete[] dataset;
