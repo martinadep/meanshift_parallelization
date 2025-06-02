@@ -2,15 +2,15 @@
 #include <filesystem>
 #include <iostream>
 #include <sys/time.h>
+#include <unordered_map>
+#include <map>
 #include "include/point.h"
 #include "include/mean_shift.h"
 #include "include/utils.h"
-#include <unordered_map>
-#include <map>
+
 
 #ifdef PREPROCESSING
 #include "preprocessing/preprocessing.h"
-#include "include/color_conversion.h"
 #endif
 
 #ifdef TOTAL_TIMING
@@ -154,7 +154,13 @@ int main_std(int argc, char *argv[]){
     TOTAL_TIMER_STOP(mean_shift)
 #endif
 
-    std::cout << "\n\n>>> Clusters found: " << clusters_count << "\n\n";
+    if (clusters_count > 1000) {
+        std::cout << "--- Warning: More than 1000 clusters found. Some clusters may be lost." << endl;
+    } else if (clusters_count == 1) {
+        std::cout << "--- Warning: Only one cluster found. No segmentation possible." << endl<< "Try to select a smaller bandwidth." << endl;
+    } else{
+        std::cout << ">>> Clusters found: " << clusters_count << endl;
+    }
     // write to csv file
     FILE *fileout_prep = fopen(output_csv_path, "w");
     if (!fileout_prep) {
@@ -272,7 +278,6 @@ int main_preprocessing(int argc, char *argv[]){
     
     unsigned int index = 0;
 
-    Point rgb_point;
     Point lab_point;
     // read each row (pixel) and convert in doubles
     while (getline(filein, line) && index < pixel_count) {
@@ -284,21 +289,12 @@ int main_preprocessing(int argc, char *argv[]){
         getline(ss, b, ',');
 
         // append each pixel in the dataset
-        rgb_point[0] = T(stoi(r));
-        rgb_point[1] = T(stoi(g));
-        rgb_point[2] = T(stoi(b));
-        
-        // Convert to LAB
-        rgb_to_lab(rgb_point, lab_point);
+        lab_point[0] = T(stoi(r));
+        lab_point[1] = T(stoi(g));
+        lab_point[2] = T(stoi(b));
         
         // Store LAB values in the dataset
         copy_point(&lab_point, &dataset[index]);
-        Point point;
-        point[0] = T(stoi(r));
-        point[1] = T(stoi(g));
-        point[2] = T(stoi(b));
-        
-        copy_point(&point, &dataset[index]); // copy to dataset
         index++;
     }
     filein.close();
@@ -341,15 +337,18 @@ int main_preprocessing(int argc, char *argv[]){
     for (int i = 0; i < pixel_count; i++) {
         int label = dataset_labels[i];
         copy_point(&superpixel_dataset[label], &lab_point);
-        lab_to_rgb(lab_point, rgb_point);
-        write_point_to_file(&rgb_point, fileout_slic);
+        write_point_to_file(&lab_point, fileout_slic);
     }
     fclose(fileout_slic);
  
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(mean_shift)
 #endif
+    #ifndef MATRIX
     mean_shift(NUM_SUPERPIXELS, superpixel_dataset, shifted_superpixels, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+    #else
+    mean_shift_sqrd(NUM_SUPERPIXELS, superpixel_dataset, shifted_superpixels, bandwidth * bandwidth, gaussian_kernel_sqrd, cluster_modes, &clusters_count);
+    #endif
     for(unsigned int i = 0; i < pixel_count; i++) {
         int label = dataset_labels[i]; 
         copy_point(&shifted_superpixels[label], &shifted_dataset[i]);
@@ -357,13 +356,20 @@ int main_preprocessing(int argc, char *argv[]){
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(mean_shift)
 #endif
+
+
     // Free heap memory
     delete[] superpixel_dataset;
     delete[] shifted_superpixels;
     delete[] dataset_labels;
 
-    std::cout << "\n\n>>> Clusters found: " << clusters_count << "\n\n";
-
+    if (clusters_count > 1000) {
+        std::cout << "--- Warning: More than 1000 clusters found. Some clusters may be lost." << endl;
+    } else if (clusters_count == 1) {
+        std::cout << "--- Warning: Only one cluster found. No segmentation possible." << endl<< "Try to select a smaller bandwidth." << endl;
+    } else{
+        std::cout << ">>> Clusters found: " << clusters_count << endl;
+    }
     // write to csv file
     FILE *fileout_prep = fopen(output_csv_path, "w");
     if (!fileout_prep) {
@@ -376,8 +382,7 @@ int main_preprocessing(int argc, char *argv[]){
 
     for (int i = 0; i < pixel_count; i++) {
         copy_point(&shifted_dataset[i], &lab_point);
-        lab_to_rgb(lab_point, rgb_point);
-        write_point_to_file(&rgb_point, fileout_prep);
+        write_point_to_file(&lab_point, fileout_prep);
     }
     fclose(fileout_prep);
     

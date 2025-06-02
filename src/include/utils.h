@@ -20,6 +20,7 @@ int main_preprocessing(int argc, char *argv[]);
 
 // ------------ src/kernels.c ------------
 T gaussian_kernel(T distance, unsigned int bandwidth);
+T gaussian_kernel_sqrd(T distance, unsigned int bandwidth);
 T uniform_kernel(T distance, unsigned int bandwidth);
 T epanechnikov_kernel(T distance, unsigned int bandwidth);
 

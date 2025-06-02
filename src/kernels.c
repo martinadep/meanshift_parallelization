@@ -5,6 +5,11 @@ T gaussian_kernel(T distance, unsigned int bandwidth) {
     return exp(-0.5 * norm_distance * norm_distance);
 }
 
+T gaussian_kernel_sqrd(T distance, unsigned int bandwidth) {
+    T norm_distance = distance / bandwidth; // Normalize by bandwidth
+    return exp(-0.5 * norm_distance);
+}
+
 T uniform_kernel(T distance, unsigned int bandwidth) {
     T norm_dist = distance / bandwidth;
     return (norm_dist <= 1.0) ? 1.0 : 0.0;

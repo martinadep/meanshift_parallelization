@@ -9,7 +9,8 @@ set(COMMON_SOURCES
     src/main.cpp
     src/kernels.c
     src/distances.c
-    src/point.c)
+    src/point.c
+    src/mean_shift_sqrd.c)
 
 # Sequential version
 add_executable(main 
@@ -38,6 +39,17 @@ target_compile_definitions(slic PRIVATE
                 TOTAL_TIMING
                 NUM_SUPERPIXELS=1000)
 
+add_executable(slic_matrix
+               ${COMMON_SOURCES}
+               src/mean_shift_matrix.c
+               src/mean_shift.c
+               src/preprocessing/slic.c)
+target_compile_definitions(slic_matrix PRIVATE 
+                PREPROCESSING 
+                MATRIX
+                TOTAL_TIMING
+                NUM_SUPERPIXELS=1000)
+
 # SLIC with metrics
 add_executable(slic_metrics
                ${COMMON_SOURCES}
@@ -53,7 +65,7 @@ add_compile_definitions(
     CSV_IN="./data/original.csv"
     CSV_OUT="./data/modified.csv"
     CSV_OUT_SLIC="./data/modified_slic.csv"
-    KERNEL="uniform"
+    KERNEL="gaussian"
     DIM=3
     T=double
     TYPENAME="double"
