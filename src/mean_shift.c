@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 void mean_shift(unsigned int dataset_size, const Point dataset[],
-                Point shifted_dataset[], unsigned int bandwidth,
-                T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+                Point shifted_dataset[], T bandwidth,
+                T (*kernel_func)(T, T), Point cluster_modes[],
                 unsigned int *cluster_count)
 {
 
@@ -29,7 +29,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
 // Convergence loop for a single point
 unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
                                    const Point dataset[], unsigned int dataset_size,
-                                   unsigned int bandwidth, T (*kernel_func)(T, unsigned int))
+                                   T bandwidth, T (*kernel_func)(T, T))
 {
     Point prev_point;
     Point next_point;
@@ -59,7 +59,7 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
 // Move a single point towards the maximum density area
 void shift_single_point(const Point *point, Point *next_point,
                         const Point dataset[], unsigned int dataset_size,
-                        unsigned int bandwidth, T (*kernel_func)(T, unsigned int))
+                        T bandwidth, T (*kernel_func)(T, T))
 {
     T total_weight = 0;
     Point point_i;

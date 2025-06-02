@@ -44,7 +44,7 @@ extern "C" {
 // Move a single point towards the maximum density area
 void shift_single_point(const Point *point, Point *next_point,
                               const Point dataset[], unsigned int dataset_size,
-                              unsigned int bandwidth, T (*kernel_func)(T, unsigned int));
+                              T bandwidth, T (*kernel_func)(T, T));
 
 // Assign clusters to shifted points
 void assign_clusters(Point *shifted_point, Point cluster_modes[],
@@ -52,37 +52,31 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
 
 // Perform the mean shift clustering
 void mean_shift(unsigned int dataset_size, const Point dataset[],
-                      Point shifted_dataset[], unsigned int bandwidth,
-                      T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+                      Point shifted_dataset[], T bandwidth,
+                      T (*kernel_func)(T, T), Point cluster_modes[],
                       unsigned int *cluster_count);
 
 unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
                       const Point dataset[], unsigned int dataset_size,
-                      unsigned int bandwidth, T (*kernel_func)(T, unsigned int));
+                      T bandwidth, T (*kernel_func)(T, T));
 
 
 // Move a single point towards the maximum density area
-void shift_single_point_sqrd(const Point *point, Point *next_point,
-                              const Point dataset[], unsigned int dataset_size,
-                              unsigned int bandwidth, T (*kernel_func)(T, unsigned int));
+// void shift_single_point_sqrd(const Point *point, Point *next_point,
+//                               const Point dataset[], unsigned int dataset_size,
+//                               T bandwidth, T (*kernel_func)(T, T));
 
 // Assign clusters to shifted points
-void assign_clusters_sqrd(Point *shifted_point, Point cluster_modes[],
-                           unsigned int *cluster_count);
+// void assign_clusters_sqrd(Point *shifted_point, Point cluster_modes[],
+//                            unsigned int *cluster_count);
 
-// Perform the mean shift clustering
-void mean_shift_sqrd(unsigned int dataset_size, const Point dataset[],
-                    Point shifted_dataset[], unsigned int bandwidth,
-                    T (*kernel_func)(T, unsigned int), Point cluster_modes[],
-                    unsigned int *cluster_count);
-
-unsigned int shift_point_until_convergence_sqrd(const Point *input_point, Point *output_point,
-                    const Point dataset[], unsigned int dataset_size,
-                    unsigned int bandwidth, T (*kernel_func)(T, unsigned int));
+// unsigned int shift_point_until_convergence_sqrd(const Point *input_point, Point *output_point,
+//                     const Point dataset[], unsigned int dataset_size,
+//                     T bandwidth_sqrd, T (*kernel_func)(T, T));
 
 void mean_shift_matrix(unsigned int dataset_size, const Point dataset[],
-                    Point shifted_dataset[], unsigned int bandwidth,
-                    T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+                    Point shifted_dataset[], T bandwidth,
+                    T (*kernel_func)(T, T), Point cluster_modes[],
                     unsigned int *cluster_count);
 
 

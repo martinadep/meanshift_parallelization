@@ -9,20 +9,22 @@ set(COMMON_SOURCES
     src/main.cpp
     src/kernels.c
     src/distances.c
-    src/point.c
-    src/mean_shift_sqrd.c)
+    src/point.c)
 
-# Sequential version
+# Mean-Shift base version
 add_executable(main 
                ${COMMON_SOURCES}
                src/mean_shift.c)
-target_compile_definitions(main PRIVATE TOTAL_TIMING) #DEBUG)
+target_compile_definitions(main PRIVATE 
+                TOTAL_TIMING 
+                DEBUG)
 
-# Breakdown version
+# Mean-Shift Breakdown version
 add_executable(breakdown 
                ${COMMON_SOURCES}
                src/metrics/mean_shift_breakdown.c)
-target_compile_definitions(breakdown PRIVATE TIMING_BREAKDOWN)
+target_compile_definitions(breakdown PRIVATE 
+                TIMING_BREAKDOWN)
 
 # Metrics version
 add_executable(metrics 
@@ -39,14 +41,27 @@ target_compile_definitions(slic PRIVATE
                 TOTAL_TIMING
                 NUM_SUPERPIXELS=1000)
 
+# SLIC with matrix
 add_executable(slic_matrix
                ${COMMON_SOURCES}
                src/mean_shift_matrix.c
-               src/mean_shift.c
                src/preprocessing/slic.c)
+
 target_compile_definitions(slic_matrix PRIVATE 
                 PREPROCESSING 
                 MATRIX
+                TOTAL_TIMING
+                NUM_SUPERPIXELS=1000)
+
+# SLIC with Mean-Shift squared distance
+add_executable(slic_sqrd
+               ${COMMON_SOURCES}
+               src/mean_shift_sqrd.c
+               src/preprocessing/slic.c)
+
+target_compile_definitions(slic_sqrd PRIVATE
+                MEAN_SHIFT_SQRD
+                PREPROCESSING
                 TOTAL_TIMING
                 NUM_SUPERPIXELS=1000)
 
@@ -61,7 +76,7 @@ target_compile_definitions(slic_metrics PRIVATE
                 NUM_SUPERPIXELS=1000)
 
 add_compile_definitions( 
-    BANDWIDTH=10.0
+    BANDWIDTH=3.0
     CSV_IN="./data/original.csv"
     CSV_OUT="./data/modified.csv"
     CSV_OUT_SLIC="./data/modified_slic.csv"

@@ -8,7 +8,7 @@
 // Move a single point towards the maximum density area
 void shift_single_point(const Point *point, Point *next_point,
                               const Point dataset[], unsigned int dataset_size,
-                              unsigned int bandwidth, T (*kernel_func)(T, unsigned int)) {
+                              T bandwidth, T (*kernel_func)(T, T)) {
     T total_weight = 0;
     Point point_i;
     init_point(&point_i); // xi
@@ -74,8 +74,8 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
 
 // Perform the mean shift clustering
 void mean_shift(unsigned int dataset_size, const Point dataset[],
-                      Point shifted_dataset[], unsigned int bandwidth,
-                      T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+                      Point shifted_dataset[], T bandwidth,
+                      T (*kernel_func)(T, T), Point cluster_modes[],
                       unsigned int *cluster_count) {
     Point prev_point;
     Point next_point;

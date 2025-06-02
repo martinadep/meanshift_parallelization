@@ -6,9 +6,9 @@
 #include <math.h>
 
 // Matrix-based implementation of Mean Shift algorithm
-void mean_shift_matrix(unsigned int dataset_size, const Point dataset[],
-                Point shifted_dataset[], unsigned int bandwidth,
-                T (*kernel_func)(T, unsigned int), Point cluster_modes[],
+void mean_shift(unsigned int dataset_size, const Point dataset[],
+                Point shifted_dataset[], T bandwidth,
+                T (*kernel_func)(T, T), Point cluster_modes[],
                 unsigned int *cluster_count)
 {
     // Allocate memory for matrices and vectors
@@ -119,4 +119,29 @@ cleanup:
     free(weight_sums);
     free(current_points);
     free(next_points);
+}
+
+// Assign clusters to shifted points
+void assign_clusters(Point *shifted_point, Point cluster_modes[],
+                     unsigned int *cluster_count)
+{
+    int c = 0;
+    for (; c < *cluster_count; c++)
+    {
+
+        T distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
+
+        if (distance_from_cluster <= CLUSTER_EPSILON)
+        {
+            copy_point(&cluster_modes[c], shifted_point); // assign cluster mode to shifted point
+            break;
+        }
+    }
+    // Whenever [shifted_point] doesn't belong to any cluster:
+    // --> create cluster with mode in [shifted_point]
+    if (c == *cluster_count)
+    {
+        copy_point(shifted_point, &cluster_modes[c]); // assign cluster mode to shifted point
+        (*cluster_count)++;
+    }
 }

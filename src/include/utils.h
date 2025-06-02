@@ -12,17 +12,14 @@ typedef T Point[DIM];
 extern "C" {
 #endif
 
-// ------------ src/main.c ------------
-int main_std(int argc, char *argv[]);
-#ifdef PREPROCESSING
-int main_preprocessing(int argc, char *argv[]);
-#endif
-
 // ------------ src/kernels.c ------------
-T gaussian_kernel(T distance, unsigned int bandwidth);
-T gaussian_kernel_sqrd(T distance, unsigned int bandwidth);
-T uniform_kernel(T distance, unsigned int bandwidth);
-T epanechnikov_kernel(T distance, unsigned int bandwidth);
+T gaussian_kernel(T distance, T bandwidth);
+T uniform_kernel(T distance, T bandwidth);
+T epanechnikov_kernel(T distance, T bandwidth);
+
+T gaussian_kernel_sqrd(T distance_sqrd, T bandwidth_sqrd);
+T uniform_kernel_sqrd(T distance_sqrd, T bandwidth_sqrd);
+T epanechnikov_kernel_sqrd(T distance_sqrd, T bandwidth_sqrd);
 
 // ---------- src/distances.c ------------
 T euclidean_distance(const Point *point1, const Point *point2);
