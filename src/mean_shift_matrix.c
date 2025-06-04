@@ -11,7 +11,6 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
                 T (*kernel_func)(T, T), Point cluster_modes[],
                 unsigned int *cluster_count)
 {
-    // Allocate memory for matrices and vectors
     T* distances = (T*)malloc(dataset_size * dataset_size * sizeof(T));
     T* weights = (T*)malloc(dataset_size * dataset_size * sizeof(T));
     T* weight_sums = (T*)malloc(dataset_size * sizeof(T));

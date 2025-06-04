@@ -12,7 +12,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     T bandwidth_sqrd = bandwidth * bandwidth; 
     // Phase 1: Independent point shifting - parallelizable
     for (int i = 0; i < dataset_size; i++){
-        printf("Shifting point %d/%d...\n", i, dataset_size);
+        // printf("Shifting point %d/%d...\n", i, dataset_size);
         shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
                                       dataset, dataset_size, bandwidth_sqrd, kernel_func);
 #ifdef DEBUG
@@ -53,7 +53,7 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
             stop_moving = 1;
         }
         copy_point(&next_point, &prev_point);
-        printf("Iteration %d: Shift distance = %.6f\n", iter, shift_distance);
+        // printf("Iteration %d: Shift distance = %.6f\n", iter, shift_distance);
         iter++;
     }
     copy_point(&prev_point, output_point);

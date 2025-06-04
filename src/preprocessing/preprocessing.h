@@ -6,6 +6,7 @@
 #ifndef NUM_SUPERPIXELS
 #define NUM_SUPERPIXELS 1000
 #endif
+#define MAX_SUPERPIXELS 6000
 #define MAX_ITER 10
 
 #ifdef __cplusplus

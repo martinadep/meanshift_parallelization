@@ -36,8 +36,8 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
     // Ideal distance between superpixels 
     int S = sqrt((width * height) / (T)num_superpixels);
 ;
-    int center_x[NUM_SUPERPIXELS];
-    int center_y[NUM_SUPERPIXELS];
+    int center_x[MAX_SUPERPIXELS];
+    int center_y[MAX_SUPERPIXELS];
     T distances[dataset_size];
 
     // Initialize centers
@@ -47,10 +47,10 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
     // Initialize labels and distances (inifinite)
     reset_labels_and_distances(dataset_size, dataset_labels, distances);
 
-    Point new_centers[NUM_SUPERPIXELS];
-    int counts[NUM_SUPERPIXELS];
-    int sum_x[NUM_SUPERPIXELS];
-    int sum_y[NUM_SUPERPIXELS];
+    Point new_centers[MAX_SUPERPIXELS];
+    int counts[MAX_SUPERPIXELS];
+    int sum_x[MAX_SUPERPIXELS];
+    int sum_y[MAX_SUPERPIXELS];
 
 
     for (int iter = 0; iter < MAX_ITER; iter++) {

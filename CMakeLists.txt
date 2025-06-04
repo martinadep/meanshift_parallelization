@@ -38,8 +38,7 @@ add_executable(slic
                src/preprocessing/slic.c)
 target_compile_definitions(slic PRIVATE 
                 PREPROCESSING 
-                TOTAL_TIMING
-                NUM_SUPERPIXELS=1000)
+                TOTAL_TIMING)
 
 # SLIC with matrix
 add_executable(slic_matrix
@@ -50,8 +49,7 @@ add_executable(slic_matrix
 target_compile_definitions(slic_matrix PRIVATE 
                 PREPROCESSING 
                 MATRIX
-                TOTAL_TIMING
-                NUM_SUPERPIXELS=1000)
+                TOTAL_TIMING)
 
 # SLIC with Mean-Shift squared distance
 add_executable(slic_sqrd
@@ -62,8 +60,25 @@ add_executable(slic_sqrd
 target_compile_definitions(slic_sqrd PRIVATE
                 MEAN_SHIFT_SQRD
                 PREPROCESSING
-                TOTAL_TIMING
-                NUM_SUPERPIXELS=1000)
+                TOTAL_TIMING)
+
+# Mean-Shift Breakdown version
+add_executable(slic_breakdown
+               ${COMMON_SOURCES}
+               src/preprocessing/slic.c
+               src/metrics/mean_shift_breakdown.c)
+target_compile_definitions(slic_breakdown PRIVATE 
+                TIMING_BREAKDOWN
+                PREPROCESSING)
+# SLIC with Mean-Shift squared distance Breakdown version
+add_executable(slic_breakdown_sqrd
+               ${COMMON_SOURCES}
+               src/preprocessing/slic.c
+               src/metrics/mean_shift_sqrd_breakdown.c)
+target_compile_definitions(slic_breakdown_sqrd PRIVATE 
+                TIMING_BREAKDOWN
+                MEAN_SHIFT_SQRD
+                PREPROCESSING)
 
 # SLIC with metrics
 add_executable(slic_metrics
@@ -72,8 +87,7 @@ add_executable(slic_metrics
                src/preprocessing/slic.c)
 target_compile_definitions(slic_metrics PRIVATE 
                 PREPROCESSING 
-                TOTAL_TIMING
-                NUM_SUPERPIXELS=1000)
+                TOTAL_TIMING)
 
 add_compile_definitions( 
     BANDWIDTH=3.0

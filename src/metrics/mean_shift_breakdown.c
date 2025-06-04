@@ -71,50 +71,61 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
         (*cluster_count)++;
     }
 }
+// Convergence loop for a single point
+unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
+                                   const Point dataset[], unsigned int dataset_size,
+                                   T bandwidth, T (*kernel_func)(T, T))
+{
+    Point prev_point;
+    Point next_point;
+    unsigned int iter = 0;
+    int stop_moving = 0;
 
+    copy_point(input_point, &prev_point);
+
+    // Shift until convergence
+    while (!stop_moving)
+    {
+        shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
+#ifdef TIMING_BREAKDOWN
+            TIMER_START(distance_shift)
+#endif
+        T shift_distance = euclidean_distance(&prev_point, &next_point);
+#ifdef TIMING_BREAKDOWN
+            TIMER_SUM(distance_shift)
+#endif
+        if (shift_distance <= EPSILON)
+        {
+            stop_moving = 1;
+        }
+        copy_point(&next_point, &prev_point);
+        iter++;
+    }
+    copy_point(&prev_point, output_point);
+    return iter;
+}
 // Perform the mean shift clustering
 void mean_shift(unsigned int dataset_size, const Point dataset[],
                       Point shifted_dataset[], T bandwidth,
                       T (*kernel_func)(T, T), Point cluster_modes[],
                       unsigned int *cluster_count) {
-    Point prev_point;
-    Point next_point;
-    unsigned int iter;
-    int stop_moving; // flag to check if each point has converged
-
+ 
     // Shift each point
     for (int i = 0; i < dataset_size; i++) {
-        stop_moving = 0; // reset for each point
-        iter = 0;
 #ifdef DEBUG
         if (i % 500 == 0) {
             printf("points [%d/%u] ...\n", i, dataset_size);
         }
 #endif
-        copy_point(&dataset[i], &prev_point);
+    shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
+                                      dataset, dataset_size, bandwidth, kernel_func);
 
-        // Shift until convergence
-        while (!stop_moving) {
-            shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
 
-#ifdef TIMING_BREAKDOWN
-            TIMER_START(distance_shift)
-#endif
-            T shift_distance = euclidean_distance(&prev_point, &next_point);
-#ifdef TIMING_BREAKDOWN
-            TIMER_SUM(distance_shift)
-#endif
-            if (shift_distance <= EPSILON) {
-                stop_moving = 1;
-            }
-            copy_point(&next_point, &prev_point);
-            iter++;
-        }
-        copy_point(&next_point, &shifted_dataset[i]);
-
-        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count); // assign clusters to shifted points
+       }
+    for (int i = 0; i < dataset_size; i++){
+        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
     }
-
+    
 #ifdef TIMING_BREAKDOWN
     TIMER_SUM_PRINT(coords_update)
     TIMER_SUM_PRINT(kernel)

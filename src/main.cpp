@@ -8,6 +8,11 @@
 #include "include/mean_shift.h"
 #include "include/utils.h"
 
+#define MAX_PIXEL_COUNT 4000000 // = 400MB (96MB + 96MB for dataset and shifted_dataset)
+                                // each Point is 3 doubles (3 * 8 bytes (double) = 24 bytes)
+                                // 2048 x 2048 image has 4'194'304 pixels
+                                // dataset = pixel_count * sizeof(Point) = 4'000'000 * 24 bytes = 96MB
+                                // allocated in data segment
 
 #ifdef PREPROCESSING
 #include "preprocessing/preprocessing.h"
@@ -30,6 +35,9 @@ int main(int argc, char *argv[]) {
     const char *input_csv_path = CSV_IN;
     const char *output_csv_path = CSV_OUT;
     const char *output_slic_path = "./data/slic_output.csv";
+    #ifdef PREPROCESSING
+    unsigned int superpixels = NUM_SUPERPIXELS;
+    #endif
 
     if (argc < 2) {
         std::cout << "No arguments provided. Using default values." << endl;
@@ -43,7 +51,7 @@ int main(int argc, char *argv[]) {
         {"-b", "--bandwidth"},
         {"-i", "--input"},
         {"-o", "--output"},
-        {"-s", "--slic_out"}
+        {"-s", "--superpixels"}
     };
     for (int i = 1; i < argc; i += 2) {
         string key = argv[i];
@@ -71,9 +79,15 @@ int main(int argc, char *argv[]) {
     if (args.find("--output") != args.end()) {
         output_csv_path = args["--output"].c_str();
     }
-    if (args.find("--slic_out") != args.end()) {
-        output_slic_path = args["--slic_out"].c_str();
+    #ifdef PREPROCESSING
+    if (args.find("--superpixels") != args.end()) {
+        superpixels = stoi(args["--superpixels"]);
+        if (superpixels > MAX_SUPERPIXELS){
+            std::cout << "### Maximum number of superpixels is set to "<<< MAX_SUPERPIXELS << " ! ###" << endl;
+            superpixels = MAX_SUPERPIXELS;
+        }
     }
+    #endif
 
     // Map kernel names to functions
     #ifdef MEAN_SHIFT_SQRD
@@ -118,9 +132,14 @@ int main(int argc, char *argv[]) {
     int height = stoi(height_str);
     int pixel_count = width * height;
 
+    if (pixel_count > MAX_PIXEL_COUNT) {
+        cerr << "Error: The image has too many pixels (" << pixel_count << "). Maximum allowed is " << MAX_PIXEL_COUNT << "." << endl;
+        return 1;
+    }
+
     getline(filein, line); // skip the third line "R,G,B"
 
-    Point* dataset = new Point[pixel_count];
+    static Point dataset [MAX_PIXEL_COUNT]; // dataset to store LAB values
     
     unsigned int index = 0;
 
@@ -152,24 +171,24 @@ int main(int argc, char *argv[]) {
     std::cout << "\t- Bandwidth: " << bandwidth << endl;
     std::cout << "\t- Kernel: " << kernel << endl;
     
-    Point* shifted_dataset = new Point[pixel_count];
-    Point cluster_modes[1000]; 
+    static Point shifted_dataset [MAX_PIXEL_COUNT]; // dataset to store shifted LAB values
+    static Point cluster_modes[1000]; 
     unsigned int clusters_count = 0; // number of clusters 
 
 #ifdef PREPROCESSING
     double m = 10.0; // compactness parameter
-    std::cout <<"Preprocessing (SLIC)"<< endl << "\t- Superpixels: " << NUM_SUPERPIXELS << endl;
+    std::cout <<"Preprocessing (SLIC)"<< endl << "\t- Superpixels: " << superpixels << endl;
     std::cout << "\t- Compactness: " << m << endl <<endl;
         
-    Point* superpixel_dataset = new Point[NUM_SUPERPIXELS];
-    Point* shifted_superpixels = new Point[NUM_SUPERPIXELS];
-    int* dataset_labels = new int[pixel_count];
+    static Point superpixel_dataset [MAX_SUPERPIXELS];
+    static Point shifted_superpixels [MAX_SUPERPIXELS];
+    static int dataset_labels [MAX_PIXEL_COUNT]; // labels for each pixel in the dataset
 
     // ----------------------- SLIC PREPROCESSING ----------------------------
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(slic)
 #endif
-    preprocess_dataset(pixel_count, dataset, dataset_labels, superpixel_dataset, width, height, NUM_SUPERPIXELS, m);
+    preprocess_dataset(pixel_count, dataset, dataset_labels, superpixel_dataset, width, height, superpixels, m);
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(slic)
 #endif
@@ -189,20 +208,27 @@ int main(int argc, char *argv[]) {
         write_point_to_file(&lab_point, fileout_slic);
     }
     fclose(fileout_slic);
+    std::cout << ">>>> SLIC results saved in: [" << output_slic_path << "] <<<<" << endl;
+    std::cout << "=============================================================" << endl;
     // ----------------------- END PREPROCESSING ----------------------------
 #endif
 
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(mean_shift)
 #endif
+
 #ifdef PREPROCESSING
-    mean_shift(NUM_SUPERPIXELS, superpixel_dataset, shifted_superpixels, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+    mean_shift(superpixels, superpixel_dataset, shifted_superpixels, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
     for(unsigned int i = 0; i < pixel_count; i++) {
         int label = dataset_labels[i]; 
         copy_point(&shifted_superpixels[label], &shifted_dataset[i]);
     }
 #else
+
+    // standard Mean-Shift
     mean_shift(pixel_count, dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+
+
 #endif
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(mean_shift)
@@ -213,8 +239,9 @@ int main(int argc, char *argv[]) {
     } else if (clusters_count == 1) {
         std::cout << "--- Warning: Only one cluster found. No segmentation possible." << endl<< "Try to select a smaller bandwidth." << endl;
     } else{
-        std::cout << ">>> Clusters found: " << clusters_count << endl;
+        std::cout << "--- Clusters found: " << clusters_count << endl;
     }
+    
     // write to csv file
     FILE *fileout = fopen(output_csv_path, "w");
     if (!fileout) {
@@ -232,16 +259,6 @@ int main(int argc, char *argv[]) {
     fclose(fileout);
 
     std::cout << ">>>> Mean-Shift results saved in: [" << output_csv_path << "] <<<<" << endl;
-    std::cout << "=================================================" << endl;
-
-#ifdef PREPROCESSING
-    std::cout << ">>>> SLIC results saved in: [" << output_slic_path << "] <<<<" << endl;
-    // Free heap memory
-    delete[] superpixel_dataset;
-    delete[] shifted_superpixels;
-    delete[] dataset_labels;
-#endif
-    delete[] dataset;
-    delete[] shifted_dataset;
+    std::cout << "=============================================================" << endl;
     return 0;
 }

@@ -1,6 +1,7 @@
-#include "include/point.h"
-#include "include/utils.h"
-#include "include/mean_shift.h"
+#include "../include/point.h"
+#include "../include/utils.h"
+#include "../include/mean_shift.h"
+#include "timing.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,11 +10,11 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
                 T (*kernel_func)(T, T), Point cluster_modes[],
                 unsigned int *cluster_count)
 {
-
+    T bandwidth_sqrd = bandwidth * bandwidth; 
     // Phase 1: Independent point shifting - parallelizable
     for (int i = 0; i < dataset_size; i++){
         shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
-                                      dataset, dataset_size, bandwidth, kernel_func);
+                                      dataset, dataset_size, bandwidth_sqrd, kernel_func);
 #ifdef DEBUG
         if (i % 500 == 0)
             printf("Shifted %d/%d points... \n", i, dataset_size);
@@ -24,6 +25,13 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     for (int i = 0; i < dataset_size; i++){
         assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
     }
+#ifdef TIMING_BREAKDOWN
+    TIMER_SUM_PRINT(coords_update)
+    TIMER_SUM_PRINT(kernel)
+    TIMER_SUM_PRINT(distance_shift)
+    TIMER_SUM_PRINT(distance_mode_find)
+    TIMER_SUM_PRINT(distance_cluster)
+#endif
 }
 
 // Convergence loop for a single point
@@ -38,14 +46,20 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
 
     copy_point(input_point, &prev_point);
 
+    const T EPSILON_SQRD = EPSILON * EPSILON; 
+    T shift_distance = 0;
     // Shift until convergence
     while (!stop_moving)
     {
         shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
-
-        T shift_distance = euclidean_distance(&prev_point, &next_point);
-
-        if (shift_distance <= EPSILON)
+#ifdef TIMING_BREAKDOWN
+            TIMER_START(distance_shift)
+#endif
+        shift_distance = sqrd_euclidean_distance(&prev_point, &next_point);
+#ifdef TIMING_BREAKDOWN
+            TIMER_SUM(distance_shift)
+#endif
+        if (shift_distance <= EPSILON_SQRD)
         {
             stop_moving = 1;
         }
@@ -69,16 +83,27 @@ void shift_single_point(const Point *point, Point *next_point,
     for (int i = 0; i < dataset_size; i++)
     {
         copy_point(&dataset[i], &point_i);                     // xi = dataset[i]
-        T distance = euclidean_distance(point, &point_i); // x - xi
-
+#ifdef TIMING_BREAKDOWN
+        TIMER_START(distance_mode_find)
+#endif
+        T distance = sqrd_euclidean_distance(point, &point_i); // x - xi
+#ifdef TIMING_BREAKDOWN
+        TIMER_SUM(distance_mode_find)
+        TIMER_START(kernel)
+#endif
         T weight = kernel_func(distance, bandwidth); // K(x - xi / h)
-
+#ifdef TIMING_BREAKDOWN
+        TIMER_SUM(kernel)
+        TIMER_START(coords_update)
+#endif
         // x' = x' + xi * K(x - xi / h)
         for (int j = 0; j < DIM; j++)
         {
             (*next_point)[j] += point_i[j] * weight;
         }
-
+#ifdef TIMING_BREAKDOWN
+        TIMER_SUM(coords_update)
+#endif
         total_weight += weight; // total weight of all points with respect to [point]
     }
 
@@ -86,7 +111,9 @@ void shift_single_point(const Point *point, Point *next_point,
     {
         // normalization
         divide_point(next_point, total_weight); // x' = x' / sum(K(x - xi / h))
-    } else {
+    }
+    else
+    {
         fprintf(stderr, "Error: total_weight == 0, couldn't normalize.\n");
     }
 }
@@ -95,13 +122,18 @@ void shift_single_point(const Point *point, Point *next_point,
 void assign_clusters(Point *shifted_point, Point cluster_modes[],
                      unsigned int *cluster_count)
 {
+    const T CLUSTER_EPSILON_SQRD = CLUSTER_EPSILON * CLUSTER_EPSILON; // squared epsilon for distance comparison
     int c = 0;
     for (; c < *cluster_count; c++)
     {
-
-        T distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
-
-        if (distance_from_cluster <= CLUSTER_EPSILON)
+#ifdef TIMING_BREAKDOWN
+        TIMER_START(distance_cluster)
+#endif
+        T distance_from_cluster = sqrd_euclidean_distance(shifted_point, &cluster_modes[c]);
+#ifdef TIMING_BREAKDOWN
+        TIMER_SUM(distance_cluster)
+#endif
+        if (distance_from_cluster <= CLUSTER_EPSILON_SQRD)
         {
             copy_point(&cluster_modes[c], shifted_point); // assign cluster mode to shifted point
             break;
