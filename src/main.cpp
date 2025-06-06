@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
         {"-i", "--input"},
         {"-o", "--output"},
         {"-s", "--superpixels"},
-        {"-c", "--compactness"}   
+        {"-c", "--compactness"}  
     };
     for (int i = 1; i < argc; i += 2) {
         string key = argv[i];
