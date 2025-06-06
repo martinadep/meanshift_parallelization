@@ -14,20 +14,19 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     T* distances = (T*)malloc(dataset_size * dataset_size * sizeof(T));
     T* weights = (T*)malloc(dataset_size * dataset_size * sizeof(T));
     T* weight_sums = (T*)malloc(dataset_size * sizeof(T));
-    Point* current_points = (Point*)malloc(dataset_size * sizeof(Point));
-    Point* next_points = (Point*)malloc(dataset_size * sizeof(Point));
+    // Point* current_points = (Point*)malloc(dataset_size * sizeof(Point)); // Matrix of current points
+    Point* next_points = (Point*)malloc(dataset_size * sizeof(Point)); // Matrix of next points
     
-    if (!distances || !weights || !weight_sums || !current_points || !next_points) {
+    if (!distances || !weights || !weight_sums || !next_points) {
         fprintf(stderr, "Error: Memory allocation failed in mean_shift_matrix\n");
         goto cleanup;
     }
     
-    // Initialize current points with the dataset
     for (unsigned int i = 0; i < dataset_size; i++) {
-        copy_point(&dataset[i], &current_points[i]);
+        // copy_point(&dataset[i], &current_points[i]); // Initialize current points with the dataset
+        copy_point(&dataset[i], &shifted_dataset[i]);
     }
     
-    // Initialize cluster count
     *cluster_count = 0;
     
     // Iterate until convergence or max iterations
@@ -39,21 +38,22 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     while (iter < MAX_ITER && shift_norm > TOLERANCE) {
         shift_norm = 0.0;
         
-        // Phase 1: Compute all pairwise distances (equivalent to cdist in Python)
+        // Compute all pairwise distances 
         for (unsigned int i = 0; i < dataset_size; i++) {
             for (unsigned int j = 0; j < dataset_size; j++) {
-                distances[i * dataset_size + j] = euclidean_distance(&current_points[i], &current_points[j]);
+                // distances[i * dataset_size + j] = euclidean_distance(&current_points[i], &current_points[j]);
+                distances[i * dataset_size + j] = euclidean_distance(&shifted_dataset[i], &shifted_dataset[j]);
             }
         }
         
-        // Phase 2: Apply kernel function to distances
+        // Apply kernel function to distances
         for (unsigned int i = 0; i < dataset_size; i++) {
             for (unsigned int j = 0; j < dataset_size; j++) {
                 weights[i * dataset_size + j] = kernel_func(distances[i * dataset_size + j], bandwidth);
             }
         }
         
-        // Phase 3: Calculate sum of weights (W1 in Python)
+        // Calculate sum of weights (kernels)
         for (unsigned int i = 0; i < dataset_size; i++) {
             weight_sums[i] = 0.0;
             for (unsigned int j = 0; j < dataset_size; j++) {
@@ -61,14 +61,15 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
             }
         }
         
-        // Phase 4: Compute new points (weights @ points / W1 in Python)
+        // Compute new points
         for (unsigned int i = 0; i < dataset_size; i++) {
             init_point(&next_points[i]);
             
             // Matrix multiplication: weights * points
             for (unsigned int j = 0; j < dataset_size; j++) {
                 for (unsigned int d = 0; d < DIM; d++) {
-                    next_points[i][d] += weights[i * dataset_size + j] * current_points[j][d];
+                    // next_points[i][d] += weights[i * dataset_size + j] * current_points[j][d];
+                    next_points[i][d] += weights[i * dataset_size + j] * shifted_dataset[j][d];
                 }
             }
             
@@ -84,14 +85,16 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         
         // Calculate convergence metric
         for (unsigned int i = 0; i < dataset_size; i++) {
-            T point_shift = euclidean_distance(&current_points[i], &next_points[i]);
+            // T point_shift = euclidean_distance(&current_points[i], &next_points[i]);
+            T point_shift = euclidean_distance(&shifted_dataset[i], &next_points[i]);
             shift_norm += point_shift;
         }
         shift_norm /= dataset_size; // Average shift
         
         // Update current points
         for (unsigned int i = 0; i < dataset_size; i++) {
-            copy_point(&next_points[i], &current_points[i]);
+            // copy_point(&next_points[i], &current_points[i]);
+            copy_point(&next_points[i], &shifted_dataset[i]);
         }
         
         iter++;
@@ -102,11 +105,11 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     }
     
     // Copy the final shifted points to the output
-    for (unsigned int i = 0; i < dataset_size; i++) {
-        copy_point(&current_points[i], &shifted_dataset[i]);
-    }
+    // for (unsigned int i = 0; i < dataset_size; i++) {
+    //     copy_point(&current_points[i], &shifted_dataset[i]);
+    // }
     
-    // Phase 5: Cluster assignment (same as in original mean_shift)
+    // Cluster assignment (same as in original mean_shift)
     for (int i = 0; i < dataset_size; i++) {
         assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
     }
@@ -116,7 +119,7 @@ cleanup:
     free(distances);
     free(weights);
     free(weight_sums);
-    free(current_points);
+    // free(current_points);
     free(next_points);
 }
 

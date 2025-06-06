@@ -14,9 +14,10 @@ extern "C" {
 #endif
 
 unsigned int preprocess_dataset(unsigned int dataset_size,
-                        const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
-                        int width, int height, int num_superpixels, T m);
+                        const Point dataset[], unsigned int dataset_labels[], Point superpixel_dataset[],
+                        unsigned int width, unsigned int height, unsigned int num_superpixels, T m);
 
+// ---------------- slic.c -----------------
 T slic_distance(const Point *p1, const Point *p2, 
     int x1, int y1, int x2, int y2, T S, T m);
 

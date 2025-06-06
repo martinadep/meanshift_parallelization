@@ -30,8 +30,8 @@ con label 3 è diventato [15,2,200]
 
 */
 unsigned int preprocess_dataset(unsigned int dataset_size,
-                        const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
-                        int width, int height, int num_superpixels, T m)
+                        const Point dataset[], unsigned int dataset_labels[], Point superpixel_dataset[],
+                        unsigned int width, unsigned int height, unsigned int num_superpixels, T m)
 {
     // Ideal distance between superpixels 
     int S = sqrt((width * height) / (T)num_superpixels);

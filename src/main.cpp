@@ -8,12 +8,6 @@
 #include "include/mean_shift.h"
 #include "include/utils.h"
 
-#define MAX_PIXEL_COUNT 4000000 // = 400MB (96MB + 96MB for dataset and shifted_dataset)
-                                // each Point is 3 doubles (3 * 8 bytes (double) = 24 bytes)
-                                // 2048 x 2048 image has 4'194'304 pixels
-                                // dataset = pixel_count * sizeof(Point) = 4'000'000 * 24 bytes = 96MB
-                                // allocated in data segment
-
 #ifdef PREPROCESSING
 #include "preprocessing/preprocessing.h"
 #endif
@@ -37,6 +31,7 @@ int main(int argc, char *argv[]) {
     const char *output_slic_path = "./data/slic_output.csv";
     #ifdef PREPROCESSING
     unsigned int superpixels = NUM_SUPERPIXELS;
+    float m = 10.0;
     #endif
 
     if (argc < 2) {
@@ -51,7 +46,8 @@ int main(int argc, char *argv[]) {
         {"-b", "--bandwidth"},
         {"-i", "--input"},
         {"-o", "--output"},
-        {"-s", "--superpixels"}
+        {"-s", "--superpixels"},
+        {"-c", "--compactness"}   
     };
     for (int i = 1; i < argc; i += 2) {
         string key = argv[i];
@@ -83,9 +79,12 @@ int main(int argc, char *argv[]) {
     if (args.find("--superpixels") != args.end()) {
         superpixels = stoi(args["--superpixels"]);
         if (superpixels > MAX_SUPERPIXELS){
-            std::cout << "### Maximum number of superpixels is set to "<<< MAX_SUPERPIXELS << " ! ###" << endl;
+            std::cout << "### Maximum number of superpixels is set to "<< MAX_SUPERPIXELS << " ! ###" << endl;
             superpixels = MAX_SUPERPIXELS;
         }
+    }
+    if (args.find("--compactness") != args.end()) {
+        m = stoi(args["--compactness"]);
     }
     #endif
 
@@ -128,23 +127,31 @@ int main(int argc, char *argv[]) {
     getline(ss, width_str, ',');
     getline(ss, height_str, ',');
 
-    int width = stoi(width_str);
-    int height = stoi(height_str);
-    int pixel_count = width * height;
+    unsigned int width = stoi(width_str);
+    unsigned int height = stoi(height_str);
+    unsigned int pixel_count = width * height;
 
-    if (pixel_count > MAX_PIXEL_COUNT) {
-        cerr << "Error: The image has too many pixels (" << pixel_count << "). Maximum allowed is " << MAX_PIXEL_COUNT << "." << endl;
-        return 1;
-    }
+    // if (pixel_count > MAX_PIXEL_COUNT) {
+    //     cerr << "Error: The image has too many pixels (" << pixel_count << "). Maximum allowed is " << MAX_PIXEL_COUNT << "." << endl;
+    //     return 1;
+    // }
 
-    getline(filein, line); // skip the third line "R,G,B"
+    getline(filein, line); // skip the third line "L,A,B"
 
-    static Point dataset [MAX_PIXEL_COUNT]; // dataset to store LAB values
+    // static Point dataset [MAX_PIXEL_COUNT]; // dataset to store LAB values
+    Point* dataset = (Point*) malloc(pixel_count * sizeof(Point));
+    Point* shifted_dataset = (Point*) malloc(pixel_count * sizeof(Point)); // dataset to store shifted LAB values
+    Point cluster_modes[1000]; 
+    unsigned int clusters_count = 0; // number of clusters
+    #ifdef PREPROCESSING     
+        Point* superpixel_dataset = (Point*) malloc(superpixels * sizeof(Point));
+        Point* shifted_superpixels = (Point*) malloc(superpixels * sizeof(Point));
+        unsigned int* dataset_labels = (unsigned int*) malloc(pixel_count * sizeof(unsigned int)); // labels for each pixel in the dataset
+    #endif 
     
-    unsigned int index = 0;
-
-    Point lab_point;
     // read each row (pixel) and convert in doubles
+    unsigned int index = 0;
+    Point lab_point;
     while (getline(filein, line) && index < pixel_count) {
         stringstream ss(line);
         string r, g, b;
@@ -164,27 +171,13 @@ int main(int argc, char *argv[]) {
     }
     filein.close();
 
-    // ------------------------- MEAN-SHIFT ----------------------------
-    std::cout << endl << "==================== Mean-Shift ==================" << endl;
-    std::cout << "Dataset: [" << input_csv_path  << "]\t "<< width << "x" << height << " (" << pixel_count << " elements)" << endl << endl;
-    std::cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
-    std::cout << "\t- Bandwidth: " << bandwidth << endl;
-    std::cout << "\t- Kernel: " << kernel << endl;
-    
-    static Point shifted_dataset [MAX_PIXEL_COUNT]; // dataset to store shifted LAB values
-    static Point cluster_modes[1000]; 
-    unsigned int clusters_count = 0; // number of clusters 
-
 #ifdef PREPROCESSING
-    double m = 10.0; // compactness parameter
+    // ----------------------- SLIC PREPROCESSING ----------------------------
+    std::cout << endl << "==================== SLIC preprocessing ==================" << endl;
+    std::cout << "Dataset: [" << input_csv_path  << "]\t "<< width << "x" << height << " (" << pixel_count << " elements)" << endl << endl;
     std::cout <<"Preprocessing (SLIC)"<< endl << "\t- Superpixels: " << superpixels << endl;
     std::cout << "\t- Compactness: " << m << endl <<endl;
-        
-    static Point superpixel_dataset [MAX_SUPERPIXELS];
-    static Point shifted_superpixels [MAX_SUPERPIXELS];
-    static int dataset_labels [MAX_PIXEL_COUNT]; // labels for each pixel in the dataset
 
-    // ----------------------- SLIC PREPROCESSING ----------------------------
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(slic)
 #endif
@@ -209,10 +202,14 @@ int main(int argc, char *argv[]) {
     }
     fclose(fileout_slic);
     std::cout << ">>>> SLIC results saved in: [" << output_slic_path << "] <<<<" << endl;
-    std::cout << "=============================================================" << endl;
     // ----------------------- END PREPROCESSING ----------------------------
 #endif
-
+    // ------------------------- MEAN-SHIFT ----------------------------
+    std::cout << endl << "==================== Mean-Shift ==================" << endl;
+    std::cout << "Dataset: [" << input_csv_path  << "]\t "<< width << "x" << height << " (" << pixel_count << " elements)" << endl << endl;
+    std::cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
+    std::cout << "\t- Bandwidth: " << bandwidth << endl;
+    std::cout << "\t- Kernel: " << kernel << endl;
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(mean_shift)
 #endif

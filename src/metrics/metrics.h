@@ -45,7 +45,7 @@ extern double elapsed_seconds;
         if (f) { \
             double mean = sum_iterations / n_points; \
             double stddev = sqrt(sum_sq_iterations / n_points - mean * mean); \
-            fprintf(f, "Bandwidth: %u\n", bandwidth); \
+            fprintf(f, "Bandwidth: %f\n", bandwidth); \
             fprintf(f, "Cluster Epsilon: %f\n", (float)cluster_epsilon); \
             fprintf(f, "Iteration Epsilon: %f\n", (float)epsilon); \
             fprintf(f, "DataType: %s\n", dtype); \
@@ -57,7 +57,7 @@ extern double elapsed_seconds;
             fprintf(f, "Max Iterations: %u\n", max_iterations); \
             fprintf(f, "Mean Iterations: %.2f\n", mean); \
             fprintf(f, "Stddev Iterations: %.2f\n", stddev); \
-            printf( "Bandwidth: %u\n", bandwidth); \
+            printf( "Bandwidth: %f\n", bandwidth); \
             printf( "Cluster Epsilon: %f\n", (float)cluster_epsilon); \
             printf( "Iteration Epsilon: %f\n", (float)epsilon); \
             printf( "DataType: %s\n", dtype); \
