@@ -4,6 +4,9 @@ project(mean_shift_segmentation)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
+option(ENABLE_PROFILING "Enable gprof profiling instrumentation" ON)
+set(PROFILING_FLAGS -pg)
+
 # Common source files
 set(COMMON_SOURCES
     src/main.cpp
@@ -11,15 +14,28 @@ set(COMMON_SOURCES
     src/distances.c
     src/point.c)
 
-# Mean-Shift base version
+# base versions
 add_executable(main 
                ${COMMON_SOURCES}
                src/mean_shift.c)
 target_compile_definitions(main PRIVATE 
                 TOTAL_TIMING 
-                DEBUG)
+                # DEBUG
+                )
+add_executable(main_matrix
+               ${COMMON_SOURCES}
+               src/mean_shift_matrix.c)
+target_compile_definitions(main_matrix PRIVATE 
+                TOTAL_TIMING 
+                )
+add_executable(main_sqrd
+               ${COMMON_SOURCES}
+               src/mean_shift_sqrd.c)
+target_compile_definitions(main_sqrd PRIVATE 
+                TOTAL_TIMING 
+                )
 
-# Mean-Shift Breakdown version
+# Breakdown version
 add_executable(breakdown 
                ${COMMON_SOURCES}
                src/metrics/mean_shift_breakdown.c)
@@ -31,7 +47,7 @@ add_executable(metrics
                ${COMMON_SOURCES}
                src/metrics/mean_shift_metrics.c)
 
-# SLIC version
+# SLIC versions
 add_executable(slic
                ${COMMON_SOURCES}
                src/mean_shift.c
@@ -40,7 +56,6 @@ target_compile_definitions(slic PRIVATE
                 PREPROCESSING 
                 TOTAL_TIMING)
 
-# SLIC with matrix
 add_executable(slic_matrix
                ${COMMON_SOURCES}
                src/mean_shift_matrix.c
@@ -51,7 +66,6 @@ target_compile_definitions(slic_matrix PRIVATE
                 MATRIX
                 TOTAL_TIMING)
 
-# SLIC with Mean-Shift squared distance
 add_executable(slic_sqrd
                ${COMMON_SOURCES}
                src/mean_shift_sqrd.c
@@ -62,7 +76,7 @@ target_compile_definitions(slic_sqrd PRIVATE
                 PREPROCESSING
                 TOTAL_TIMING)
 
-# Mean-Shift Breakdown version
+# SLIC-Mean-Shift Breakdown version
 add_executable(slic_breakdown
                ${COMMON_SOURCES}
                src/preprocessing/slic.c
@@ -70,7 +84,7 @@ add_executable(slic_breakdown
 target_compile_definitions(slic_breakdown PRIVATE 
                 TIMING_BREAKDOWN
                 PREPROCESSING)
-# SLIC with Mean-Shift squared distance Breakdown version
+# SLIC-Mean-Shift squared Breakdown version
 add_executable(slic_breakdown_sqrd
                ${COMMON_SOURCES}
                src/preprocessing/slic.c
@@ -80,7 +94,7 @@ target_compile_definitions(slic_breakdown_sqrd PRIVATE
                 MEAN_SHIFT_SQRD
                 PREPROCESSING)
 
-# SLIC with metrics
+# SLIC metrics
 add_executable(slic_metrics
                ${COMMON_SOURCES}
                src/metrics/mean_shift_metrics.c
@@ -99,3 +113,24 @@ add_compile_definitions(
     T=double
     TYPENAME="double"
 )
+
+set(TARGETS
+    main
+    main_matrix
+    main_sqrd
+    breakdown
+    metrics
+    slic
+    slic_matrix
+    slic_sqrd
+    slic_breakdown
+    slic_breakdown_sqrd
+    slic_metrics
+)
+
+if(ENABLE_PROFILING)
+    foreach(target ${TARGETS})
+        target_compile_options(${target} PRIVATE ${PROFILING_FLAGS})
+        target_link_options(${target} PRIVATE ${PROFILING_FLAGS})
+    endforeach()
+endif()
