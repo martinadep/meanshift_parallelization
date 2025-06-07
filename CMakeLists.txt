@@ -28,6 +28,18 @@ add_executable(main
 target_compile_definitions(main PRIVATE 
                 TOTAL_TIMING 
                 DEBUG)
+add_executable(main_sqrd
+               ${COMMON_SOURCES}
+               src/mean_shift_sqrd.c)
+target_compile_definitions(main_sqrd PRIVATE 
+                TOTAL_TIMING 
+                DEBUG)
+add_executable(main_matrix
+               ${COMMON_SOURCES}
+               src/mean_shift_matrix.c)
+target_compile_definitions(main_matrix PRIVATE 
+                TOTAL_TIMING 
+                DEBUG)
 
 add_executable(breakdown 
                ${COMMON_SOURCES}
