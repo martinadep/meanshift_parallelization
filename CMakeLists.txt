@@ -11,8 +11,8 @@ if(OpenMP_FOUND)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-option(ENABLE_PROFILING "Enable gprof profiling instrumentation" ON)
-set(PROFILING_FLAGS -pg)
+# option(ENABLE_PROFILING "Enable gprof profiling instrumentation" ON)
+# set(PROFILING_FLAGS -pg)
 
 # Common source files
 set(COMMON_SOURCES
@@ -127,9 +127,9 @@ set(TARGETS
     slic_metrics
 )
 
-if(ENABLE_PROFILING)
-    foreach(target ${TARGETS})
-        target_compile_options(${target} PRIVATE ${PROFILING_FLAGS})
-        target_link_options(${target} PRIVATE ${PROFILING_FLAGS})
-    endforeach()
-endif()
+# if(ENABLE_PROFILING)
+#     foreach(target ${TARGETS})
+#         target_compile_options(${target} PRIVATE ${PROFILING_FLAGS})
+#         target_link_options(${target} PRIVATE ${PROFILING_FLAGS})
+#     endforeach()
+# endif()
