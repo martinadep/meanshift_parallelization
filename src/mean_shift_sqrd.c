@@ -4,26 +4,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <omp.h>
+
 void mean_shift(unsigned int dataset_size, const Point dataset[],
                 Point shifted_dataset[], T bandwidth,
                 T (*kernel_func)(T, T), Point cluster_modes[],
                 unsigned int *cluster_count)
 {
     T bandwidth_sqrd = bandwidth * bandwidth; 
+    *cluster_count = 0;
+    
+    // Report thread count
+    #pragma omp parallel
+    {
+        #pragma omp master
+        {
+            printf("Running squared distance implementation with %d threads\n", omp_get_num_threads());
+        }
+    }
+
+
     // Phase 1: Independent point shifting - parallelizable
+    #pragma omp parallel for schedule(dynamic, 64)
     for (int i = 0; i < dataset_size; i++){
         // printf("Shifting point %d/%d...\n", i, dataset_size);
         shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
                                       dataset, dataset_size, bandwidth_sqrd, kernel_func);
-#ifdef DEBUG
-        if (i % 500 == 0)
-            printf("Shifted %d/%d points... \n", i, dataset_size);
-#endif
+        #ifdef DEBUG
+        #pragma omp critical
+        {
+            if (i % 500 == 0)
+                printf("Thread %d: Shifted %d/%d points...\n", 
+                       omp_get_thread_num(), i, dataset_size);
+        }
+        #endif
     }
 
     // Phase 2: Cluster assignment - requires synchronization when parallelized
     for (int i = 0; i < dataset_size; i++){
-        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
+        #pragma omp critical
+        {
+            assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
+        }
     }
 }
 

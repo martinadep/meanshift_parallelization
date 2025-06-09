@@ -27,19 +27,29 @@ add_executable(main
                src/mean_shift.c)
 target_compile_definitions(main PRIVATE 
                 TOTAL_TIMING 
-                DEBUG)
+                # DEBUG
+                )
 add_executable(main_sqrd
                ${COMMON_SOURCES}
                src/mean_shift_sqrd.c)
 target_compile_definitions(main_sqrd PRIVATE 
                 TOTAL_TIMING 
-                DEBUG)
+                # DEBUG
+                )
 add_executable(main_matrix
                ${COMMON_SOURCES}
                src/mean_shift_matrix.c)
 target_compile_definitions(main_matrix PRIVATE 
                 TOTAL_TIMING 
-                DEBUG)
+                # DEBUG
+                )
+add_executable(main_matrix_block
+               ${COMMON_SOURCES}
+               src/mean_shift_matrix_block.c)
+target_compile_definitions(main_matrix_block PRIVATE 
+                TOTAL_TIMING 
+                # DEBUG
+                )
 
 add_executable(breakdown 
                ${COMMON_SOURCES}
@@ -111,21 +121,20 @@ add_compile_definitions(
     DIM=3
     T=double
     TYPENAME="double"
-    DEBUG
 )
 
 # Lista dei target da modificare per profiling
-set(TARGETS
-    main
-    breakdown
-    metrics
-    slic
-    slic_matrix
-    slic_sqrd
-    slic_breakdown
-    slic_breakdown_sqrd
-    slic_metrics
-)
+# set(TARGETS
+#     main
+#     breakdown
+#     metrics
+#     slic
+#     slic_matrix
+#     slic_sqrd
+#     slic_breakdown
+#     slic_breakdown_sqrd
+#     slic_metrics
+# )
 
 # if(ENABLE_PROFILING)
 #     foreach(target ${TARGETS})

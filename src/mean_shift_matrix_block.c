@@ -47,21 +47,31 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     
     while (iter < MAX_ITER && shift_norm > TOLERANCE) {
         shift_norm = 0.0;
-        
-        // Compute all pairwise distances 
-        #pragma omp parallel for //schedule(dynamic, 64)
-        for (unsigned int i = 0; i < dataset_size; i++) {
-            for (unsigned int j = 0; j < dataset_size; j++) {
-                // distances[i * dataset_size + j] = euclidean_distance(&current_points[i], &current_points[j]);
-                distances[i * dataset_size + j] = euclidean_distance(&shifted_dataset[i], &shifted_dataset[j]);
+        // Compute all pairwise distances using block-based approach
+        const int BLOCK_SIZE = 64; // Dimensione ottimale del blocco
+
+        // Calcolo delle distanze a blocchi
+        #pragma omp parallel for schedule(dynamic, 1)
+        for (unsigned int bi = 0; bi < dataset_size; bi += BLOCK_SIZE) {
+            for (unsigned int bj = 0; bj < dataset_size; bj += BLOCK_SIZE) {
+                // Processo il blocco (bi,bj) fino a (bi+BLOCK_SIZE-1,bj+BLOCK_SIZE-1)
+                for (unsigned int i = bi; i < bi + BLOCK_SIZE && i < dataset_size; i++) {
+                    for (unsigned int j = bj; j < bj + BLOCK_SIZE && j < dataset_size; j++) {
+                        distances[i * dataset_size + j] = euclidean_distance(&shifted_dataset[i], &shifted_dataset[j]);
+                    }
+                }
             }
         }
         
         // Apply kernel function to distances
-        #pragma omp parallel for // schedule(dynamic, 64)
-        for (unsigned int i = 0; i < dataset_size; i++) {
-            for (unsigned int j = 0; j < dataset_size; j++) {
-                weights[i * dataset_size + j] = kernel_func(distances[i * dataset_size + j], bandwidth);
+        #pragma omp parallel for schedule(dynamic, 1)
+        for (unsigned int bi = 0; bi < dataset_size; bi += BLOCK_SIZE) {
+            for (unsigned int bj = 0; bj < dataset_size; bj += BLOCK_SIZE) {
+                for (unsigned int i = bi; i < bi + BLOCK_SIZE && i < dataset_size; i++) {
+                    for (unsigned int j = bj; j < bj + BLOCK_SIZE && j < dataset_size; j++) {
+                        weights[i * dataset_size + j] = kernel_func(distances[i * dataset_size + j], bandwidth);
+                    }
+                }
             }
         }
         
@@ -79,20 +89,26 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         for (unsigned int i = 0; i < dataset_size; i++) {
             init_point(&next_points[i]);
             
-            // Matrix multiplication: weights * points
-            for (unsigned int j = 0; j < dataset_size; j++) {
-                for (unsigned int d = 0; d < DIM; d++) {
-                    // next_points[i][d] += weights[i * dataset_size + j] * current_points[j][d];
-                    next_points[i][d] += weights[i * dataset_size + j] * shifted_dataset[j][d];
+            for (unsigned int bj = 0; bj < dataset_size; bj += BLOCK_SIZE) {
+                unsigned int end_j = (bj + BLOCK_SIZE < dataset_size) ? bj + BLOCK_SIZE : dataset_size;
+                
+                // Accumulo dei contributi dal blocco corrente
+                for (unsigned int j = bj; j < end_j; j++) {
+                    T weight = weights[i * dataset_size + j];
+                    if (weight > 0) {
+                        for (unsigned int d = 0; d < DIM; d++) {
+                            next_points[i][d] += weight * shifted_dataset[j][d];
+                        }
+                    }
                 }
             }
-            
-            // Normalize by weight sum
-            if (weight_sums[i] > 0) {
-                for (unsigned int d = 0; d < DIM; d++) {
-                    next_points[i][d] /= weight_sums[i];
-                }
-            } else {
+        
+        // Normalizzazione
+        if (weight_sums[i] > 0) {
+            for (unsigned int d = 0; d < DIM; d++) {
+                next_points[i][d] /= weight_sums[i];
+            }
+        } else {
                 #pragma omp critical
                 {
                     fprintf(stderr, "Error: total_weight == 0, couldn't normalize.\n");

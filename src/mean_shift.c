@@ -16,25 +16,23 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     
 #pragma omp parallel
     {
-        #ifdef DEBUG
         #pragma omp master
         {
             printf("Running with %d threads\n", omp_get_num_threads());
         }
-        #endif
 
         #pragma omp for schedule(dynamic, 64)
         for (int i = 0; i < dataset_size; i++) {
             shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
                                         dataset, dataset_size, bandwidth, kernel_func);
-            #ifdef DEBUG
-            #pragma omp critical
-            {
-                if (i % 500 == 0)
-                    printf("Thread %d: Shifted %d/%d points...\n", 
-                           omp_get_thread_num(), i, dataset_size);
-            }
-            #endif
+            // #ifdef DEBUG
+            // #pragma omp critical
+            // {
+            //     if (i % 500 == 0)
+            //         printf("Thread %d: Shifted %d/%d points...\n", 
+            //                omp_get_thread_num(), i, dataset_size);
+            // }
+            // #endif
         }
     }
 
