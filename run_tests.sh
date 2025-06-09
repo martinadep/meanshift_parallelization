@@ -1,5 +1,4 @@
 #!/bin/bash
-# filepath: run_tests.sh
 
 # Array dei numeri di thread da testare
 threads=(1 2 4 8 16 32 64)
@@ -15,14 +14,23 @@ echo "Inizio dei test di main_matrix..."
 for t in "${threads[@]}"; do
     echo "Esecuzione test con $t thread..."
     
+    # Crea un file per questo numero di thread
+    result_file="results/main_matrix_${t}_threads.txt"
+    echo "# Results for $t threads" > "$result_file"
+    
     # Ciclo sulle ripetizioni
     for r in $(seq 1 $repetitions); do
         echo "  Esecuzione $r/$repetitions..."
         
-        # Esegui il programma e salva l'output
-        ./build/main_matrix $t > "results/output_${t}_threads_run_${r}.txt"
+        # Imposta variabile d'ambiente per numero di thread
+        export OMP_NUM_THREADS=$t
+        
+        # Esegui il programma e salva l'output nel file
+        echo "## Run $r" >> "$result_file"
+        ./build/main_matrix >> "$result_file"
+        echo "" >> "$result_file"  # Aggiungi una riga vuota tra i runs
     done
 done
 
 echo "Test completati!"
-echo "Generazione script di visualizzazione..."
+echo "Per visualizzare i risultati, esegui: python py_utils/plot_results.py"

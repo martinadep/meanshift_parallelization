@@ -9,53 +9,84 @@ results_dir = 'results'
 # Thread testati
 threads = [1, 2, 4, 8, 16, 32, 64]
 
-# Numero di ripetizioni
-repetitions = 5
-
 # Dizionario per memorizzare i tempi
 execution_times = {t: [] for t in threads}
 
-# Funzione per estrarre il tempo di esecuzione dal file
-def extract_time(file_content):
-    # Modificare questa regex in base al formato effettivo dell'output
-    # Questo è solo un esempio, assumendo che il tempo sia indicato come "Time: X.XXX seconds"
-    match = re.search(r'Time:\s+(\d+\.\d+)', file_content)
-    if match:
-        return float(match.group(1))
-    return None
+# Funzione per estrarre i tempi di esecuzione dal file
+def extract_times(file_content):
+    # Cerca tutte le occorrenze di tempi nel file
+    # Pattern specifico per l'output di main_matrix
+    times = re.findall(r'mean_shift execution time: (\d+\.\d+) s', file_content)
+    return [float(time) for time in times]
 
 # Leggi i file di risultato
 for t in threads:
-    for r in range(1, repetitions + 1):
-        filename = f"output_{t}_threads_run_{r}.txt"
-        filepath = os.path.join(results_dir, filename)
-        
-        try:
-            with open(filepath, 'r') as file:
-                content = file.read()
-                time = extract_time(content)
-                if time is not None:
-                    execution_times[t].append(time)
-        except FileNotFoundError:
-            print(f"File non trovato: {filepath}")
+    filename = f"main_matrix_{t}_threads.txt"
+    filepath = os.path.join(results_dir, filename)
+    
+    try:
+        with open(filepath, 'r') as file:
+            content = file.read()
+            times = extract_times(content)
+            if times:
+                execution_times[t].extend(times)
+                print(f"Thread {t}: trovate {len(times)} misurazioni")
+            else:
+                print(f"Nessun tempo trovato nel file {filename}")
+    except FileNotFoundError:
+        print(f"File non trovato: {filepath}")
 
 # Calcola le medie
-mean_times = [np.mean(execution_times[t]) for t in threads]
+mean_times = []
+for t in threads:
+    if execution_times[t]:
+        mean_times.append(np.mean(execution_times[t]))
+    else:
+        mean_times.append(0)  # Se non ci sono dati, inserisci 0
+        print(f"Attenzione: nessun dato disponibile per {t} thread")
 
 # Crea il grafico
 plt.figure(figsize=(10, 6))
 plt.bar([str(t) for t in threads], mean_times, color='skyblue', edgecolor='navy')
 plt.xlabel('Numero di Thread')
 plt.ylabel('Tempo di Esecuzione Medio (secondi)')
-plt.title('Tempo di Esecuzione Medio di main_matrix per Numero di Thread')
+plt.title('Tempo di Esecuzione Medio di Mean-Shift per Numero di Thread')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 # Aggiungi i valori sopra le colonne
 for i, v in enumerate(mean_times):
-    plt.text(i, v + 0.01, f"{v:.3f}", ha='center')
+    plt.text(i, v + max(mean_times)*0.01, f"{v:.3f}", ha='center')
+
+# Aggiungi una linea che mostra il tempo sequenziale
+if mean_times[0] > 0:
+    plt.axhline(y=mean_times[0], color='red', linestyle='--', alpha=0.5, label='Tempo sequenziale')
+    plt.legend()
 
 plt.tight_layout()
 plt.savefig('execution_times.png')
 plt.show()
 
-print("Grafico generato: execution_times.png")
+# Calcola e mostra anche lo speedup
+if mean_times[0] > 0:
+    plt.figure(figsize=(10, 6))
+    speedups = [mean_times[0]/t if t > 0 else 0 for t in mean_times]
+    plt.bar([str(t) for t in threads], speedups, color='lightgreen', edgecolor='darkgreen')
+    plt.xlabel('Numero di Thread')
+    plt.ylabel('Speedup')
+    plt.title('Speedup di Mean-Shift per Numero di Thread')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Linea di speedup ideale
+    ideal_speedups = [min(t, threads[0]) for t in threads]
+    plt.plot([str(t) for t in threads], ideal_speedups, 'r--', label='Speedup ideale')
+    
+    # Aggiungi i valori sopra le colonne
+    for i, v in enumerate(speedups):
+        plt.text(i, v + max(speedups)*0.01, f"{v:.2f}", ha='center')
+    
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig('speedup.png')
+    plt.show()
+
+print("Grafici generati: execution_times.png e speedup.png")
