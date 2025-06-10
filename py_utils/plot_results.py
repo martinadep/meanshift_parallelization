@@ -15,17 +15,19 @@ execution_times = {t: [] for t in threads}
 # Funzione per estrarre i tempi di esecuzione dal file
 def extract_times(file_content):
     # Cerca tutte le occorrenze di tempi nel file
-    # Pattern specifico per l'output di main_matrix
-    times = re.findall(r'mean_shift execution time: (\d+\.\d+) s', file_content)
+    times = re.findall(r'mean_shift execution time: (\d+\.\d+)', file_content)
+    if times:
+        print(f"Trovati {len(times)} tempi di esecuzione")
     return [float(time) for time in times]
 
 # Leggi i file di risultato
 for t in threads:
-    filename = f"main_matrix_{t}_threads.txt"
+    filename = f"main_matrix_block/main_matrix_block_{t}_threads.txt"
     filepath = os.path.join(results_dir, filename)
     
     try:
-        with open(filepath, 'r') as file:
+        # Leggi il file specificando l'encoding UTF-16
+        with open(filepath, 'r', encoding='utf-16') as file:
             content = file.read()
             times = extract_times(content)
             if times:
@@ -41,9 +43,15 @@ mean_times = []
 for t in threads:
     if execution_times[t]:
         mean_times.append(np.mean(execution_times[t]))
+        print(f"Thread {t}: tempo medio = {mean_times[-1]:.4f} secondi")
     else:
         mean_times.append(0)  # Se non ci sono dati, inserisci 0
         print(f"Attenzione: nessun dato disponibile per {t} thread")
+
+# Verifica se ci sono tempi validi
+if not any(mean_times):
+    print("Nessun tempo valido trovato nei file. Verifica i file di input.")
+    exit(1)
 
 # Crea il grafico
 plt.figure(figsize=(10, 6))
@@ -54,8 +62,12 @@ plt.title('Tempo di Esecuzione Medio di Mean-Shift per Numero di Thread')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 # Aggiungi i valori sopra le colonne
-for i, v in enumerate(mean_times):
-    plt.text(i, v + max(mean_times)*0.01, f"{v:.3f}", ha='center')
+valid_times = [t for t in mean_times if t > 0]
+if valid_times:
+    max_time = max(valid_times)
+    for i, v in enumerate(mean_times):
+        if v > 0:
+            plt.text(i, v + max_time*0.01, f"{v:.3f}", ha='center')
 
 # Aggiungi una linea che mostra il tempo sequenziale
 if mean_times[0] > 0:
@@ -77,12 +89,16 @@ if mean_times[0] > 0:
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     
     # Linea di speedup ideale
-    ideal_speedups = [min(t, threads[0]) for t in threads]
+    ideal_speedups = [min(t/threads[0], t) for t in threads]
     plt.plot([str(t) for t in threads], ideal_speedups, 'r--', label='Speedup ideale')
     
     # Aggiungi i valori sopra le colonne
-    for i, v in enumerate(speedups):
-        plt.text(i, v + max(speedups)*0.01, f"{v:.2f}", ha='center')
+    valid_speedups = [s for s in speedups if s > 0]
+    if valid_speedups:
+        max_speedup = max(valid_speedups)
+        for i, v in enumerate(speedups):
+            if v > 0:
+                plt.text(i, v + max_speedup*0.01, f"{v:.2f}", ha='center')
     
     plt.legend()
     plt.tight_layout()

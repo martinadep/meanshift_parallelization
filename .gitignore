@@ -6,6 +6,7 @@
 cmake-build-debug/
 build/
 
+results/
 dataset/*
 !dataset/12003.jpg
 !dataset/35010.jpg

@@ -51,7 +51,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         const int BLOCK_SIZE = 64; // Dimensione ottimale del blocco
 
         // Calcolo delle distanze a blocchi
-        #pragma omp parallel for schedule(dynamic, 1)
+        #pragma omp parallel for // schedule(dynamic, 1)
         for (unsigned int bi = 0; bi < dataset_size; bi += BLOCK_SIZE) {
             for (unsigned int bj = 0; bj < dataset_size; bj += BLOCK_SIZE) {
                 // Processo il blocco (bi,bj) fino a (bi+BLOCK_SIZE-1,bj+BLOCK_SIZE-1)

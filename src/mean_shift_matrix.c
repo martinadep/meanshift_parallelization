@@ -49,7 +49,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         shift_norm = 0.0;
         
         // Compute all pairwise distances 
-        #pragma omp parallel for //schedule(dynamic, 64)
+        #pragma omp parallel for // schedule(dynamic, 64)
         for (unsigned int i = 0; i < dataset_size; i++) {
             for (unsigned int j = 0; j < dataset_size; j++) {
                 // distances[i * dataset_size + j] = euclidean_distance(&current_points[i], &current_points[j]);
