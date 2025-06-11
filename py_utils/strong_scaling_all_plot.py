@@ -4,29 +4,61 @@ import re
 import numpy as np
 
 # Directory contenente i risultati
-results_dir = 'results'
+results_dir = 'results_strong_scaling'
 
 # Thread testati
 threads = [1, 2, 4, 8, 16, 32, 64]
 
-# Implementazioni da confrontare
+# # Implementazioni da confrontare
+# # implementations = [
+# #     {"name": "main", "color": "royalblue", "folder": "main"},
+# #     {"name": "main_matrix", "color": "forestgreen", "folder": "main_matrix"},
+# #     {"name": "main_matrix_block", "color": "firebrick", "folder": "main_matrix_block"},
+# #     {"name": "main_sqrd", "color": "darkorange", "folder": "main_sqrd"}
+# # ]
+# implementations = [
+#     {"name": "slic", "color": "royalblue", "folder": "slic"},
+#     {"name": "slic_matrix", "color": "forestgreen", "folder": "slic_matrix"},
+#     {"name": "slic_sqrd", "color": "darkorange", "folder": "slic_sqrd"}
+# ]
+
+#Implementazioni da confrontare
 implementations = [
-    {"name": "main", "color": "royalblue", "folder": "main"},
-    {"name": "main_matrix", "color": "forestgreen", "folder": "main_matrix"},
-    {"name": "main_matrix_block", "color": "firebrick", "folder": "main_matrix_block"},
-    {"name": "main_sqrd", "color": "darkorange", "folder": "main_sqrd"}
+    {"name": "main", "color": "#BC1957", "folder": "main"},  
+    {"name": "main_sqrd", "color": "#D85A1A", "folder": "main_sqrd"},    
+    {"name": "main_matrix", "color": "#FFAA00DA", "folder": "main_matrix"}, 
+    {"name": "main_matrix_block", "color": "#FFD900", "folder": "main_matrix_block"}, 
+    {"name": "slic", "color": "#1B529F", "folder": "slic"},               
+    {"name": "slic_sqrd", "color": "#38A5D0", "folder": "slic_sqrd"},
+    {"name": "slic_matrix", "color": "#2A7709", "folder": "slic_matrix"},
+    {"name": "slic_matrix_block", "color": "#1BBA13", "folder": "slic_matrix_block"} 
 ]
 
 # Dizionario per memorizzare i tempi di esecuzione per ogni implementazione
 all_execution_times = {impl["name"]: {t: [] for t in threads} for impl in implementations}
 all_mean_times = {impl["name"]: [] for impl in implementations}
 
-# Funzione per estrarre i tempi di esecuzione dal file
+# Update the extract_times function
 def extract_times(file_content):
-    # Cerca tutte le occorrenze di tempi nel file
-    times = re.findall(r'mean_shift execution time: (\d+\.\d+)', file_content)
-    return [float(time) for time in times]
-
+    # Extract both SLIC and mean shift times
+    slic_times = re.findall(r'slic execution time: (\d+\.\d+)', file_content)
+    mean_shift_times = re.findall(r'mean_shift execution time: (\d+\.\d+)', file_content)
+    
+    if not mean_shift_times:
+        return []
+    
+    # Convert to float
+    mean_shift_times = [float(time) for time in mean_shift_times]
+    
+    # For SLIC implementations, add the preprocessing time
+    if slic_times and "slic" in file_content.lower():
+        slic_times = [float(time) for time in slic_times]
+        # Return combined times (SLIC + mean_shift)
+        return [slic_times[i] + mean_shift_times[i] for i in range(min(len(slic_times), len(mean_shift_times)))]
+    else:
+        # No SLIC times or not a SLIC implementation, return mean_shift times only
+        return mean_shift_times
+    
 # Funzione per provare diversi encoding
 def try_read_file(filepath):
     encodings = ['utf-8', 'utf-16', 'latin1', 'cp1252']
@@ -107,7 +139,7 @@ if not has_data:
 fig, ax = plt.subplots(figsize=(14, 8))
 
 # Larghezza delle barre
-bar_width = 0.2
+bar_width = 0.11
 index = np.arange(len(threads))
 
 # Crea le barre per ogni implementazione
@@ -115,6 +147,11 @@ for i, impl in enumerate(implementations):
     impl_name = impl["name"]
     color = impl["color"]
     times = all_mean_times[impl_name]
+
+    if "slic" in impl_name:
+        impl_label = f"{impl_name} (preprocessing + mean-shift)"
+    else:
+        impl_label = impl_name
     
     # Posizione delle barre
     position = index + (i - len(implementations)/2 + 0.5) * bar_width
@@ -131,11 +168,11 @@ ax.legend()
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 plt.tight_layout()
-plt.savefig('implementation_comparison.png')
+plt.savefig('strong_scaling_all.png')
 plt.show()
 
 # Calcola e mostra anche lo speedup per ogni implementazione
-fig_speedup, ax_speedup = plt.subplots(figsize=(14, 8))
+fig_speedup, ax_speedup = plt.subplots(figsize=(16, 8))
 
 # Calcola lo speedup per ogni implementazione
 for i, impl in enumerate(implementations):
@@ -153,20 +190,20 @@ for i, impl in enumerate(implementations):
         ax_speedup.bar(position, speedups, bar_width, color=color, label=impl_name)
 
 # Aggiungi la linea di speedup ideale
-ideal_speedups = [min(t, threads[0]) for t in threads]
-ax_speedup.plot(index, ideal_speedups, 'r--', label='Speedup ideale')
+ideal_speedups = threads
+ax_speedup.plot(index, ideal_speedups, 'r--', label='Ideal Speedup')
 
 # Configura gli assi e le etichette
-ax_speedup.set_xlabel('Numero di Thread')
+ax_speedup.set_xlabel('Num of Threads')
 ax_speedup.set_ylabel('Speedup')
-ax_speedup.set_title('Confronto dello Speedup tra Implementazioni')
+ax_speedup.set_title('Speedup comparison between implementations')
 ax_speedup.set_xticks(index)
 ax_speedup.set_xticklabels([str(t) for t in threads])
 ax_speedup.legend()
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 plt.tight_layout()
-plt.savefig('implementation_speedup_comparison.png')
+plt.savefig('strong_scaling_speedup_all.png')
 plt.show()
 
-print("Grafici generati: implementation_comparison.png e implementation_speedup_comparison.png")
+print("Grafici generati: strong_scaling_all.png e strong_scaling_speedup_all.png")

@@ -19,6 +19,7 @@ venv/
 .venv/
 
 run_experiments.*
+dataset_weak_scaling/
 
 # Output files
 test/
@@ -29,3 +30,7 @@ data/*
 *.a
 *.txt
 !requirements.txt
+*.ps1
+*.png
+scripts_local/
+results_*/

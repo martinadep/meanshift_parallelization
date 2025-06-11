@@ -4,7 +4,7 @@ import re
 import numpy as np
 
 # Directory contenente i risultati
-results_dir = 'results'
+results_dir = 'results_strong_scaling'
 
 # Thread testati
 threads = [1, 2, 4, 8, 16, 32, 64]
@@ -14,15 +14,30 @@ execution_times = {t: [] for t in threads}
 
 # Funzione per estrarre i tempi di esecuzione dal file
 def extract_times(file_content):
-    # Cerca tutte le occorrenze di tempi nel file
-    times = re.findall(r'mean_shift execution time: (\d+\.\d+)', file_content)
-    if times:
-        print(f"Trovati {len(times)} tempi di esecuzione")
-    return [float(time) for time in times]
+    # Extract both SLIC and mean shift times
+    slic_times = re.findall(r'slic execution time: (\d+\.\d+)', file_content)
+    mean_shift_times = re.findall(r'mean_shift execution time: (\d+\.\d+)', file_content)
+    
+    if not mean_shift_times:
+        print("No mean_shift execution times found")
+        return []
+    
+    # Convert to float
+    mean_shift_times = [float(time) for time in mean_shift_times]
+    
+    # For SLIC implementations, add the preprocessing time
+    if slic_times:
+        print(f"Found {len(slic_times)} SLIC preprocessing times")
+        slic_times = [float(time) for time in slic_times]
+        # Return combined times (SLIC + mean_shift)
+        return [slic_times[i] + mean_shift_times[i] for i in range(min(len(slic_times), len(mean_shift_times)))]
+    else:
+        # No SLIC times, return mean_shift times only
+        return mean_shift_times
 
 # Leggi i file di risultato
 for t in threads:
-    filename = f"main_matrix_block/main_matrix_block_{t}_threads.txt"
+    filename = f"slic_matrix/slic_matrix_{t}_threads.txt"
     filepath = os.path.join(results_dir, filename)
     
     try:

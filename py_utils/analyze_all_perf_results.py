@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
-from plotting_metrics import parse_perf_file
+from py_utils.plot_metrics import parse_perf_file
 
 # Modifica qui il path al perf_results.txt che vuoi analizzare
 perf_path = "./test/epanechnikov/8049/perf_results.txt"

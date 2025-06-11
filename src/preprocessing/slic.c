@@ -3,6 +3,7 @@
 #include "../include/utils.h"
 #include <math.h>
 #include <float.h>
+#include <omp.h>
 
 
 /*
@@ -67,6 +68,7 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
         update_centers(num_centers, superpixel_dataset, center_x, center_y, new_centers, counts, sum_x, sum_y);
 
         // reset distances
+        #pragma omp parallel for
         for (int i = 0; i < dataset_size; i++)
             distances[i] = DBL_MAX;
     }
@@ -85,6 +87,7 @@ T slic_distance(const Point *p1, const Point *p2, int x1, int y1, int x2, int y2
 void update_centers(int num_centers, Point centers[], int center_x[], int center_y[],
                            const Point new_centers[], const int counts[], const int sum_x[], const int sum_y[])
 {
+     #pragma omp parallel for
     for (int c = 0; c < num_centers; c++) {
         if (counts[c] > 0) {
             for (int j = 0; j < DIM; j++)
@@ -99,19 +102,72 @@ void update_centers(int num_centers, Point centers[], int center_x[], int center
 void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
                                     const int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[])
 {
-    for (int i = 0; i < dataset_size; i++) {
-        int c = labels[i];
-        if (c < 0) continue;
-        for (int j = 0; j < DIM; j++)
-            new_centers[c][j] += dataset[i][j];
-        sum_x[c] += i % width;
-        sum_y[c] += i / width;
-        counts[c]++;
+    // Using OpenMP with private arrays for reduction
+    int local_counts[MAX_SUPERPIXELS] = {0};
+    int local_sum_x[MAX_SUPERPIXELS] = {0};
+    int local_sum_y[MAX_SUPERPIXELS] = {0};
+    Point local_centers[MAX_SUPERPIXELS];
+    
+    // Initialize local centers
+    for (int c = 0; c < MAX_SUPERPIXELS; c++) {
+        init_point(&local_centers[c]);
+    }
+    
+    #pragma omp parallel
+    {
+        // Thread-private arrays
+        int private_counts[MAX_SUPERPIXELS] = {0};
+        int private_sum_x[MAX_SUPERPIXELS] = {0};
+        int private_sum_y[MAX_SUPERPIXELS] = {0};
+        Point private_centers[MAX_SUPERPIXELS];
+        
+        for (int c = 0; c < MAX_SUPERPIXELS; c++) {
+            init_point(&private_centers[c]);
+        }
+        
+        #pragma omp for nowait
+        for (int i = 0; i < dataset_size; i++) {
+            int c = labels[i];
+            if (c < 0) continue;
+            
+            for (int j = 0; j < DIM; j++)
+                private_centers[c][j] += dataset[i][j];
+            
+            private_sum_x[c] += i % width;
+            private_sum_y[c] += i / width;
+            private_counts[c]++;
+        }
+        
+        // Combine results from all threads
+        #pragma omp critical
+        {
+            for (int c = 0; c < MAX_SUPERPIXELS; c++) {
+                if (private_counts[c] > 0) {
+                    for (int j = 0; j < DIM; j++)
+                        local_centers[c][j] += private_centers[c][j];
+                    local_sum_x[c] += private_sum_x[c];
+                    local_sum_y[c] += private_sum_y[c];
+                    local_counts[c] += private_counts[c];
+                }
+            }
+        }
+    }
+    
+    // Copy local results to output arrays
+    for (int c = 0; c < MAX_SUPERPIXELS; c++) {
+        if (local_counts[c] > 0) {
+            for (int j = 0; j < DIM; j++)
+                new_centers[c][j] = local_centers[c][j];
+            sum_x[c] = local_sum_x[c];
+            sum_y[c] = local_sum_y[c];
+            counts[c] = local_counts[c];
+        }
     }
 }
 
 void reset_new_centers(int num_centers, Point new_centers[], int counts[], int sum_x[], int sum_y[])
 {
+    #pragma omp parallel for
     for (int c = 0; c < num_centers; c++) {
         init_point(&new_centers[c]);
         counts[c] = 0;
@@ -124,6 +180,7 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
                             int num_centers, int width, int height, int S, T m,
                             int labels[], T distances[], int dataset_size)
 {
+    #pragma omp parallel for
     for (int c = 0; c < num_centers; c++) {
         int cx = center_x[c];
         int cy = center_y[c];
@@ -135,15 +192,19 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
                     continue;
                 int idx = y * width + x;
                 T d = slic_distance(&dataset[idx], &centers[c], x, y, cx, cy, S, m);
-                if (d < distances[idx]) {
-                    distances[idx] = d;
-                    labels[idx] = c;
+                #pragma omp critical
+                {
+                    if (d < distances[idx]) {
+                        distances[idx] = d;
+                        labels[idx] = c;
+                    }
                 }
             }
         }
     }
 
     // Assign pixels which are not assigned to any center to the closest center
+#pragma omp parallel for
     for (int i = 0; i < dataset_size; i++) {
     if (labels[i] == -1) {
         T min_dist = DBL_MAX;
@@ -182,6 +243,7 @@ void initialize_centers(const Point dataset[], int width, int height, int S, int
 
 void reset_labels_and_distances(int dataset_size, int labels[], T distances[])
 {
+    #pragma omp parallel for
     for (int i = 0; i < dataset_size; i++) {
         labels[i] = -1;
         distances[i] = DBL_MAX;

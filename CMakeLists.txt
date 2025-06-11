@@ -93,7 +93,7 @@ add_mean_shift_target(metrics BASIC METRICS)
 add_mean_shift_target(slic BASIC PREPROCESSING)
 add_mean_shift_target(slic_sqrd SQRD PREPROCESSING)
 add_mean_shift_target(slic_matrix MATRIX PREPROCESSING)
-add_mean_shift_target(slic_matrix_block MATRIX_BLOCK)
+add_mean_shift_target(slic_matrix_block MATRIX_BLOCK PREPROCESSING)
 
 add_mean_shift_target(slic_breakdown BASIC PREPROCESSING BREAKDOWN)
 add_mean_shift_target(slic_breakdown_sqrd SQRD PREPROCESSING BREAKDOWN)
