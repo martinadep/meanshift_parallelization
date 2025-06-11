@@ -58,21 +58,21 @@ mkdir -p results_strong_scaling
 
 # 6. Convert example images
 echo "Converting example images to CSV format..."
-
+$PYTHON_CMD ./py_utils/img_to_csv.py
 # Process sample images from examples directory
-example_images=$(find ./examples -type f -name "*.jpg")
+# example_images=$(find ./examples -type f -name "*.jpg")
 
-for img_path in $example_images; do
-    echo "Processing: $img_path"
-    # Extract filename without extension
-    filename=$(basename "$img_path")
-    filename_no_ext="${filename%.*}"
+# for img_path in $example_images; do
+#     echo "Processing: $img_path"
+#     # Extract filename without extension
+#     filename=$(basename "$img_path")
+#     filename_no_ext="${filename%.*}"
     
-    # Convert to CSV
-    $PYTHON_CMD ./py_utils/img_to_csv.py -i "$img_path" -o "./data/original.csv"
+#     # Convert to CSV
+#     $PYTHON_CMD ./py_utils/img_to_csv.py -i "$img_path" -o "./data/original.csv"
     
-    echo "\"$img_path\" converted to ./data/original.csv"
-done
+#     echo "\"$img_path\" converted to ./data/original.csv"
+# done
 
 echo ""
 echo "=== Setup Complete ==="
