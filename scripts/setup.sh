@@ -14,6 +14,7 @@ else
     exit 1
 fi
 
+PYTHON_VERSION=$($PYTHON_CMD -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 echo "Using Python: $($PYTHON_CMD --version)"
 
 # 2. Create virtual environment if it doesn't exist
@@ -36,35 +37,42 @@ else
     echo "Warning: Unsupported OS. Please activate virtual environment manually."
 fi
 
-# 4. Install dependencies
+# 4. Install dependencies with version constraints compatible with Python 3.10
 echo "Installing required packages..."
-pip install -r requirements.txt
+
+# Check Python version and install compatible packages
+if [[ $(echo "$PYTHON_VERSION < 3.11" | bc) -eq 1 ]]; then
+    echo "Detected Python $PYTHON_VERSION - Installing compatible versions"
+    pip install --upgrade pip
+    pip install numpy pandas pillow matplotlib==3.7.2 networkx==3.1
+else
+    echo "Installing packages from requirements.txt"
+    pip install -r requirements.txt
+fi
 
 # 5. Create directories if they don't exist
 echo "Setting up directory structure..."
 mkdir -p data
 mkdir -p build
+mkdir -p results_strong_scaling
 
 # 6. Convert example images
 echo "Converting example images to CSV format..."
-$PYTHON_CMD ./py_utils/img_to_csv.py 
 
-# # Process sample images from examples directory
-# example_images=$(find ./examples -type f -name "*.jpg")
+# Process sample images from examples directory
+example_images=$(find ./examples -type f -name "*.jpg")
 
-# for img_path in $example_images; do
-#     echo "Processing: $img_path"
-#     # Extract filename without extension
-#     filename=$(basename "$img_path")
-#     filename_no_ext="${filename%.*}"
+for img_path in $example_images; do
+    echo "Processing: $img_path"
+    # Extract filename without extension
+    filename=$(basename "$img_path")
+    filename_no_ext="${filename%.*}"
     
-#     # Convert to CSV
-#     $PYTHON_CMD ./py_utils/img_to_csv.py -i "$img_path" -o "./data/${filename_no_ext}.csv"
+    # Convert to CSV
+    $PYTHON_CMD ./py_utils/img_to_csv.py -i "$img_path" -o "./data/original.csv"
     
-#     echo "✓ Converted $filename to ./data/${filename_no_ext}.csv"
-# done
-
-
+    echo "\"$img_path\" converted to ./data/original.csv"
+done
 
 echo ""
 echo "=== Setup Complete ==="
