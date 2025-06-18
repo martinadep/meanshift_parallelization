@@ -5,6 +5,9 @@
 #include <float.h>
 #include <omp.h>
 
+#ifdef TOTAL_TIMING
+#include "../metrics/timing.h"
+#endif
 
 /*
 
@@ -34,9 +37,12 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
                         const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
                         unsigned int width, unsigned int height, unsigned int num_superpixels, T m)
 {
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_START(slic)
+#endif
     // Ideal distance between superpixels 
     int S = sqrt((width * height) / (T)num_superpixels);
-;
+
     int center_x[MAX_SUPERPIXELS];
     int center_y[MAX_SUPERPIXELS];
     T distances[dataset_size];
@@ -72,7 +78,9 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
         for (int i = 0; i < dataset_size; i++)
             distances[i] = DBL_MAX;
     }
-
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(slic)
+#endif
     return num_centers;
 }
 

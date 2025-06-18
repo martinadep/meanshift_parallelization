@@ -25,6 +25,7 @@ dataset_weak_scaling/
 test/
 data/*
 !data/.gitkeep
+!data/original.csv
 *.exe
 *.o
 *.a

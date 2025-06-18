@@ -178,13 +178,7 @@ int main(int argc, char *argv[]) {
     std::cout <<"Preprocessing (SLIC)"<< endl << "\t- Superpixels: " << superpixels << endl;
     std::cout << "\t- Compactness: " << m << endl <<endl;
 
-#ifdef TOTAL_TIMING
-    TOTAL_TIMER_START(slic)
-#endif
     preprocess_dataset(pixel_count, dataset, dataset_labels, superpixel_dataset, width, height, superpixels, m);
-#ifdef TOTAL_TIMING
-    TOTAL_TIMER_STOP(slic)
-#endif
 
     FILE *fileout_slic = fopen(output_slic_path, "w");
     if (!fileout_slic) {
@@ -210,25 +204,26 @@ int main(int argc, char *argv[]) {
     std::cout << "Type precision: " << sizeof(T) * 8 << " bits - " << TYPENAME << endl;
     std::cout << "\t- Bandwidth: " << bandwidth << endl;
     std::cout << "\t- Kernel: " << kernel << endl;
-#ifdef TOTAL_TIMING
-    TOTAL_TIMER_START(mean_shift)
-#endif
 
 #ifdef PREPROCESSING
     mean_shift(superpixels, superpixel_dataset, shifted_superpixels, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
+
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_START(label_to_cluster_assignment)
+#endif
     for(unsigned int i = 0; i < pixel_count; i++) {
         int label = dataset_labels[i]; 
         copy_point(&shifted_superpixels[label], &shifted_dataset[i]);
     }
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(label_to_cluster_assignment)
+#endif
 #else
 
     // standard Mean-Shift
     mean_shift(pixel_count, dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
 
 
-#endif
-#ifdef TOTAL_TIMING
-    TOTAL_TIMER_STOP(mean_shift)
 #endif
 
     if (clusters_count > 1000) {
