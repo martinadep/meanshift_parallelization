@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 unsigned int preprocess_dataset(unsigned int dataset_size,
-                        const Point dataset[], unsigned int dataset_labels[], Point superpixel_dataset[],
+                        const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
                         unsigned int width, unsigned int height, unsigned int num_superpixels, T m);
 
 // ---------------- slic.c -----------------
@@ -33,7 +33,7 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
 void reset_new_centers(int num_centers, Point new_centers[], int counts[], int sum_x[], int sum_y[]);
 
 void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
-                                    const int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[]);
+                                    int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[]);
 
 void update_centers(int num_centers, Point centers[], int center_x[], int center_y[],
                            const Point new_centers[], const int counts[], const int sum_x[], const int sum_y[]);

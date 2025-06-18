@@ -31,7 +31,7 @@ con label 3 è diventato [15,2,200]
 
 */
 unsigned int preprocess_dataset(unsigned int dataset_size,
-                        const Point dataset[], unsigned int dataset_labels[], Point superpixel_dataset[],
+                        const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
                         unsigned int width, unsigned int height, unsigned int num_superpixels, T m)
 {
     // Ideal distance between superpixels 
@@ -100,7 +100,7 @@ void update_centers(int num_centers, Point centers[], int center_x[], int center
 
 
 void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
-                                    const int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[])
+                                    int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[])
 {
     // Using OpenMP with private arrays for reduction
     int local_counts[MAX_SUPERPIXELS] = {0};

@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
     #ifdef PREPROCESSING     
         Point* superpixel_dataset = (Point*) malloc(superpixels * sizeof(Point));
         Point* shifted_superpixels = (Point*) malloc(superpixels * sizeof(Point));
-        unsigned int* dataset_labels = (unsigned int*) malloc(pixel_count * sizeof(unsigned int)); // labels for each pixel in the dataset
+        int* dataset_labels = (int*) malloc(pixel_count * sizeof(int)); // labels for each pixel in the dataset
     #endif 
     
     // read each row (pixel) and convert in doubles

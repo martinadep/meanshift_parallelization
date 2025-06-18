@@ -7,7 +7,7 @@ import numpy as np
 results_dir = 'results_strong_scaling'
 
 # Thread testati
-threads = [1, 2, 4, 8, 16, 32, 64]
+threads = [1, 2, 4, 8] #, 16, 32, 64]
 
 # # Implementazioni da confrontare
 # # implementations = [
@@ -159,9 +159,9 @@ for i, impl in enumerate(implementations):
     ax.bar(position, times, bar_width, color=color, label=impl_name)
 
 # Configura gli assi e le etichette
-ax.set_xlabel('Numero di Thread')
-ax.set_ylabel('Tempo di Esecuzione Medio (secondi)')
-ax.set_title('Confronto dei Tempi di Esecuzione tra Implementazioni')
+ax.set_xlabel('Num of Threads')
+ax.set_ylabel('Mean Execution Time (seconds)')
+ax.set_title('Execution Time Comparison between Implementations')
 ax.set_xticks(index)
 ax.set_xticklabels([str(t) for t in threads])
 ax.legend()

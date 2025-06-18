@@ -7,7 +7,7 @@ import numpy as np
 results_dir = 'results_weak_scaling'
 
 # Thread testati
-threads = [1, 2, 4, 8, 16, 32, 64]
+threads = [1, 2, 4, 8] #, 16, 32, 64]
 
 # Implementazioni da confrontare
 implementations = [
