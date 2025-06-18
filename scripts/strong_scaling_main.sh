@@ -7,7 +7,7 @@ mkdir -p results_strong_scaling
 implementations=("main" "main_matrix" "main_matrix_block" "main_sqrd")
 
 # Define thread counts
-threads=(1 2 4 8 16 32 64)
+threads=(1 2 4 8 16 32 64 96)
 
 # Number of runs per configuration
 num_runs=5

@@ -4,21 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#ifdef TOTAL_TIMING
-#include "metrics/timing.h"
-#endif
 
 void mean_shift(unsigned int dataset_size, const Point dataset[],
                 Point shifted_dataset[], T bandwidth,
                 T (*kernel_func)(T, T), Point cluster_modes[],
                 unsigned int *cluster_count)
 {
-#ifdef TOTAL_TIMING
-    TOTAL_TIMER_START(mean_shift)
-#endif
     *cluster_count = 0;
-    // Phase 1: Independent point shifting - parallelizable
-    
+// Phase 1: Independent point shifting - parallelizable   
 #pragma omp parallel
     {
         #pragma omp master
@@ -48,9 +41,6 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
             assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
         }
     }
-    #ifdef TOTAL_TIMING
-    TOTAL_TIMER_STOP(mean_shift)
-    #endif
 }
 
 // Convergence loop for a single point

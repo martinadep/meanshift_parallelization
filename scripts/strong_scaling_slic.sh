@@ -7,7 +7,7 @@ mkdir -p results_strong_scaling
 implementations=("slic" "slic_matrix" "slic_matrix_block" "slic_sqrd")
 
 # Define thread counts
-threads=(1 2 4 8 16 32 64)
+threads=(1 2 4 8 16 32 64 96)
 
 # Number of runs per configuration
 num_runs=5

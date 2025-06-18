@@ -206,8 +206,18 @@ int main(int argc, char *argv[]) {
     std::cout << "\t- Kernel: " << kernel << endl;
 
 #ifdef PREPROCESSING
+
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_START(mean_shift)
+#endif
+// ----- Mean-Shift on superpixels
     mean_shift(superpixels, superpixel_dataset, shifted_superpixels, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
 
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(mean_shift)
+#endif
+
+// ----- label to cluster assignment
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_START(label_to_cluster_assignment)
 #endif
@@ -218,11 +228,18 @@ int main(int argc, char *argv[]) {
 #ifdef TOTAL_TIMING
     TOTAL_TIMER_STOP(label_to_cluster_assignment)
 #endif
+
 #else
 
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_START(mean_shift)
+#endif
     // standard Mean-Shift
     mean_shift(pixel_count, dataset, shifted_dataset, bandwidth, kernel_map[kernel], cluster_modes, &clusters_count);
 
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(mean_shift)
+#endif
 
 #endif
 

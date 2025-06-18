@@ -19,7 +19,7 @@ venv/
 .venv/
 
 run_experiments.*
-dataset_weak_scaling/
+# dataset_weak_scaling/
 
 # Output files
 test/
