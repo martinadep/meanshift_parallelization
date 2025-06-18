@@ -1,22 +1,23 @@
 #ifndef __TIMING_H__
 #define __TIMING_H__
 #include <stdio.h>
-#include <time.h>
+
+#include <omp.h> // Use OpenMP for timing
 
 #ifdef TIMING_BREAKDOWN
 // Timer definition
 #define TIMER_DEF(label) \
-    static clock_t start_##label, end_##label; \
+    static double start_##label, end_##label; \
     static double duration_##label = 0.0;
 
 // Timer start
 #define TIMER_START(label) \
-    start_##label = clock();
+    start_##label = omp_get_wtime();
 
 // Duration calculation
 #define TIMER_ELAPSED(label) \
-    end_##label = clock(); \
-    duration_##label = ((double)(end_##label - start_##label)) / CLOCKS_PER_SEC;
+    end_##label = omp_get_wtime(); \
+    duration_##label = end_##label - start_##label;
 
 // Print elapsed time
 #define TIMER_PRINT(label) \
@@ -49,13 +50,13 @@
 #ifdef TOTAL_TIMING
 
 #define TOTAL_TIMER_START(label) \
-    clock_t start_##label, end_##label; \
+    double start_##label, end_##label; \
     double duration_##label = 0.0; \
-    start_##label = clock();
+    start_##label = omp_get_wtime();
 
 #define TOTAL_TIMER_STOP(label) \
-    end_##label = clock(); \
-    duration_##label = ((double)(end_##label - start_##label)) / CLOCKS_PER_SEC; \
+    end_##label = omp_get_wtime(); \
+    duration_##label = end_##label - start_##label; \
     printf(#label " execution time: %f s\n", duration_##label);
 
 #endif
