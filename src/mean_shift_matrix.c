@@ -6,16 +6,23 @@
 #include <math.h>
 #include <omp.h>
 
+// 8GB RAM using 4 bytes per float (T)
+#define MAX_DATASET_SIZE 100000 // Define a maximum dataset size for safety
+
 // Matrix-based implementation of Mean Shift algorithm
 void mean_shift(unsigned int dataset_size, const Point dataset[],
                 Point shifted_dataset[], T bandwidth,
                 T (*kernel_func)(T, T), Point cluster_modes[],
                 unsigned int *cluster_count)
 {
+    if (dataset_size > MAX_DATASET_SIZE) {
+        fprintf(stderr, "Error: dataset_size exceeds MAX_DATASET_SIZE (%d)\n", MAX_DATASET_SIZE);
+        return;
+    }
     T* distances = (T*)malloc(dataset_size * dataset_size * sizeof(T));
     T* weights = (T*)malloc(dataset_size * dataset_size * sizeof(T));
     T* weight_sums = (T*)malloc(dataset_size * sizeof(T));
-    // Point* current_points = (Point*)malloc(dataset_size * sizeof(Point)); // Matrix of current points
+    
     Point* next_points = (Point*)malloc(dataset_size * sizeof(Point)); // Matrix of next points
     
     if (!distances || !weights || !weight_sums || !next_points) {

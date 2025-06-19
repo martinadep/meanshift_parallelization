@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     const char *output_csv_path = CSV_OUT;
     const char *output_slic_path = "./data/slic_output.csv";
     #ifdef PREPROCESSING
-    unsigned int superpixels = NUM_SUPERPIXELS;
+    unsigned int superpixels = 0;
     float m = 10.0;
     #endif
 
@@ -144,6 +144,13 @@ int main(int argc, char *argv[]) {
     Point cluster_modes[1000]; 
     unsigned int clusters_count = 0; // number of clusters
     #ifdef PREPROCESSING     
+        if (superpixels == 0) {
+            superpixels = pixel_count / 100; // default value for superpixels, once every 100 pixels
+            if (superpixels < 10) superpixels = 10;
+            if (superpixels > MAX_SUPERPIXELS) superpixels = MAX_SUPERPIXELS;
+            std::cout << "No superpixels specified. Using default value: " << superpixels << endl;
+        }
+
         Point* superpixel_dataset = (Point*) malloc(superpixels * sizeof(Point));
         Point* shifted_superpixels = (Point*) malloc(superpixels * sizeof(Point));
         int* dataset_labels = (int*) malloc(pixel_count * sizeof(int)); // labels for each pixel in the dataset

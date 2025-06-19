@@ -4,7 +4,7 @@ set -e
 
 mkdir -p results_weak_scaling
 
-THREADS=(1 2 4 8 16 32 64 96)
+THREADS=(1 2 4 8 16 32 64)
 BINARIES=("main" "main_matrix" "main_sqrd" "main_matrix_block")
 
 for BIN in "${BINARIES[@]}"; do
@@ -16,11 +16,11 @@ for BIN in "${BINARIES[@]}"; do
         # 5 runs for 1,2,4,8 threads 
         # Only 1 run for 16,32,64 threads
         if [[ "$T" -le 4 ]]; then
-            for i in {1..5}; do
-                ./build/${BIN}.exe >> "$OUT"
+            for i in {1..3}; do
+                ./build/${BIN} >> "$OUT"
             done
         else
-            ./build/${BIN}.exe >> "$OUT"
+            ./build/${BIN} >> "$OUT"
         fi
     done
     mkdir -p results_weak_scaling/$BIN

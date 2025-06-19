@@ -107,6 +107,6 @@ add_compile_definitions(
     CSV_OUT_SLIC="./data/modified_slic.csv"
     KERNEL="gaussian"
     DIM=3
-    T=double
-    TYPENAME="double"
+    T=float
+    TYPENAME="float"
 )
