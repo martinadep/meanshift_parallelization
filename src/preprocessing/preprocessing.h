@@ -21,8 +21,8 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
 T slic_distance(const Point *p1, const Point *p2, 
     int x1, int y1, int x2, int y2, T S, T m);
 
-void initialize_centers(const Point dataset[], int width, int height, int S, int num_superpixels,
-                               Point centers[], int center_x[], int center_y[], int *num_centers);
+void initialize_centers(const Point dataset[], unsigned int width, unsigned int height, int S, unsigned int num_superpixels,
+                               Point centers[], unsigned int center_x[], unsigned int center_y[], unsigned int *num_centers);
 
 void reset_labels_and_distances(int dataset_size, int labels[], T distances[]);
 

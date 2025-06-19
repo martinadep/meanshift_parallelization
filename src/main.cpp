@@ -185,7 +185,13 @@ int main(int argc, char *argv[]) {
     std::cout <<"Preprocessing (SLIC)"<< endl << "\t- Superpixels: " << superpixels << endl;
     std::cout << "\t- Compactness: " << m << endl <<endl;
 
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_START(slic)
+#endif
     preprocess_dataset(pixel_count, dataset, dataset_labels, superpixel_dataset, width, height, superpixels, m);
+#ifdef TOTAL_TIMING
+    TOTAL_TIMER_STOP(slic)
+#endif
 
     FILE *fileout_slic = fopen(output_slic_path, "w");
     if (!fileout_slic) {

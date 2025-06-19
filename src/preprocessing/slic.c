@@ -37,27 +37,25 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
                         const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
                         unsigned int width, unsigned int height, unsigned int num_superpixels, T m)
 {
-#ifdef TOTAL_TIMING
-    TOTAL_TIMER_START(slic)
-#endif
+    
     // Ideal distance between superpixels 
-    int S = sqrt((width * height) / (T)num_superpixels);
+    unsigned int S = sqrt((width * height) / (T)num_superpixels); //area for each superpixel
 
-    int center_x[MAX_SUPERPIXELS];
-    int center_y[MAX_SUPERPIXELS];
-    T distances[dataset_size];
+    unsigned int *center_x = malloc(num_superpixels * sizeof(unsigned int)); // x-coordinates of superpixel centers
+    unsigned int *center_y = malloc(num_superpixels * sizeof(unsigned int)); // y-coordinates of superpixel centers
+    T *distances = malloc(dataset_size * sizeof(T)); // distances from each pixel to its assigned superpixel center
 
     // Initialize centers
-    int num_centers = 0;
+    unsigned int num_centers = 0;
     initialize_centers(dataset, width, height, S, num_superpixels, superpixel_dataset, center_x, center_y, &num_centers);
 
-    // Initialize labels and distances (inifinite)
+    // Initialize labels and distances (infinite)
     reset_labels_and_distances(dataset_size, dataset_labels, distances);
 
-    Point new_centers[MAX_SUPERPIXELS];
-    int counts[MAX_SUPERPIXELS];
-    int sum_x[MAX_SUPERPIXELS];
-    int sum_y[MAX_SUPERPIXELS];
+    Point *new_centers = malloc(num_superpixels * sizeof(Point));
+    unsigned int *counts = malloc(num_superpixels * sizeof(unsigned int));
+    unsigned int *sum_x = malloc(num_superpixels * sizeof(unsigned int));
+    unsigned int *sum_y = malloc(num_superpixels * sizeof(unsigned int));
 
 
     for (int iter = 0; iter < MAX_ITER; iter++) {
@@ -78,9 +76,7 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
         for (int i = 0; i < dataset_size; i++)
             distances[i] = DBL_MAX;
     }
-#ifdef TOTAL_TIMING
-    TOTAL_TIMER_STOP(slic)
-#endif
+
     return num_centers;
 }
 
@@ -184,61 +180,61 @@ void reset_new_centers(int num_centers, Point new_centers[], int counts[], int s
     }
 }
 
-void assignment_step(const Point dataset[], const Point centers[], const int center_x[], const int center_y[],
-                            int num_centers, int width, int height, int S, T m,
-                            int labels[], T distances[], int dataset_size)
-{
-    #pragma omp parallel for
-    for (int c = 0; c < num_centers; c++) {
-        int cx = center_x[c];
-        int cy = center_y[c];
-        for (int dy = -S; dy <= S; dy++) {
-            for (int dx = -S; dx <= S; dx++) {
-                int x = cx + dx;
-                int y = cy + dy;
-                if (x < 0 || x >= width || y < 0 || y >= height)
-                    continue;
-                int idx = y * width + x;
-                T d = slic_distance(&dataset[idx], &centers[c], x, y, cx, cy, S, m);
-                #pragma omp critical
-                {
-                    if (d < distances[idx]) {
-                        distances[idx] = d;
-                        labels[idx] = c;
-                    }
-                }
-            }
-        }
-    }
+// void assignment_step(const Point dataset[], const Point centers[], const int center_x[], const int center_y[],
+//                             int num_centers, int width, int height, int S, T m,
+//                             int labels[], T distances[], int dataset_size)
+// {
+//     #pragma omp parallel for
+//     for (int c = 0; c < num_centers; c++) {
+//         int cx = center_x[c];
+//         int cy = center_y[c];
+//         for (int dy = -S; dy <= S; dy++) {
+//             for (int dx = -S; dx <= S; dx++) {
+//                 int x = cx + dx;
+//                 int y = cy + dy;
+//                 if (x < 0 || x >= width || y < 0 || y >= height)
+//                     continue;
+//                 int idx = y * width + x;
+//                 T d = slic_distance(&dataset[idx], &centers[c], x, y, cx, cy, S, m);
+//                 #pragma omp critical
+//                 {
+//                     if (d < distances[idx]) {
+//                         distances[idx] = d;
+//                         labels[idx] = c;
+//                     }
+//                 }
+//             }
+//         }
+//     }
 
-    // Assign pixels which are not assigned to any center to the closest center
-#pragma omp parallel for
-    for (int i = 0; i < dataset_size; i++) {
-    if (labels[i] == -1) {
-        T min_dist = DBL_MAX;
-        int best = 0;
-        int x = i % width;
-        int y = i / width;
-        for (int c = 0; c < num_centers; c++) {
-            T d = slic_distance(&dataset[i], &centers[c], x, y, center_x[c], center_y[c], S, m);
-            if (d < min_dist) {
-                min_dist = d;
-                best = c;
-            }
-        }
-        labels[i] = best;
-    }
-}
+//     // Assign pixels which are not assigned to any center to the closest center
+// #pragma omp parallel for
+//     for (int i = 0; i < dataset_size; i++) {
+//     if (labels[i] == -1) {
+//         T min_dist = DBL_MAX;
+//         int best = 0;
+//         int x = i % width;
+//         int y = i / width;
+//         for (int c = 0; c < num_centers; c++) {
+//             T d = slic_distance(&dataset[i], &centers[c], x, y, center_x[c], center_y[c], S, m);
+//             if (d < min_dist) {
+//                 min_dist = d;
+//                 best = c;
+//             }
+//         }
+//         labels[i] = best;
+//     }
+// }
 
-}
+// }
 
-void initialize_centers(const Point dataset[], int width, int height, int S, int num_superpixels,
-                               Point centers[], int center_x[], int center_y[], int *num_centers)
+void initialize_centers(const Point dataset[], unsigned int width, unsigned int height, int S, unsigned int num_superpixels,
+                               Point centers[], unsigned int center_x[], unsigned int center_y[], unsigned int *num_centers)
 {
     int count = 0;
     for (int y = S / 2; y < height; y += S) {
         for (int x = S / 2; x < width; x += S) {
-            copy_point(&dataset[y * width + x], &centers[count]);
+            copy_point(&dataset[y * width + x], &centers[count]); // Copy each center from the dataset
             center_x[count] = x;
             center_y[count] = y;
             count++;
@@ -257,3 +253,81 @@ void reset_labels_and_distances(int dataset_size, int labels[], T distances[])
         distances[i] = DBL_MAX;
     }
 }
+
+// void assignment_step(const Point dataset[], const Point centers[], const int center_x[], const int center_y[],
+//                      int num_centers, int width, int height, int S, T m,
+//                      int labels[], T distances[], int dataset_size)
+// {
+//     #pragma omp parallel for
+//     for (int i = 0; i < dataset_size; i++) {
+//         int x = i % width;
+//         int y = i / width;
+//         T min_dist = DBL_MAX;
+//         int best_label = -1;
+
+//         for (int c = 0; c < num_centers; c++) {
+//             if (abs(x - center_x[c]) > S || abs(y - center_y[c]) > S)
+//                 continue;
+//             T d = slic_distance(&dataset[i], &centers[c], x, y, center_x[c], center_y[c], S, m);
+//             if (d < min_dist) {
+//                 min_dist = d;
+//                 best_label = c;
+//             }
+//         }
+//         labels[i] = best_label;
+//         distances[i] = min_dist;
+//     }
+// }
+void assignment_step(const Point dataset[], const Point centers[], const int center_x[], const int center_y[],
+                     int num_centers, int width, int height, int S, T m,
+                     int labels[], T distances[], int dataset_size)
+{
+    #pragma omp parallel for
+    for (int c = 0; c < num_centers; c++) {
+        int cx = center_x[c];
+        int cy = center_y[c];
+        for (int dy = -S; dy <= S; dy++) {
+            for (int dx = -S; dx <= S; dx++) {
+                int x = cx + dx;
+                int y = cy + dy;
+                if (x < 0 || x >= width || y < 0 || y >= height)
+                    continue;
+                int idx = y * width + x;
+
+                T d = slic_distance(&dataset[idx], &centers[c], x, y, cx, cy, S, m);
+
+                // Aggiornamento lock-free:
+                // se la nuova distanza è migliore, aggiornala in modo atomico
+                int updated = 0;
+                #pragma omp critical(dist_update)
+                {
+                    if (d < distances[idx]) {
+                        distances[idx] = d;
+                        labels[idx] = c;
+                        updated = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    // Assegna i pixel rimasti senza cluster al più vicino centro
+    #pragma omp parallel for
+    for (int i = 0; i < dataset_size; i++) {
+        if (labels[i] == -1) {
+            T min_dist = DBL_MAX;
+            int best = 0;
+            int x = i % width;
+            int y = i / width;
+            for (int c = 0; c < num_centers; c++) {
+                T d = slic_distance(&dataset[i], &centers[c], x, y, center_x[c], center_y[c], S, m);
+                if (d < min_dist) {
+                    min_dist = d;
+                    best = c;
+                }
+            }
+            labels[i] = best;
+        }
+    }
+}
+
