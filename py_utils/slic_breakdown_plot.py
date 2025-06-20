@@ -6,7 +6,7 @@ import os
 print("Importing libraries...")
 
 # Input file
-input_file = "./breakdown_slic1.txt"
+input_file = "./breakdown_slic2.txt"
 
 # Check if file exists
 if not os.path.exists(input_file):
@@ -115,6 +115,6 @@ ax.legend(loc="upper right")
 ax.grid(axis="y", linestyle="--", alpha=0.7)
 
 plt.tight_layout()
-plt.savefig("./slic_thread_performance1.png")
+plt.savefig("./slic_thread_performance2.png")
 print("\nPlot saved as 'slic_thread_performance.png'")
 plt.show()
