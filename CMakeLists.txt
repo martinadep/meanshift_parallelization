@@ -95,9 +95,16 @@ add_mean_shift_target(slic_sqrd SQRD PREPROCESSING)
 add_mean_shift_target(slic_matrix MATRIX PREPROCESSING)
 add_mean_shift_target(slic_matrix_block MATRIX_BLOCK PREPROCESSING)
 
-add_mean_shift_target(slic_breakdown BASIC PREPROCESSING BREAKDOWN)
-add_mean_shift_target(slic_breakdown_sqrd SQRD PREPROCESSING BREAKDOWN)
-add_mean_shift_target(slic_metrics BASIC PREPROCESSING METRICS)
+add_executable(slic_breakdown 
+               src/main.cpp
+               src/kernels.c
+               src/distances.c
+               src/point.c
+               src/mean_shift.c
+               src/preprocessing/slic_breakdown.c)
+target_compile_definitions(slic_breakdown PRIVATE 
+                TIMING_BREAKDOWN
+                PREPROCESSING)
 
 # Common definitions for all targets
 add_compile_definitions( 
