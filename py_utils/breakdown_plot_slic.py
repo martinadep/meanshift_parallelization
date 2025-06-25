@@ -15,20 +15,7 @@ if not os.path.exists(input_file):
 
 # Function to read file with different encodings
 def read_file_with_encoding(filename):
-    encodings = ['utf-8', 'latin-1', 'cp1252', 'ascii']
-    for encoding in encodings:
-        try:
-            with open(filename, 'r', encoding=encoding) as f:
-                content = f.read()
-            print(f"Successfully read file with encoding: {encoding}")
-            return content
-        except UnicodeDecodeError:
-            continue
-    raise Exception(f"Could not read file {filename} with any of the attempted encodings: {encodings}")
-
-# Function to read file with different encodings
-def read_file_with_encoding(filename):
-    encodings = ['utf-8', 'latin-1', 'cp1252', 'ascii']
+    encodings = ['utf-8', 'utf-16', 'latin-1', 'cp1252', 'ascii']
     for encoding in encodings:
         try:
             with open(filename, 'r', encoding=encoding) as f:
