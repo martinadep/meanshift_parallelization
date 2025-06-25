@@ -1,8 +1,41 @@
 import os
+import re
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
-from metrics_plot import parse_perf_file
+
+def parse_perf_file(filename):
+    with open(filename, "r") as f:
+        content = f.read()
+    runs = content.strip().split('---')
+    data = []
+    for run in runs:
+        if not run.strip():
+            continue
+        # Only parse if Bandwidth and Total Points are present
+        if not re.search(r'Bandwidth:', run) or not re.search(r'Total Points:', run):
+            continue
+        try:
+            d = {}
+            d['Bandwidth'] = int(re.search(r'Bandwidth: (\d+)', run).group(1))
+            d['Cluster Epsilon'] = float(re.search(r'Cluster Epsilon: ([\d.eE+-]+)', run).group(1))
+            d['Iteration Epsilon'] = float(re.search(r'Iteration Epsilon: ([\d.eE+-]+)', run).group(1))
+            d['DataType'] = re.search(r'DataType: (\w+)', run).group(1)
+            d['Total Points'] = int(re.search(r'Total Points: (\d+)', run).group(1))
+            d['Total Iterations'] = int(re.search(r'Total Iterations: (\d+)', run).group(1))
+            d['Iterations/sec'] = float(re.search(r'Iterations/sec: ([\d.]+)', run).group(1))
+            d['Elapsed Time'] = float(re.search(r'Elapsed Time: ([\d.]+)', run).group(1))
+            d['Min Iterations'] = int(re.search(r'Min Iterations: (\d+)', run).group(1))
+            d['Max Iterations'] = int(re.search(r'Max Iterations: (\d+)', run).group(1))
+            d['Mean Iterations'] = float(re.search(r'Mean Iterations: ([\d.]+)', run).group(1))
+            d['Stddev Iterations'] = float(re.search(r'Stddev Iterations: ([\d.]+)', run).group(1))
+            iters = re.search(r'Iterations per point: ([\d\s]+)', run)
+            d['Iterations per point'] = np.array([int(x) for x in iters.group(1).split()]) if iters else np.array([])
+            data.append(d)
+        except Exception as e:
+            print(f"Skipping a run due to parse error: {e}")
+            continue
+    return data
 
 # Modifica qui il path al perf_results.txt che vuoi analizzare
 perf_path = "./data/perf_results.txt"
@@ -17,7 +50,7 @@ for d in all_data:
 
 # Prepara la directory di output e il path del file
 output_dir = os.path.dirname(os.path.abspath(perf_path))
-output_path = os.path.join(output_dir, "perf_analysis_plots.png")
+output_path = os.path.join(output_dir, "metrics_plots.png")
 
 # Crea una figura con 3 subplot
 fig, axs = plt.subplots(3, 1, figsize=(10, 18))

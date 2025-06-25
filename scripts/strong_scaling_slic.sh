@@ -4,7 +4,7 @@
 mkdir -p results_strong_scaling
 
 # Define implementation types for SLIC variants
-implementations=("slic" "slic_matrix" "slic_matrix_block" "slic_sqrd")
+implementations=("slic_ms" "slic_ms_sqrd" "slic_ms_matrix" "slic_ms_matrix_block" )
 
 # Define thread counts
 threads=(1 2 4 8 16 32 64 96)
@@ -30,6 +30,7 @@ for impl in "${implementations[@]}"; do
             ./build/${impl} >> "results_strong_scaling/${impl}/${impl}_${t}_threads.txt"
         done
     done
+    echo "Results for ${impl} saved in results_strong_scaling/${impl}/"
 done
 
 echo "All SLIC variant tests completed!"

@@ -3,8 +3,8 @@
 # Create results directory
 mkdir -p results_strong_scaling
 
-# Define implementation types for main variants
-implementations=("main" "main_matrix" "main_matrix_block" "main_sqrd")
+# Define implementation types for mean_shift variants
+implementations=("mean_shift" "mean_shift_sqrd" "mean_shift_matrix" "mean_shift_matrix_block" )
 
 # Define thread counts
 threads=(1 2 4 8 16 32 64 96)
@@ -30,6 +30,7 @@ for impl in "${implementations[@]}"; do
             ./build/${impl} >> "results_strong_scaling/${impl}/${impl}_${t}_threads.txt"
         done
     done
+    echo "Results for ${impl} saved in results_strong_scaling/${impl}/"
 done
 
-echo "All main variant tests completed!"
+echo "All mean_shift variant tests completed!"

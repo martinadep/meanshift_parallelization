@@ -9,29 +9,16 @@ results_dir = 'results_strong_scaling'
 # Thread testati
 threads = [1, 2, 4, 8, 16, 32, 64]
 
-# # Implementazioni da confrontare
-# # implementations = [
-# #     {"name": "main", "color": "royalblue", "folder": "main"},
-# #     {"name": "main_matrix", "color": "forestgreen", "folder": "main_matrix"},
-# #     {"name": "main_matrix_block", "color": "firebrick", "folder": "main_matrix_block"},
-# #     {"name": "main_sqrd", "color": "darkorange", "folder": "main_sqrd"}
-# # ]
-# implementations = [
-#     {"name": "slic", "color": "royalblue", "folder": "slic"},
-#     {"name": "slic_matrix", "color": "forestgreen", "folder": "slic_matrix"},
-#     {"name": "slic_sqrd", "color": "darkorange", "folder": "slic_sqrd"}
-# ]
-
 #Implementazioni da confrontare
 implementations = [
-    {"name": "main", "color": "#BC1957", "folder": "main"},  
-    {"name": "main_sqrd", "color": "#D85A1A", "folder": "main_sqrd"},    
-    {"name": "main_matrix", "color": "#FFAA00DA", "folder": "main_matrix"}, 
-    {"name": "main_matrix_block", "color": "#FFD900", "folder": "main_matrix_block"}, 
-    {"name": "slic", "color": "#1B529F", "folder": "slic"},               
-    {"name": "slic_sqrd", "color": "#38A5D0", "folder": "slic_sqrd"},
-    {"name": "slic_matrix", "color": "#2A7709", "folder": "slic_matrix"},
-    {"name": "slic_matrix_block", "color": "#1BBA13", "folder": "slic_matrix_block"} 
+    {"name": "mean_shift", "color": "#BC1957", "folder": "mean_shift"},  
+    {"name": "mean_shift_sqrd", "color": "#D85A1A", "folder": "mean_shift_sqrd"},    
+    {"name": "mean_shift_matrix", "color": "#FFAA00DA", "folder": "mean_shift_matrix"}, 
+    {"name": "mean_shift_matrix_block", "color": "#FFD900", "folder": "mean_shift_matrix_block"}, 
+    {"name": "slic_ms", "color": "#1B529F", "folder": "slic_ms"},               
+    {"name": "slic_ms_sqrd", "color": "#38A5D0", "folder": "slic_sqrd_ms"},
+    {"name": "slic_ms_matrix", "color": "#2A7709", "folder": "slic_matrix_ms"},
+    {"name": "slic_ms_matrix_block", "color": "#1BBA13", "folder": "slic_matrix_block_ms"} 
 ]
 
 # Dizionario per memorizzare i tempi di esecuzione per ogni implementazione
@@ -165,6 +152,7 @@ ax.set_title('Execution Time Comparison between Implementations')
 ax.set_xticks(index)
 ax.set_xticklabels([str(t) for t in threads])
 ax.legend()
+ax.set_yscale('log') 
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 plt.tight_layout()

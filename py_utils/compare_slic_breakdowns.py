@@ -6,8 +6,8 @@ import os
 print("Importing libraries...")
 
 # Input files
-input_file1 = "./breakdown_slic1.txt"
-input_file2 = "./breakdown_slic2.txt"
+input_file1 = "./breakdown_slic_naive.txt"
+input_file2 = "./breakdown_slic_modified.txt"
 
 # Check if files exist
 for file in [input_file1, input_file2]:

@@ -5,7 +5,7 @@ set -e
 mkdir -p results_weak_scaling
 
 THREADS=(1 2 4 8 16 32 64)
-BINARIES=("slic" "slic_matrix" "slic_sqrd" "slic_matrix_block")
+BINARIES=("slic_ms" "slic_ms_sqrd" "slic_ms_matrix"  "slic_ms_matrix_block")
 
 for BIN in "${BINARIES[@]}"; do
     for T in "${THREADS[@]}"; do
@@ -20,4 +20,5 @@ for BIN in "${BINARIES[@]}"; do
     done
     mkdir -p results_weak_scaling/$BIN
     mv results_weak_scaling/${BIN}_*.txt results_weak_scaling/$BIN/
+    echo "Results for $BIN saved in results_weak_scaling/$BIN/"
 done

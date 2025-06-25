@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 2) {
         std::cout << "No arguments provided. Using default values." << endl;
-        std::cout << "Usage: main.exe [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]" << endl;
+        std::cout << "Usage: ./mean_shift [--input | -i input_csv] [--kernel | -k kernel_name] [--bandwidth | -b bandwidth]  [--output | -o output_csv]" << endl;
     }
 
     // Parse command-line arguments
@@ -67,11 +67,15 @@ int main(int argc, char *argv[]) {
         kernel = args["--kernel"].c_str();
     }
     if (args.find("--bandwidth") != args.end()) {
-        bandwidth = stoi(args["--bandwidth"]);
+        bandwidth = stof(args["--bandwidth"]);
     }
     if (args.find("--input") != args.end()) {
         input_csv_path = args["--input"].c_str();
-    }
+    } 
+    // else {
+    //     std::cout << "Input CSV path is not set. Please select input file: ./mean_shift [--input | -i input_csv]" << endl;
+    //     return 1;
+    // }
     if (args.find("--output") != args.end()) {
         output_csv_path = args["--output"].c_str();
     }
@@ -84,7 +88,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (args.find("--compactness") != args.end()) {
-        m = stoi(args["--compactness"]);
+        m = stof(args["--compactness"]);
     }
     #endif
 

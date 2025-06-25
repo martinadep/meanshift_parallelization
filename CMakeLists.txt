@@ -79,30 +79,31 @@ endfunction()
 
 
 # Create all the executables using the function
-# --- Basic targets ---
-add_mean_shift_target(main BASIC)
-add_mean_shift_target(main_sqrd SQRD)
-add_mean_shift_target(main_matrix MATRIX)
-add_mean_shift_target(main_matrix_block MATRIX_BLOCK)
+# --- Basic MeanShift targets ---
+add_mean_shift_target(mean_shift BASIC)
+add_mean_shift_target(mean_shift_sqrd SQRD)
+add_mean_shift_target(mean_shift_matrix MATRIX)
+add_mean_shift_target(mean_shift_matrix_block MATRIX_BLOCK)
 
-add_mean_shift_target(breakdown BASIC BREAKDOWN)
-add_mean_shift_target(breakdown_sqrd SQRD BREAKDOWN)
-add_mean_shift_target(metrics BASIC METRICS)
+# --- SLIC-MeanShift targets ---
+add_mean_shift_target(slic_ms BASIC PREPROCESSING)
+add_mean_shift_target(slic_ms_sqrd SQRD PREPROCESSING)
+add_mean_shift_target(slic_ms_matrix MATRIX PREPROCESSING)
+add_mean_shift_target(slic_ms_matrix_block MATRIX_BLOCK PREPROCESSING)
 
-# --- SLIC targets ---
-add_mean_shift_target(slic BASIC PREPROCESSING)
-add_mean_shift_target(slic_sqrd SQRD PREPROCESSING)
-add_mean_shift_target(slic_matrix MATRIX PREPROCESSING)
-add_mean_shift_target(slic_matrix_block MATRIX_BLOCK PREPROCESSING)
 
-add_executable(slic_breakdown 
+add_mean_shift_target(breakdown_mean_shift BASIC BREAKDOWN)
+add_mean_shift_target(metrics_mean_shift BASIC METRICS)
+
+
+add_executable(breakdown_slic_ms 
                src/main.cpp
                src/kernels.c
                src/distances.c
                src/point.c
                src/mean_shift.c
                src/preprocessing/slic_breakdown.c)
-target_compile_definitions(slic_breakdown PRIVATE 
+target_compile_definitions(breakdown_slic_ms PRIVATE 
                 TIMING_BREAKDOWN
                 PREPROCESSING)
 
@@ -116,4 +117,4 @@ add_compile_definitions(
     DIM=3
     T=float
     TYPENAME="float"
-)
+)  

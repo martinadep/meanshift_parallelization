@@ -69,7 +69,7 @@ extern double elapsed_seconds;
             for (unsigned int i = 0; i < n_points; ++i) fprintf(f, "%u ", point_iterations[i]); \
             fprintf(f, "\n---------------------------------------\n"); \
             fclose(f); \
-            printf("Metrics written to %s\n", filename); \
+            printf(">>>> Metrics written to %s\n", filename); \
         } \
         else { \
             fprintf(stderr, "Error opening file %s\n", filename); \

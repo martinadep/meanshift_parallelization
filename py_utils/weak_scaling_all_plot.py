@@ -9,16 +9,15 @@ results_dir = 'results_weak_scaling'
 # Thread testati
 threads = [1, 2, 4, 8, 16, 32, 64]
 
-# Implementazioni da confrontare
 implementations = [
-    {"name": "main", "color": "#FF4500", "folder": "main"},               # Orange-Red (warm)
-    {"name": "main_matrix", "color": "#FF8C00", "folder": "main_matrix"},  # Dark Orange (warm)
-    {"name": "main_matrix_block", "color": "#FFD700", "folder": "main_matrix_block"},  # Gold (warm)
-    {"name": "main_sqrd", "color": "#DC143C", "folder": "main_sqrd"},     # Crimson (warm)
-    {"name": "slic", "color": "#1E90FF", "folder": "slic"},               # Dodger Blue (cool)
-    {"name": "slic_matrix", "color": "#4169E1", "folder": "slic_matrix"},
-    {"name": "slic_matrix_block", "color": "#092474", "folder": "slic_matrix_block"},  # Royal Blue (cool)
-    {"name": "slic_sqrd", "color": "#A0C1DB", "folder": "slic_sqrd"}      # Slate Blue (cool)
+    {"name": "mean_shift", "color": "#BC1957", "folder": "mean_shift"},  
+    {"name": "mean_shift_sqrd", "color": "#D85A1A", "folder": "mean_shift_sqrd"},    
+    {"name": "mean_shift_matrix", "color": "#FFAA00DA", "folder": "mean_shift_matrix"}, 
+    {"name": "mean_shift_matrix_block", "color": "#FFD900", "folder": "mean_shift_matrix_block"}, 
+    {"name": "slic_ms", "color": "#1B529F", "folder": "slic_ms"},               
+    {"name": "slic_ms_sqrd", "color": "#38A5D0", "folder": "slic_sqrd_ms"},
+    {"name": "slic_ms_matrix", "color": "#2A7709", "folder": "slic_matrix_ms"},
+    {"name": "slic_ms_matrix_block", "color": "#1BBA13", "folder": "slic_matrix_block_ms"} 
 ]
 
 # Dizionario per memorizzare i tempi di esecuzione per ogni implementazione

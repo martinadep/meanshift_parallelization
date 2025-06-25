@@ -5,7 +5,7 @@ set -e
 mkdir -p results_weak_scaling
 
 THREADS=(1 2 4 8 16 32 64)
-BINARIES=("main" "main_matrix" "main_sqrd" "main_matrix_block")
+BINARIES=("mean_shift" "mean_shift_sqrd" "mean_shift_matrix" "mean_shift_matrix_block")
 
 for BIN in "${BINARIES[@]}"; do
     for T in "${THREADS[@]}"; do
@@ -25,4 +25,5 @@ for BIN in "${BINARIES[@]}"; do
     done
     mkdir -p results_weak_scaling/$BIN
     mv results_weak_scaling/${BIN}_*.txt results_weak_scaling/$BIN/
+    echo "Results for $BIN saved in results_weak_scaling/$BIN/"
 done
