@@ -124,6 +124,7 @@ if not has_data:
     exit(1)
 
 # Prepara il grafico dei tempi di esecuzione con scala logaritmica
+plt.rcParams.update({'font.size': 14})  # Set global font size
 fig, ax = plt.subplots(figsize=(16, 8))
 
 # Larghezza delle barre
@@ -147,14 +148,15 @@ for i, impl in enumerate(implementations):
     ax.bar(position, times, bar_width, color=color, label=impl_name)
 
 # Configura gli assi e le etichette
-ax.set_xlabel('Num of Threads')
-ax.set_ylabel('Mean Execution Time (seconds)')
-ax.set_title('Weak Scaling: Benchmark Comparison over Implementations')
+ax.set_xlabel('Num of Threads', fontsize=16)
+ax.set_ylabel('Mean Execution Time (seconds)', fontsize=16)
+ax.set_title('Weak Scaling: Benchmark Comparison over Implementations', fontsize=18)
 ax.set_xticks(index)
-ax.set_xticklabels([str(t) for t in threads])
-ax.legend()
+ax.set_xticklabels([str(t) for t in threads], fontsize=14)
+ax.legend(fontsize=12)
 ax.set_yscale('log')  # Scala logaritmica per l'asse y
 plt.grid(axis='y', linestyle='--', alpha=0.7)
+ax.tick_params(axis='y', labelsize=14)
 
 plt.tight_layout()
 plt.savefig('weak_scaling_all.png')
@@ -184,14 +186,15 @@ for i, impl in enumerate(implementations):
 ax_efficiency.axhline(y=1.0, linestyle='--', color='r', label='Ideal Efficiency (1.0)')
 
 # Configura gli assi e le etichette
-ax_efficiency.set_xlabel('Num of Threads')
-ax_efficiency.set_ylabel('Efficiency')
-ax_efficiency.set_title('Weak Scaling: Efficiency Comparison over Implementations')
+ax_efficiency.set_xlabel('Num of Threads', fontsize=16)
+ax_efficiency.set_ylabel('Efficiency', fontsize=16)
+ax_efficiency.set_title('Weak Scaling: Efficiency Comparison over Implementations', fontsize=18)
 ax_efficiency.set_xticks(index)
-ax_efficiency.set_xticklabels([str(t) for t in threads])
-ax_efficiency.legend()
+ax_efficiency.set_xticklabels([str(t) for t in threads], fontsize=14)
+ax_efficiency.legend(fontsize=12)
 ax_efficiency.set_yscale('log')  # Scala logaritmica per l'asse y
 plt.grid(axis='y', linestyle='--', alpha=0.7)
+ax_efficiency.tick_params(axis='y', labelsize=14)
 
 plt.tight_layout()
 plt.savefig('weak_scaling_efficiency_all.png')

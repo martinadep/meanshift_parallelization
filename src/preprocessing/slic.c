@@ -59,16 +59,16 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
 
     for (int iter = 0; iter < MAX_ITER; iter++)
     {
-        // Assignment step --- PARALLELIZABLE over pixels
+        // Associate each pixel with nearest cluster center based on combined color and spatial distance metric
         assignment_step(dataset, superpixel_dataset, center_x, center_y, num_centers, width, height, S, m, dataset_labels, distances, dataset_size);
 
-        // Reset new centers
+        // Zero out temporary arrays for calculating new cluster centers in the update phase
         reset_new_centers(num_centers, new_centers, counts, sum_x, sum_y);
 
-        // Sum pixels in each cluster -- PARALLELIZABLE (attention to race condition)
+        // For each cluster, sum color values and spatial coordinates of all assigned pixels for centroid calculation
         accumulate_cluster_sums(dataset, dataset_size, width, dataset_labels, new_centers, counts, sum_x, sum_y);
 
-        // Update centers -- PARALLELIZABLE over clusters
+        // Recalculate each cluster's center position and color  by averaging the values of all pixels belonging to that cluster
         update_centers(num_centers, superpixel_dataset, center_x, center_y, new_centers, counts, sum_x, sum_y);
 
 // reset distances
@@ -226,15 +226,15 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
                      int num_centers, int width, int height, int S, T m,
                      int labels[], T distances[], int dataset_size)
 {
-    int n_threads;
-#pragma omp parallel
-    {
-#pragma omp single
-        n_threads = omp_get_num_threads();
-    }
+//     int n_threads;
+// #pragma omp parallel
+//     {
+// #pragma omp single
+//         n_threads = omp_get_num_threads();
+//     }
 
-    if (n_threads > 4)
-    {
+//     if (n_threads > 4)
+//     {
         // Parallelize over pixels
 #pragma omp parallel for
         for (int i = 0; i < dataset_size; i++)
@@ -258,9 +258,9 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
             labels[i] = best_label;
             distances[i] = min_dist;
         }
-    }
-    else
-    {
+    // }
+    // else
+    // {
 #pragma omp parallel for
         for (int c = 0; c < num_centers; c++)
         {
@@ -314,53 +314,5 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
                 labels[i] = best;
             }
         }
-    }
+    // }
 }
-
-// void assignment_step(const Point dataset[], const Point centers[], const int center_x[], const int center_y[],
-//                             int num_centers, int width, int height, int S, T m,
-//                             int labels[], T distances[], int dataset_size)
-// {
-//     #pragma omp parallel for
-//     for (int c = 0; c < num_centers; c++) {
-//         int cx = center_x[c];
-//         int cy = center_y[c];
-//         for (int dy = -S; dy <= S; dy++) {
-//             for (int dx = -S; dx <= S; dx++) {
-//                 int x = cx + dx;
-//                 int y = cy + dy;
-//                 if (x < 0 || x >= width || y < 0 || y >= height)
-//                     continue;
-//                 int idx = y * width + x;
-//                 T d = slic_distance(&dataset[idx], &centers[c], x, y, cx, cy, S, m);
-//                 #pragma omp critical
-//                 {
-//                     if (d < distances[idx]) {
-//                         distances[idx] = d;
-//                         labels[idx] = c;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-
-//     // Assign pixels which are not assigned to any center to the closest center
-// #pragma omp parallel for
-//     for (int i = 0; i < dataset_size; i++) {
-//     if (labels[i] == -1) {
-//         T min_dist = DBL_MAX;
-//         int best = 0;
-//         int x = i % width;
-//         int y = i / width;
-//         for (int c = 0; c < num_centers; c++) {
-//             T d = slic_distance(&dataset[i], &centers[c], x, y, center_x[c], center_y[c], S, m);
-//             if (d < min_dist) {
-//                 min_dist = d;
-//                 best = c;
-//             }
-//         }
-//         labels[i] = best;
-//     }
-// }
-
-// }

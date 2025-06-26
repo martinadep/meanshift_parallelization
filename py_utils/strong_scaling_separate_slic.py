@@ -22,29 +22,29 @@ implementations = [
 ]
 
 # Dizionario per memorizzare i tempi di esecuzione per ogni implementazione
-all_execution_times = {impl["name"]: {t: [] for t in threads} for impl in implementations}
-all_mean_times = {impl["name"]: [] for impl in implementations}
+all_execution_times = {impl["name"]: {t: {"slic": [], "mean_shift": []} for t in threads} for impl in implementations}
+all_mean_times = {impl["name"]: {"slic": [], "mean_shift": []} for impl in implementations}
 
-# Update the extract_times function
+# Update the extract_times function to return times separately
 def extract_times(file_content):
     # Extract both SLIC and mean shift times
     slic_times = re.findall(r'slic execution time: (\d+\.\d+)', file_content)
     mean_shift_times = re.findall(r'mean_shift execution time: (\d+\.\d+)', file_content)
     
     if not mean_shift_times:
-        return []
+        return [], []
     
     # Convert to float
     mean_shift_times = [float(time) for time in mean_shift_times]
     
-    # For SLIC implementations, add the preprocessing time
+    # For SLIC implementations, return both times separately
     if slic_times and "slic" in file_content.lower():
         slic_times = [float(time) for time in slic_times]
-        # Return combined times (SLIC + mean_shift)
-        return [slic_times[i] + mean_shift_times[i] for i in range(min(len(slic_times), len(mean_shift_times)))]
+        # Return both time arrays separately
+        return slic_times[:len(mean_shift_times)], mean_shift_times
     else:
-        # No SLIC times or not a SLIC implementation, return mean_shift times only
-        return mean_shift_times
+        # No SLIC times or not a SLIC implementation, return empty list for SLIC and mean_shift times
+        return [], mean_shift_times
     
 # Funzione per provare diversi encoding
 def try_read_file(filepath):
@@ -76,11 +76,12 @@ for impl in implementations:
         try:
             if os.path.exists(filepath):
                 content = try_read_file(filepath)
-                times = extract_times(content)
+                slic_times, ms_times = extract_times(content)
                 
-                if times:
-                    all_execution_times[impl["name"]][t].extend(times)
-                    print(f"  Thread {t}: trovate {len(times)} misurazioni")
+                if ms_times:
+                    all_execution_times[impl["name"]][t]["slic"].extend(slic_times)
+                    all_execution_times[impl["name"]][t]["mean_shift"].extend(ms_times)
+                    print(f"  Thread {t}: trovate {len(ms_times)} misurazioni")
                 else:
                     print(f"  Nessun tempo trovato nel file {filename}")
             else:
@@ -102,13 +103,23 @@ for impl in implementations:
 # Calcola le medie per ogni implementazione
 for impl_name in all_execution_times:
     for t in threads:
-        times = all_execution_times[impl_name][t]
-        if times:
-            mean_time = np.mean(times)
-            all_mean_times[impl_name].append(mean_time)
-            print(f"{impl_name} con {t} thread: tempo medio = {mean_time:.4f} secondi")
+        ms_times = all_execution_times[impl_name][t]["mean_shift"]
+        slic_times = all_execution_times[impl_name][t]["slic"]
+        
+        if ms_times:
+            mean_ms_time = np.mean(ms_times)
+            all_mean_times[impl_name]["mean_shift"].append(mean_ms_time)
+            
+            if slic_times:
+                mean_slic_time = np.mean(slic_times)
+                all_mean_times[impl_name]["slic"].append(mean_slic_time)
+            else:
+                all_mean_times[impl_name]["slic"].append(0)
+                
+            print(f"{impl_name} con {t} thread: tempo medio = {mean_ms_time+all_mean_times[impl_name]['slic'][-1]:.4f} secondi")
         else:
-            all_mean_times[impl_name].append(0)
+            all_mean_times[impl_name]["mean_shift"].append(0)
+            all_mean_times[impl_name]["slic"].append(0)
             print(f"Attenzione: nessun dato disponibile per {impl_name} con {t} thread")
 
 # Verifica se ci sono tempi validi
@@ -123,28 +134,57 @@ if not has_data:
     exit(1)
 
 # Prepara il grafico dei tempi di esecuzione
-plt.rcParams.update({'font.size': 14})  # Set global font size
+# Prepara il grafico dei tempi di esecuzione
+plt.rcParams.update({'font.size': 14})
 fig, ax = plt.subplots(figsize=(14, 8))
 
 # Larghezza delle barre
 bar_width = 0.11
 index = np.arange(len(threads))
 
+# Map SLIC implementations to their corresponding mean_shift implementation for color matching
+slic_to_ms_map = {
+    "slic_ms": "mean_shift",
+    "slic_ms_sqrd": "mean_shift_sqrd",
+    "slic_ms_matrix": "mean_shift_matrix",
+    "slic_ms_matrix_block": "mean_shift_matrix_block"
+}
+
+# Find color for each implementation
+color_map = {impl["name"]: impl["color"] for impl in implementations}
+
 # Crea le barre per ogni implementazione
 for i, impl in enumerate(implementations):
     impl_name = impl["name"]
     color = impl["color"]
-    times = all_mean_times[impl_name]
-
-    if "slic" in impl_name:
-        impl_label = f"{impl_name} (preprocessing + mean-shift)"
-    else:
-        impl_label = impl_name
     
     # Posizione delle barre
     position = index + (i - len(implementations)/2 + 0.5) * bar_width
     
-    ax.bar(position, times, bar_width, color=color, label=impl_name)
+    if "slic" in impl_name:
+        # For SLIC implementations, show stacked bars
+        slic_times = all_mean_times[impl_name]["slic"]
+        ms_times = all_mean_times[impl_name]["mean_shift"]
+        
+        # Get corresponding mean_shift implementation color
+        ms_impl = slic_to_ms_map.get(impl_name)
+        ms_color = color_map.get(ms_impl, color)
+        
+        # Draw SLIC part (bottom)
+        ax.bar(position, slic_times, bar_width, color='#38A5D0', label=f"{impl_name} (SLIC)" if i == 4 else "")
+        
+        # Draw mean_shift part (top)
+        ax.bar(position, ms_times, bar_width, bottom=slic_times, color=ms_color, 
+               label=f"{impl_name} (mean-shift)" if i == 4 else "")
+    else:
+        # For regular mean_shift implementations, show simple bars
+        times = all_mean_times[impl_name]["mean_shift"]
+        ax.bar(position, times, bar_width, color=color, label=impl_name)
+
+# Fix legend to avoid duplicates
+handles, labels = ax.get_legend_handles_labels()
+by_label = dict(zip(labels, handles))
+ax.legend(by_label.values(), by_label.keys(), fontsize=12)
 
 # Configura gli assi e le etichette
 ax.set_xlabel('Num of Threads', fontsize=16)
