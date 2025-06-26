@@ -15,9 +15,9 @@ implementations = [
     {"name": "mean_shift_matrix", "color": "#FFAA00DA", "folder": "mean_shift_matrix"}, 
     {"name": "mean_shift_matrix_block", "color": "#FFD900", "folder": "mean_shift_matrix_block"}, 
     {"name": "slic_ms", "color": "#1B529F", "folder": "slic_ms"},               
-    {"name": "slic_ms_sqrd", "color": "#38A5D0", "folder": "slic_sqrd_ms"},
-    {"name": "slic_ms_matrix", "color": "#2A7709", "folder": "slic_matrix_ms"},
-    {"name": "slic_ms_matrix_block", "color": "#1BBA13", "folder": "slic_matrix_block_ms"} 
+    {"name": "slic_ms_sqrd", "color": "#38A5D0", "folder": "slic_ms_sqrd"},
+    {"name": "slic_ms_matrix", "color": "#2A7709", "folder": "slic_ms_matrix"},
+    {"name": "slic_ms_matrix_block", "color": "#1BBA13", "folder": "slic_ms_matrix_block"} 
 ]
 
 # Dizionario per memorizzare i tempi di esecuzione per ogni implementazione
