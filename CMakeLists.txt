@@ -46,13 +46,13 @@ function(add_mean_shift_target TARGET_NAME MS_TYPE)
         if(MS_TYPE STREQUAL "BASIC")
             list(APPEND TARGET_SOURCES src/mean_shift.c)
         elseif(MS_TYPE STREQUAL "SQRD")
-            list(APPEND TARGET_SOURCES src/mean_shift_sqrd.c)
+            list(APPEND TARGET_SOURCES src/mean_shift_variants/mean_shift_sqrd.c)
             list(APPEND TARGET_DEFINITIONS MEAN_SHIFT_SQRD)
         elseif(MS_TYPE STREQUAL "MATRIX")
-            list(APPEND TARGET_SOURCES src/mean_shift_matrix.c)
+            list(APPEND TARGET_SOURCES src/mean_shift_variants/mean_shift_matrix.c)
             list(APPEND TARGET_DEFINITIONS MATRIX)
         elseif(MS_TYPE STREQUAL "MATRIX_BLOCK")
-            list(APPEND TARGET_SOURCES src/mean_shift_matrix_block.c)
+            list(APPEND TARGET_SOURCES src/mean_shift_variants/mean_shift_matrix_block.c)
         endif()
     endif()
     
@@ -106,6 +106,16 @@ add_executable(breakdown_slic_ms
 target_compile_definitions(breakdown_slic_ms PRIVATE 
                 TIMING_BREAKDOWN
                 PREPROCESSING)
+
+add_executable(mean_shift_acc
+               src/main.cpp
+               src/kernels.c
+               src/distances.c
+               src/point.c
+               src/mean_shift_acc.c)
+target_compile_definitions(mean_shift_acc PRIVATE
+                TOTAL_TIMING
+                DEBUG)
 
 # Common definitions for all targets
 add_compile_definitions( 

@@ -25,6 +25,8 @@ T epanechnikov_kernel_sqrd(T distance_sqrd, T bandwidth_sqrd);
 T euclidean_distance(const Point *point1, const Point *point2);
 T sqrd_euclidean_distance(const Point *point1, const Point *point2);
 
+void parse_args(int argc, char *argv[]);
+
 #ifdef __cplusplus
 }
 #endif

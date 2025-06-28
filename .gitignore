@@ -25,7 +25,7 @@ run_experiments.*
 test/
 data/*
 !data/.gitkeep
-!data/original.csv
+!data/original_*.csv
 *.exe
 *.o
 *.a
