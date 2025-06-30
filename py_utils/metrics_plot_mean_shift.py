@@ -60,7 +60,10 @@ for bw, runs in sorted(bw_dict.items()):
     all_iters = np.stack([r['Iterations per point'] for r in runs])
     mean_iters = np.mean(all_iters, axis=0)
     hist_vals, bins = np.histogram(np.round(mean_iters), bins=np.arange(0, np.max(mean_iters)+2)-0.5)
-    axs[0].plot(bins[:-1], hist_vals, marker='o', label=f'Bandwidth {bw}')
+    # Plot using the bin centers (integer values) rather than bin edges
+    bin_centers = bins[:-1] + 0.5  # This makes the x-values [0, 1, 2, 3, ...]
+    axs[0].plot(bin_centers, hist_vals, marker='o', label=f'Bandwidth {bw}')
+
 axs[0].set_xlabel('Iterations per point')
 axs[0].set_ylabel('Points')
 axs[0].set_title('Iterations per point')

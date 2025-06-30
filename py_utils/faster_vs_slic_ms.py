@@ -170,7 +170,7 @@ def main():
     width = 0.35
     
     batch_bars = ax.bar(x - width/2, batch_times, width, label='Faster MeanShift Euc')
-    best_bars = ax.bar(x + width/2, best_times, width, label='SLIC + Mean Shift (Parallel)')
+    best_bars = ax.bar(x + width/2, best_times, width, label='SLIC + Mean Shift (Parallel OMP)')
     
     ax.set_xlabel('Image')
     ax.set_ylabel('Execution Time (seconds)')
@@ -190,7 +190,7 @@ def main():
                 ha='center', va='bottom', fontsize=9)
     
     # Salva e mostra il grafico
-    plt.savefig('strong_scaling_comparison.png')
+    plt.savefig('faster_vs_slicms.png')
     plt.show()
     
     # Stampa un riepilogo
