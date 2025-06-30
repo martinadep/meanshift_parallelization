@@ -117,6 +117,18 @@ target_compile_definitions(mean_shift_acc PRIVATE
                 TOTAL_TIMING
                 DEBUG)
 
+add_executable(slic_ms_acc
+               src/main.cpp
+               src/kernels.c
+               src/distances.c
+               src/point.c
+               src/mean_shift_acc.c
+                src/preprocessing/slic_acc.c)
+target_compile_definitions(slic_ms_acc PRIVATE
+                TOTAL_TIMING
+                PREPROCESSING
+                DEBUG)
+
 # Common definitions for all targets
 add_compile_definitions( 
     BANDWIDTH=3.0
