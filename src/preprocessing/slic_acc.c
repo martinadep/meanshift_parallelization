@@ -3,7 +3,6 @@
 #include "../include/utils.h"
 #include <math.h>
 #include <float.h>
-#include <openacc.h>
 
 #ifdef TOTAL_TIMING
 #include "../metrics/timing.h"
@@ -91,14 +90,13 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
             if (abs(x - center_x[c]) > S || abs(y - center_y[c]) > S)
                 continue;
             T d = 0.0;
-            
-            // Manual inline of slic_distance to avoid function calls in GPU kernels
+
             T dc_sqrd = 0.0; // color distance
             for (int j = 0; j < DIM; j++)
                 dc_sqrd += (dataset[i][j] - centers[c][j]) * (dataset[i][j] - centers[c][j]);
             T ds_sqrd = (x - center_x[c]) * (x - center_x[c]) + (y - center_y[c]) * (y - center_y[c]);
             d = sqrt(dc_sqrd + ds_sqrd / (S * S) * m * m);
-            
+
             if (d < min_dist)
             {
                 min_dist = d;
@@ -113,7 +111,6 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
 void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
                              int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[])
 {
-    // Using atomic updates to safely accumulate values from parallel threads
     #pragma acc parallel loop present(dataset[0:dataset_size], labels[0:dataset_size], \
                                      new_centers[0:MAX_SUPERPIXELS], counts[0:MAX_SUPERPIXELS], \
                                      sum_x[0:MAX_SUPERPIXELS], sum_y[0:MAX_SUPERPIXELS])
@@ -170,14 +167,17 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
         return 0;
     }
 
-    // Ideal distance between superpixels
     unsigned int S = sqrt((width * height) / (T)num_superpixels);
 
     unsigned int *center_x = malloc(num_superpixels * sizeof(unsigned int));
     unsigned int *center_y = malloc(num_superpixels * sizeof(unsigned int));
     T *distances = malloc(dataset_size * sizeof(T));
 
-    // Initialize centers (executed on CPU since it's not computation-intensive)
+    if (!center_x || !center_y || !distances) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
     unsigned int num_centers = 0;
     initialize_centers(dataset, width, height, S, num_superpixels, superpixel_dataset, center_x, center_y, &num_centers);
 
@@ -186,42 +186,38 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
     unsigned int *sum_x = malloc(num_superpixels * sizeof(unsigned int));
     unsigned int *sum_y = malloc(num_superpixels * sizeof(unsigned int));
 
-    // Create data region for GPU memory
+    if (!new_centers || !counts || !sum_x || !sum_y) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
     #pragma acc data copyin(dataset[0:dataset_size], superpixel_dataset[0:num_centers], \
                            center_x[0:num_centers], center_y[0:num_centers]) \
                      create(distances[0:dataset_size], new_centers[0:num_superpixels], \
                            counts[0:num_superpixels], sum_x[0:num_superpixels], sum_y[0:num_superpixels]) \
                      copy(dataset_labels[0:dataset_size])
     {
-        // Initialize labels and distances
         reset_labels_and_distances(dataset_size, dataset_labels, distances);
 
-        // Main SLIC iteration loop
         for (int iter = 0; iter < MAX_ITER; iter++)
         {
-            // Reset temporary arrays for update step
             reset_new_centers(num_centers, new_centers, counts, sum_x, sum_y);
 
-            // Assign each pixel to nearest center
             assignment_step(dataset, superpixel_dataset, center_x, center_y, num_centers, 
                            width, height, S, m, dataset_labels, distances, dataset_size);
 
-            // Accumulate values to calculate new centers
             accumulate_cluster_sums(dataset, dataset_size, width, dataset_labels, 
                                    new_centers, counts, sum_x, sum_y);
 
-            // Update center positions based on assigned pixels
             update_centers(num_centers, superpixel_dataset, center_x, center_y, 
                           new_centers, counts, sum_x, sum_y);
-            
-            // Reset distances for next iteration
+
             #pragma acc parallel loop present(distances[0:dataset_size])
             for (int i = 0; i < dataset_size; i++)
                 distances[i] = DBL_MAX;
         }
-    } // End of data region
+    }
 
-    // Free allocated memory
     free(center_x);
     free(center_y);
     free(distances);
