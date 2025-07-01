@@ -28,7 +28,7 @@ endif()
 if(ENABLE_OPENACC)
     message(STATUS "OpenACC enabled — using NVIDIA HPC compiler")
     set(CMAKE_C_COMPILER nvc)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -acc -cuda -Minfo=accel")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -acc")
 endif()
 
 # ===================================================
@@ -126,7 +126,7 @@ if(ENABLE_OPENACC)
             src/mean_shift_acc.c)
 
         add_executable(${TARGET_NAME} ${TARGET_SOURCES})
-        target_compile_options(${TARGET_NAME} PRIVATE -acc -Minfo=accel)
+        target_compile_options(${TARGET_NAME} PRIVATE -acc)
         target_compile_definitions(${TARGET_NAME} PRIVATE TOTAL_TIMING)
 
         if(ENABLE_DEBUG)
@@ -140,7 +140,7 @@ if(ENABLE_OPENACC)
         ${COMMON_SOURCES}
         src/mean_shift_acc.c
         src/preprocessing/slic_acc.c)
-    target_compile_options(slic_ms_acc PRIVATE -acc -Minfo=accel)
+    target_compile_options(slic_ms_acc PRIVATE -acc)
     target_compile_definitions(slic_ms_acc PRIVATE TOTAL_TIMING PREPROCESSING)
 
     if(ENABLE_DEBUG)
