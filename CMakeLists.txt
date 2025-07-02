@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(mean_shift_segmentation)
+project(mean_shift_segmentation LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
@@ -51,6 +51,9 @@ function(add_mean_shift_target TARGET_NAME MS_TYPE)
         elseif(MS_TYPE STREQUAL "MATRIX")
             list(APPEND TARGET_SOURCES src/mean_shift_matrix.c)
             list(APPEND TARGET_DEFINITIONS MATRIX)
+        elseif(MS_TYPE STREQUAL "OPENBLAS")
+            list(APPEND TARGET_SOURCES src/mean_shift_openblas.c)
+            list(APPEND TARGET_DEFINITIONS MATRIX)
         elseif(MS_TYPE STREQUAL "MATRIX_BLOCK")
             list(APPEND TARGET_SOURCES src/mean_shift_matrix_block.c)
         endif()
@@ -75,6 +78,12 @@ function(add_mean_shift_target TARGET_NAME MS_TYPE)
     # Create the executable
     add_executable(${TARGET_NAME} ${TARGET_SOURCES})
     target_compile_definitions(${TARGET_NAME} PRIVATE ${TARGET_DEFINITIONS})
+
+    if(MS_TYPE STREQUAL "OPENBLAS")
+        find_package(BLAS REQUIRED)
+        message(${BLAS_LIBRARIES})
+        target_link_libraries(${TARGET_NAME} PRIVATE ${BLAS_LIBRARIES})
+    endif()
 endfunction()
 
 
@@ -90,11 +99,10 @@ add_mean_shift_target(slic_ms BASIC PREPROCESSING)
 add_mean_shift_target(slic_ms_sqrd SQRD PREPROCESSING)
 add_mean_shift_target(slic_ms_matrix MATRIX PREPROCESSING)
 add_mean_shift_target(slic_ms_matrix_block MATRIX_BLOCK PREPROCESSING)
-
+add_mean_shift_target(slic_ms_openblas OPENBLAS PREPROCESSING)
 
 add_mean_shift_target(breakdown_mean_shift BASIC BREAKDOWN)
 add_mean_shift_target(metrics_mean_shift BASIC METRICS)
-
 
 add_executable(breakdown_slic_ms 
                src/main.cpp

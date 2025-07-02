@@ -77,7 +77,7 @@ def mean_shift_matrix(data, bandwidth=2.0, max_iter=50, tol=1e-3, kernel='gaussi
 
 
 def plot_evolution_interactive(data, trajectories):
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(15, 10))
     index = [0]  # Mutable list to hold iteration index
     
     # Compute density for contour plot
@@ -143,3 +143,5 @@ if __name__ == "__main__":
         print(trajectories[i])
 
     plot_evolution_interactive(data, trajectories)
+
+# python3 visualizer.py -b 2.0 -m 5 -k epanechnikov -M matrix -n 15 -c 3 -s 1.0

@@ -18,6 +18,7 @@ dataset/*
 venv/
 .venv/
 
+py_utils/__pycache__/
 run_experiments.*
 # dataset_weak_scaling/
 
