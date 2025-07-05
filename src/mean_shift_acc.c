@@ -54,9 +54,9 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     }
 }
 #pragma acc routine seq 
-unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
+unsigned int shift_point_until_convergence_acc(const Point *input_point, Point *output_point,
                                            const Point dataset[], unsigned int dataset_size,
-                                           T bandwidth, T (*kernel_func)(T, T))
+                                           T bandwidth)
 {
     Point prev_point;
     Point next_point;
@@ -67,7 +67,7 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
 
     while (!stop_moving)
     {
-        shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
+        shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth);
 
         T shift_distance = euclidean_distance(&prev_point, &next_point);
 
@@ -82,9 +82,9 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
     return iter;
 }
 #pragma acc routine seq
-void shift_single_point(const Point *point, Point *next_point,
+void shift_single_point_acc(const Point *point, Point *next_point,
                         const Point dataset[], unsigned int dataset_size,
-                        T bandwidth, T (*kernel_func)(T, T))
+                        T bandwidth)
 {
     T total_weight = 0;
     Point point_i;
@@ -95,7 +95,7 @@ void shift_single_point(const Point *point, Point *next_point,
     {
         copy_point(&dataset[i], &point_i);
         T distance = euclidean_distance(point, &point_i);
-        T weight = gaussian_kernel(distance, bandwidth);//kernel_func(distance, bandwidth);
+        T weight = gaussian_kernel(distance, bandwidth);
         
         (*next_point)[0] += point_i[0] * weight;
         (*next_point)[1] += point_i[1] * weight;
