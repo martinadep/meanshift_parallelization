@@ -113,7 +113,7 @@ void shift_single_point(const Point *point, Point *next_point,
     {
         copy_point(&dataset[i], &point_i);
         T distance = euclidean_distance(point, &point_i);
-        T weight = kernel_func(distance, bandwidth);
+        T weight = gaussian_kernel(distance, bandwidth); //kernel_func(distance, bandwidth);
 
         sum_coords[0] += point_i.coords[0] * weight;
         sum_coords[1] += point_i.coords[1] * weight;
