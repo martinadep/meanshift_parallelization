@@ -3,6 +3,7 @@
 #include "include/mean_shift.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <openacc.h>
 
 #ifndef NUM_GANGS
 #define NUM_GANGS 256
@@ -15,18 +16,8 @@ int acc_num_gangs = NUM_GANGS;
 int acc_num_workers = NUM_WORKERS;
 
 void print_acc_info() {
-    int num_devices = 0;
-    #pragma acc parallel
-    {
-        #pragma acc loop seq
-        for (int i = 0; i < 1; i++) {
-            if (i == 0) {
-                #pragma acc atomic update
-                num_devices++;
-            }
-        }
-    }
-    printf("OpenACC: Found %d device(s)\n", num_devices);
+    int num_devices = acc_get_num_devices(acc_device_nvidia);
+    printf("OpenACC: Found %d NVIDIA device(s)\n", num_devices);
 
     char* dev_type = getenv("ACC_DEVICE_TYPE");
     printf("OpenACC: Device type: %s\n", dev_type ? dev_type : "default");
@@ -38,19 +29,13 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
                 unsigned int *cluster_count)
 {
     *cluster_count = 0;
-    #ifdef DEBUG
     print_acc_info();
-    #endif
-
-    #ifndef DEBUG 
     printf("Debug: Beginning data transfer to device...\n");
-    #endif
 
     #pragma acc data copyin(dataset[0:dataset_size]) copyout(shifted_dataset[0:dataset_size])
     {
-        #ifdef DEBUG
         printf("Debug: Data transfer complete, starting computation\n");
-        #endif
+
 
         #pragma acc parallel loop num_gangs(acc_num_gangs) num_workers(acc_num_workers)
         for (int i = 0; i < dataset_size; i++) {
@@ -101,18 +86,15 @@ void shift_single_point(const Point *point, Point *next_point,
     init_point(&point_i);
     init_point(next_point);
 
-    #pragma acc parallel loop reduction(+:total_weight) private(point_i)
     for (int i = 0; i < dataset_size; i++)
     {
         copy_point(&dataset[i], &point_i);
         T distance = euclidean_distance(point, &point_i);
         T weight = kernel_func(distance, bandwidth);
 
-        #pragma acc atomic
+        
         (*next_point)[0] += point_i[0] * weight;
-        #pragma acc atomic
         (*next_point)[1] += point_i[1] * weight;
-        #pragma acc atomic
         (*next_point)[2] += point_i[2] * weight;
 
         total_weight += weight;
