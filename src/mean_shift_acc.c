@@ -38,7 +38,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         printf("Debug: Data transfer complete, starting computation\n");
         #pragma acc parallel loop num_gangs(acc_num_gangs) num_workers(acc_num_workers)
         for (int i = 0; i < dataset_size; i++) {
-            shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
+            shift_point_until_convergence_acc(&dataset[i], &shifted_dataset[i],
                                         dataset, dataset_size, bandwidth, gaussian_kernel);
         }
         #pragma acc update self(shifted_dataset[0:dataset_size])
@@ -67,7 +67,7 @@ unsigned int shift_point_until_convergence_acc(const Point *input_point, Point *
 
     while (!stop_moving)
     {
-        shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth);
+        shift_single_point_acc(&prev_point, &next_point, dataset, dataset_size, bandwidth);
 
         T shift_distance = euclidean_distance(&prev_point, &next_point);
 
