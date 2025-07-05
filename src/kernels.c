@@ -2,14 +2,16 @@
 #include <stdio.h>
 
 // Kernel functions for Mean Shift algorithm
+#pragma acc routine seq
 T gaussian_kernel(T distance, T bandwidth) {
     T norm_distance = distance / bandwidth;
     return exp(-0.5 * norm_distance * norm_distance);
 }
+#pragma acc routine seq
 T uniform_kernel(T distance, T bandwidth) {
     return (distance <= bandwidth) ? 1.0 : 0.0;
 }
-
+#pragma acc routine seq
 T epanechnikov_kernel(T distance, T bandwidth) {
     T norm_dist = distance / bandwidth;
     return (norm_dist <= 1.0) ? (1.0 - norm_dist * norm_dist) : 0.0;

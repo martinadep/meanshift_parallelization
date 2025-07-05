@@ -15,6 +15,7 @@
 int acc_num_gangs = NUM_GANGS;
 int acc_num_workers = NUM_WORKERS;
 
+
 void print_acc_info() {
     int num_devices = acc_get_num_devices(acc_device_nvidia);
     printf("OpenACC: Found %d NVIDIA device(s)\n", num_devices);
@@ -68,7 +69,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
     }
 }
-
+#pragma acc routine seq 
 unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
                                            const Point dataset[], unsigned int dataset_size,
                                            T bandwidth, T (*kernel_func)(T, T))
@@ -96,7 +97,7 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
     copy_point(&prev_point, output_point);
     return iter;
 }
-
+#pragma acc routine seq
 void shift_single_point(const Point *point, Point *next_point,
                         const Point dataset[], unsigned int dataset_size,
                         T bandwidth, T (*kernel_func)(T, T))
@@ -110,8 +111,7 @@ void shift_single_point(const Point *point, Point *next_point,
     {
         copy_point(&dataset[i], &point_i);
         T distance = euclidean_distance(point, &point_i);
-        T weight = kernel_func(distance, bandwidth);
-
+        T weight = gaussian_kernel(distance, bandwidth);//kernel_func(distance, bandwidth);
         
         (*next_point)[0] += point_i[0] * weight;
         (*next_point)[1] += point_i[1] * weight;
