@@ -36,28 +36,12 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     #pragma acc data copyin(dataset[0:dataset_size]) copyout(shifted_dataset[0:dataset_size])
     {
         printf("Debug: Data transfer complete, starting computation\n");
-
-
         #pragma acc parallel loop num_gangs(acc_num_gangs) num_workers(acc_num_workers)
-	  for (int i = 0; i < dataset_size; i++) {
-	    if(i==0){
-                printf("Debug: Dataset point [%d] before shifting", i);
-                print_point(&dataset[i]);
-                printf("Debug: Shifted Dataset point [%d] before shifting", i);
-                print_point(&shifted_dataset[i]);
-            }
-
+        for (int i = 0; i < dataset_size; i++) {
             shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
-                                          dataset, dataset_size, bandwidth, kernel_func);
-        
-	    if(i==0){
-                printf("Debug: Dataset point [%d] after shifting", i);
-                print_point(&dataset[i]);
-                printf("Debug: Shifted Dataset point  [%d] after shifting", i);
-                print_point(&shifted_dataset[i]);
-            }
-	}
-	#pragma acc update self(shifted_dataset[0:dataset_size])
+                                        dataset, dataset_size, bandwidth, gaussian_kernel);
+        }
+        #pragma acc update self(shifted_dataset[0:dataset_size])
 	}
     
     printf("Debug: Dataset point [0] outside loop");
