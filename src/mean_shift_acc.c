@@ -91,7 +91,6 @@ void shift_single_point(const Point *point, Point *next_point,
     T sum_coords[3] = {0.0, 0.0, 0.0};
     Point point_i;
 
-    #pragma acc parallel loop reduction(+:sum_coords[:3], total_weight) private(point_i)
     for (int i = 0; i < dataset_size; i++)
     {
         copy_point(&dataset[i], &point_i);
