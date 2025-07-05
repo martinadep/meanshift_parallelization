@@ -3,6 +3,7 @@
 #include "include/mean_shift.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <openacc.h>
 
 #ifndef NUM_GANGS
 #define NUM_GANGS 256
@@ -15,18 +16,8 @@ int acc_num_gangs = NUM_GANGS;
 int acc_num_workers = NUM_WORKERS;
 
 void print_acc_info() {
-    int num_devices = 0;
-    #pragma acc parallel
-    {
-        #pragma acc loop seq
-        for (int i = 0; i < 1; i++) {
-            if (i == 0) {
-                #pragma acc atomic update
-                num_devices++;
-            }
-        }
-    }
-    printf("OpenACC: Found %d device(s)\n", num_devices);
+    int num_devices = acc_get_num_devices(acc_device_nvidia);
+    printf("OpenACC: Found %d NVIDIA device(s)\n", num_devices);
 
     char* dev_type = getenv("ACC_DEVICE_TYPE");
     printf("OpenACC: Device type: %s\n", dev_type ? dev_type : "default");
