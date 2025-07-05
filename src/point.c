@@ -31,7 +31,7 @@ int compare_points(const Point *p1, const Point *p2) {
 // Divides each dimension of a point by a scalar
 void divide_point(Point *p, double scalar) {
     if (scalar == 0) {
-        fprintf(stderr, "Error: Division by zero\n");
+        printf("Error: Division by zero\n");
         exit(EXIT_FAILURE);
     }
     for (unsigned int i = 0; i < DIM; i++) {
