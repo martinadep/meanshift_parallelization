@@ -11,18 +11,22 @@ extern "C" {
 #endif
 
 // Initializes a point by setting all dimensions to 0.0
+#pragma acc routine seq
 void init_point(Point *p);
 
 // Copies the values from the source point to the destination point
+#pragma acc routine seq
 void copy_point(const Point *source, Point *dest);
 
 // Compares two points for equality within a tolerance
 int compare_points(const Point *p1, const Point *p2);
 
 // Divides each dimension of a point by a scalar
+#pragma acc routine seq
 void divide_point(Point *p, double scalar);
 
 // Prints a point to the standard output
+#pragma acc routine seq
 void print_point(const Point *p);
 
 // Writes a point to a file in a comma-separated format

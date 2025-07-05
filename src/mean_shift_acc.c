@@ -38,11 +38,31 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
 
 
         #pragma acc parallel loop num_gangs(acc_num_gangs) num_workers(acc_num_workers)
-        for (int i = 0; i < dataset_size; i++) {
+	  for (int i = 0; i < dataset_size; i++) {
+	    if(i==0){
+                printf("Debug: Dataset point [%d] before shifting", i);
+                print_point(&dataset[i]);
+                printf("Debug: Shifted Dataset point [%d] before shifting", i);
+                print_point(&shifted_dataset[i]);
+            }
+
             shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
                                           dataset, dataset_size, bandwidth, kernel_func);
-        }
-    }
+        
+	    if(i==0){
+                printf("Debug: Dataset point [%d] after shifting", i);
+                print_point(&dataset[i]);
+                printf("Debug: Shifted Dataset point  [%d] after shifting", i);
+                print_point(&shifted_dataset[i]);
+            }
+	}
+	#pragma acc update self(shifted_dataset[0:dataset_size])
+	}
+    
+    printf("Debug: Dataset point [0] outside loop");
+    print_point(&dataset[0]);
+    printf("Debug: Shifted Dataset point [0] outside loop");
+    print_point(&shifted_dataset[0]);;
 
     for (int i = 0; i < dataset_size; i++) {
         assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
@@ -104,7 +124,7 @@ void shift_single_point(const Point *point, Point *next_point,
     {
         divide_point(next_point, total_weight);
     } else {
-        fprintf(stderr, "Error: total_weight == 0, couldn't normalize.\n");
+        printf(stderr, "Error: total_weight == 0, couldn't normalize.\n");
     }
 }
 
