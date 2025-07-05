@@ -97,34 +97,37 @@ void shift_single_point(const Point *point, Point *next_point,
                         T bandwidth, T (*kernel_func)(T, T))
 {
     T total_weight = 0;
+    T sum_coords[3] = {0.0, 0.0, 0.0};
     Point point_i;
-    init_point(&point_i);
-    init_point(next_point);
 
-    #pragma acc parallel loop reduction(+:total_weight) private(point_i)
+    #pragma acc parallel loop reduction(+:sum_coords[:3], total_weight) private(point_i)
     for (int i = 0; i < dataset_size; i++)
     {
         copy_point(&dataset[i], &point_i);
         T distance = euclidean_distance(point, &point_i);
         T weight = kernel_func(distance, bandwidth);
 
-        #pragma acc atomic
-        next_point->coords[0] += point_i.coords[0] * weight;
-        #pragma acc atomic
-        next_point->coords[1] += point_i.coords[1] * weight;
-        #pragma acc atomic
-        next_point->coords[2] += point_i.coords[2] * weight;
+        sum_coords[0] += point_i.coords[0] * weight;
+        sum_coords[1] += point_i.coords[1] * weight;
+        sum_coords[2] += point_i.coords[2] * weight;
 
         total_weight += weight;
     }
 
     if (total_weight > 0)
     {
-        divide_point(next_point, total_weight);
-    } else {
-        fprintf(stderr, "Error: total_weight == 0, couldn't normalize.\n");
+        next_point->coords[0] = sum_coords[0] / total_weight;
+        next_point->coords[1] = sum_coords[1] / total_weight;
+        next_point->coords[2] = sum_coords[2] / total_weight;
+    }
+    else
+    {
+        next_point->coords[0] = NAN;
+        next_point->coords[1] = NAN;
+        next_point->coords[2] = NAN;
     }
 }
+
 
 void assign_clusters(Point *shifted_point, Point cluster_modes[],
                      unsigned int *cluster_count)
