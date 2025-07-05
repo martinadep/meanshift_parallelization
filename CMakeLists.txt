@@ -28,7 +28,9 @@ endif()
 if(ENABLE_OPENACC)
     message(STATUS "OpenACC enabled — using NVIDIA HPC compiler")
     set(CMAKE_C_COMPILER nvc)
+    set(CMAKE_CXX_COMPILER nvc++)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -acc")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -acc")
 endif()
 
 # ===================================================
