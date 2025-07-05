@@ -124,7 +124,7 @@ void shift_single_point(const Point *point, Point *next_point,
     {
         divide_point(next_point, total_weight);
     } else {
-        printf(stderr, "Error: total_weight == 0, couldn't normalize.\n");
+        printf("Error: total_weight == 0, couldn't normalize.\n");
     }
 }
 
