@@ -93,7 +93,7 @@ void shift_single_point(const Point *point, Point *next_point,
         // x' = x' + xi * K(x - xi / h)
         for (int j = 0; j < DIM; j++)
         {
-            (*next_point)[j] += point_i[j] * weight;
+            next_point->coords[j] += point_i.coords[j] * weight;
         }
 
         total_weight += weight; // total weight of all points with respect to [point]

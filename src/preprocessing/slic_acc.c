@@ -22,7 +22,7 @@ T slic_distance(const Point *p1, const Point *p2, int x1, int y1, int x2, int y2
 {
     T dc_sqrd = 0.0; // color distance
     for (int i = 0; i < DIM; i++)
-        dc_sqrd += ((*p1)[i] - (*p2)[i]) * ((*p1)[i] - (*p2)[i]);
+        dc_sqrd += (p1->coords[i] - p2->coords[i]) * (p1->coords[i] - p2->coords[i]);
     T ds_sqrd = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
     return sqrt(dc_sqrd + ds_sqrd / (S * S) * m * m);
 }
@@ -64,7 +64,7 @@ void reset_new_centers(int num_centers, Point new_centers[], int counts[], int s
     for (int c = 0; c < num_centers; c++)
     {
         for (int j = 0; j < DIM; j++)
-            new_centers[c][j] = 0.0;
+            new_centers[c].coords[j] = 0.0;
         counts[c] = 0;
         sum_x[c] = 0;
         sum_y[c] = 0;
@@ -93,7 +93,7 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
 
             T dc_sqrd = 0.0; // color distance
             for (int j = 0; j < DIM; j++)
-                dc_sqrd += (dataset[i][j] - centers[c][j]) * (dataset[i][j] - centers[c][j]);
+                dc_sqrd += (dataset[i].coords[j] - centers[c].coords[j]) * (dataset[i].coords[j] - centers[c].coords[j]);
             T ds_sqrd = (x - center_x[c]) * (x - center_x[c]) + (y - center_y[c]) * (y - center_y[c]);
             d = sqrt(dc_sqrd + ds_sqrd / (S * S) * m * m);
 
@@ -135,7 +135,7 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
         for (int j = 0; j < DIM; j++)
         {
             #pragma acc atomic update
-            new_centers[c][j] += dataset[i][j];
+            new_centers[c].coords[j] += dataset[i].coords[j];
         }
     }
 }
@@ -151,80 +151,9 @@ void update_centers(int num_centers, Point centers[], int center_x[], int center
         if (counts[c] > 0)
         {
             for (int j = 0; j < DIM; j++)
-                centers[c][j] = new_centers[c][j] / counts[c];
+                centers[c].coords[j] = new_centers[c].coords[j] / counts[c];
             center_x[c] = sum_x[c] / counts[c];
             center_y[c] = sum_y[c] / counts[c];
         }
     }
-}
-
-unsigned int preprocess_dataset(unsigned int dataset_size,
-                                const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
-                                unsigned int width, unsigned int height, unsigned int num_superpixels, T m)
-{
-    if (num_superpixels > MAX_SUPERPIXELS) {
-        fprintf(stderr, "Error: Number of superpixels exceeds MAX_SUPERPIXELS (%d)\n", MAX_SUPERPIXELS);
-        return 0;
-    }
-
-    unsigned int S = sqrt((width * height) / (T)num_superpixels);
-
-    unsigned int *center_x = malloc(num_superpixels * sizeof(unsigned int));
-    unsigned int *center_y = malloc(num_superpixels * sizeof(unsigned int));
-    T *distances = malloc(dataset_size * sizeof(T));
-
-    if (!center_x || !center_y || !distances) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    unsigned int num_centers = 0;
-    initialize_centers(dataset, width, height, S, num_superpixels, superpixel_dataset, center_x, center_y, &num_centers);
-
-    Point *new_centers = malloc(num_superpixels * sizeof(Point));
-    unsigned int *counts = malloc(num_superpixels * sizeof(unsigned int));
-    unsigned int *sum_x = malloc(num_superpixels * sizeof(unsigned int));
-    unsigned int *sum_y = malloc(num_superpixels * sizeof(unsigned int));
-
-    if (!new_centers || !counts || !sum_x || !sum_y) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    #pragma acc data copyin(dataset[0:dataset_size], superpixel_dataset[0:num_centers], \
-                           center_x[0:num_centers], center_y[0:num_centers]) \
-                     create(distances[0:dataset_size], new_centers[0:num_superpixels], \
-                           counts[0:num_superpixels], sum_x[0:num_superpixels], sum_y[0:num_superpixels]) \
-                     copy(dataset_labels[0:dataset_size])
-    {
-        reset_labels_and_distances(dataset_size, dataset_labels, distances);
-
-        for (int iter = 0; iter < MAX_ITER; iter++)
-        {
-            reset_new_centers(num_centers, new_centers, counts, sum_x, sum_y);
-
-            assignment_step(dataset, superpixel_dataset, center_x, center_y, num_centers, 
-                           width, height, S, m, dataset_labels, distances, dataset_size);
-
-            accumulate_cluster_sums(dataset, dataset_size, width, dataset_labels, 
-                                   new_centers, counts, sum_x, sum_y);
-
-            update_centers(num_centers, superpixel_dataset, center_x, center_y, 
-                          new_centers, counts, sum_x, sum_y);
-
-            #pragma acc parallel loop present(distances[0:dataset_size])
-            for (int i = 0; i < dataset_size; i++)
-                distances[i] = DBL_MAX;
-        }
-    }
-
-    free(center_x);
-    free(center_y);
-    free(distances);
-    free(new_centers);
-    free(counts);
-    free(sum_x);
-    free(sum_y);
-
-    return num_centers;
 }

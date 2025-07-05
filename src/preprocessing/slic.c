@@ -84,7 +84,7 @@ T slic_distance(const Point *p1, const Point *p2, int x1, int y1, int x2, int y2
 {
     T dc_sqrd = 0.0; // color distance
     for (int i = 0; i < DIM; i++)
-        dc_sqrd += ((*p1)[i] - (*p2)[i]) * ((*p1)[i] - (*p2)[i]);
+        dc_sqrd += (p1->coords[i] - p2->coords[i]) * (p1->coords[i] - p2->coords[i]);
     T ds_sqrd = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
     return sqrt(dc_sqrd + ds_sqrd / (S * S) * m * m);
 }
@@ -98,7 +98,7 @@ void update_centers(int num_centers, Point centers[], int center_x[], int center
         if (counts[c] > 0)
         {
             for (int j = 0; j < DIM; j++)
-                centers[c][j] = new_centers[c][j] / counts[c];
+                centers[c].coords[j] = new_centers[c].coords[j] / counts[c];
             center_x[c] = sum_x[c] / counts[c];
             center_y[c] = sum_y[c] / counts[c];
         }
@@ -141,7 +141,7 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
                 continue;
 
             for (int j = 0; j < DIM; j++)
-                private_centers[c][j] += dataset[i][j];
+                private_centers[c].coords[j] += dataset[i].coords[j];
 
             private_sum_x[c] += i % width;
             private_sum_y[c] += i / width;
@@ -156,7 +156,7 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
                 if (private_counts[c] > 0)
                 {
                     for (int j = 0; j < DIM; j++)
-                        local_centers[c][j] += private_centers[c][j];
+                        local_centers[c].coords[j] += private_centers[c].coords[j];
                     local_sum_x[c] += private_sum_x[c];
                     local_sum_y[c] += private_sum_y[c];
                     local_counts[c] += private_counts[c];
@@ -171,7 +171,7 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
         if (local_counts[c] > 0)
         {
             for (int j = 0; j < DIM; j++)
-                new_centers[c][j] = local_centers[c][j];
+                new_centers[c].coords[j] = local_centers[c].coords[j];
             sum_x[c] = local_sum_x[c];
             sum_y[c] = local_sum_y[c];
             counts[c] = local_counts[c];

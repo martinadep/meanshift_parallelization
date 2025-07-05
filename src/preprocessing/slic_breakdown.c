@@ -144,7 +144,7 @@ T slic_distance(const Point *p1, const Point *p2, int x1, int y1, int x2, int y2
 #endif
     T dc_sqrd = 0.0; // color distance
     for (int i = 0; i < DIM; i++)
-        dc_sqrd += ((*p1)[i] - (*p2)[i]) * ((*p1)[i] - (*p2)[i]);
+        dc_sqrd += (p1->coords[i] - p2->coords[i]) * (p1->coords[i] - p2->coords[i]);
     T ds_sqrd = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
     T result = sqrt(dc_sqrd + ds_sqrd / (S*S) * m*m);
 #ifdef TIMING_BREAKDOWN
@@ -156,11 +156,11 @@ T slic_distance(const Point *p1, const Point *p2, int x1, int y1, int x2, int y2
 void update_centers(int num_centers, Point centers[], int center_x[], int center_y[],
                            const Point new_centers[], const int counts[], const int sum_x[], const int sum_y[])
 {
-     #pragma omp parallel for
+    #pragma omp parallel for
     for (int c = 0; c < num_centers; c++) {
         if (counts[c] > 0) {
             for (int j = 0; j < DIM; j++)
-                centers[c][j] = new_centers[c][j] / counts[c];
+                centers[c].coords[j] = new_centers[c].coords[j] / counts[c];
             center_x[c] = sum_x[c] / counts[c];
             center_y[c] = sum_y[c] / counts[c];
         }
@@ -200,7 +200,7 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
             if (c < 0) continue;
             
             for (int j = 0; j < DIM; j++)
-                private_centers[c][j] += dataset[i][j];
+                private_centers[c].coords[j] += dataset[i].coords[j];
             
             private_sum_x[c] += i % width;
             private_sum_y[c] += i / width;
@@ -213,7 +213,7 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
             for (int c = 0; c < MAX_SUPERPIXELS; c++) {
                 if (private_counts[c] > 0) {
                     for (int j = 0; j < DIM; j++)
-                        local_centers[c][j] += private_centers[c][j];
+                        local_centers[c].coords[j] += private_centers[c].coords[j];
                     local_sum_x[c] += private_sum_x[c];
                     local_sum_y[c] += private_sum_y[c];
                     local_counts[c] += private_counts[c];
@@ -226,7 +226,7 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
     for (int c = 0; c < MAX_SUPERPIXELS; c++) {
         if (local_counts[c] > 0) {
             for (int j = 0; j < DIM; j++)
-                new_centers[c][j] = local_centers[c][j];
+                new_centers[c].coords[j] = local_centers[c].coords[j];
             sum_x[c] = local_sum_x[c];
             sum_y[c] = local_sum_y[c];
             counts[c] = local_counts[c];
@@ -315,7 +315,7 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
             }
         }
 
-// Assegna i pixel rimasti senza cluster al più vicino centro
+// Assign any remaining pixels without a cluster to the nearest center
 #pragma omp parallel for
         for (int i = 0; i < dataset_size; i++)
         {
@@ -339,8 +339,6 @@ void assignment_step(const Point dataset[], const Point centers[], const int cen
         }
     }
 }
-
-
 
 void initialize_centers(const Point dataset[], unsigned int width, unsigned int height, int S, unsigned int num_superpixels,
                                Point centers[], unsigned int center_x[], unsigned int center_y[], unsigned int *num_centers)

@@ -97,7 +97,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
                     T weight = weights[i * dataset_size + j];
                     if (weight > 0) {
                         for (unsigned int d = 0; d < DIM; d++) {
-                            next_points[i][d] += weight * shifted_dataset[j][d];
+                            next_points[i].coords[d] += weight * shifted_dataset[j].coords[d];
                         }
                     }
                 }
@@ -106,7 +106,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         // Normalizzazione
         if (weight_sums[i] > 0) {
             for (unsigned int d = 0; d < DIM; d++) {
-                next_points[i][d] /= weight_sums[i];
+                next_points[i].coords[d] /= weight_sums[i];
             }
         } else {
                 #pragma omp critical

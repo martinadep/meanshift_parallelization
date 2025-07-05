@@ -6,7 +6,9 @@
 #define T float
 #define TYPENAME "float"
 #endif
-typedef T Point[DIM];
+typedef struct {
+    T coords[DIM];
+} Point;
 
 #ifdef __cplusplus
 extern "C" {

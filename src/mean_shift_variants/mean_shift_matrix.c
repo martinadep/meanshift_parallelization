@@ -40,7 +40,6 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
 
     #pragma omp parallel for
     for (unsigned int i = 0; i < dataset_size; i++) {
-        // copy_point(&dataset[i], &current_points[i]); // Initialize current points with the dataset
         copy_point(&dataset[i], &shifted_dataset[i]);
     }
     
@@ -56,16 +55,15 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         shift_norm = 0.0;
         
         // Compute all pairwise distances 
-        #pragma omp parallel for // schedule(dynamic, 64)
+        #pragma omp parallel for
         for (unsigned int i = 0; i < dataset_size; i++) {
             for (unsigned int j = 0; j < dataset_size; j++) {
-                // distances[i * dataset_size + j] = euclidean_distance(&current_points[i], &current_points[j]);
-                distances[i * dataset_size + j] = euclidean_distance(&shifted_dataset[i], &shifted_dataset[j]);
+                distances[i * dataset_size + j] = euclidean_distance(&shifted_dataset[i], &dataset[j]);
             }
         }
         
         // Apply kernel function to distances
-        #pragma omp parallel for // schedule(dynamic, 64)
+        #pragma omp parallel for
         for (unsigned int i = 0; i < dataset_size; i++) {
             for (unsigned int j = 0; j < dataset_size; j++) {
                 weights[i * dataset_size + j] = kernel_func(distances[i * dataset_size + j], bandwidth);
@@ -89,15 +87,14 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
             // Matrix multiplication: weights * points
             for (unsigned int j = 0; j < dataset_size; j++) {
                 for (unsigned int d = 0; d < DIM; d++) {
-                    // next_points[i][d] += weights[i * dataset_size + j] * current_points[j][d];
-                    next_points[i][d] += weights[i * dataset_size + j] * shifted_dataset[j][d];
+                    next_points[i].coords[d] += weights[i * dataset_size + j] * shifted_dataset[j].coords[d];
                 }
             }
             
             // Normalize by weight sum
             if (weight_sums[i] > 0) {
                 for (unsigned int d = 0; d < DIM; d++) {
-                    next_points[i][d] /= weight_sums[i];
+                    next_points[i].coords[d] /= weight_sums[i];
                 }
             } else {
                 #pragma omp critical
@@ -111,7 +108,6 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         T total_shift = 0.0;
         #pragma omp parallel for reduction(+:total_shift)
         for (unsigned int i = 0; i < dataset_size; i++) {
-            // T point_shift = euclidean_distance(&current_points[i], &next_points[i]);
             T point_shift = euclidean_distance(&shifted_dataset[i], &next_points[i]);
             total_shift += point_shift;
         }
@@ -120,7 +116,6 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         // Update current points
         #pragma omp parallel for
         for (unsigned int i = 0; i < dataset_size; i++) {
-            // copy_point(&next_points[i], &current_points[i]);
             copy_point(&next_points[i], &shifted_dataset[i]);
         }
         
@@ -131,15 +126,12 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
 #endif
     }
     
-    // Copy the final shifted points to the output
-    // for (unsigned int i = 0; i < dataset_size; i++) {
-    //     copy_point(&current_points[i], &shifted_dataset[i]);
-    // }
-    
     // Cluster assignment (same as in original mean_shift)
-    #pragma omp parallel for
     for (int i = 0; i < dataset_size; i++) {
-        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
+        #pragma omp critical
+        {
+            assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
+        }
     }
     
 cleanup:
@@ -147,7 +139,6 @@ cleanup:
     free(distances);
     free(weights);
     free(weight_sums);
-    // free(current_points);
     free(next_points);
 }
 
@@ -158,7 +149,6 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
     int c = 0;
     for (; c < *cluster_count; c++)
     {
-
         T distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
 
         if (distance_from_cluster <= CLUSTER_EPSILON)

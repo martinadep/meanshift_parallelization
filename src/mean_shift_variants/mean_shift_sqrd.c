@@ -23,11 +23,9 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         }
     }
 
-
     // Phase 1: Independent point shifting - parallelizable
     #pragma omp parallel for schedule(dynamic, 64)
     for (int i = 0; i < dataset_size; i++){
-        // printf("Shifting point %d/%d...\n", i, dataset_size);
         shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
                                       dataset, dataset_size, bandwidth_sqrd, kernel_func);
         #ifdef DEBUG
@@ -75,7 +73,6 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
             stop_moving = 1;
         }
         copy_point(&next_point, &prev_point);
-        // printf("Iteration %d: Shift distance = %.6f\n", iter, shift_distance);
         iter++;
     }
     copy_point(&prev_point, output_point);
@@ -102,7 +99,7 @@ void shift_single_point(const Point *point, Point *next_point,
         // x' = x' + xi * K(x - xi / h)
         for (int j = 0; j < DIM; j++)
         {
-            (*next_point)[j] += point_i[j] * weight;
+            next_point->coords[j] += point_i.coords[j] * weight;
         }
 
         total_weight += weight; // total weight of all points with respect to [point]
@@ -127,7 +124,6 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
     int c = 0;
     for (; c < *cluster_count; c++)
     {
-
         T distance_from_cluster = sqrd_euclidean_distance(shifted_point, &cluster_modes[c]);
 
         if (distance_from_cluster <= CLUSTER_EPSILON_SQRD)

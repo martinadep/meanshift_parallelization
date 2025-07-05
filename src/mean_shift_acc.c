@@ -109,11 +109,11 @@ void shift_single_point(const Point *point, Point *next_point,
         T weight = kernel_func(distance, bandwidth);
 
         #pragma acc atomic
-        (*next_point)[0] += point_i[0] * weight;
+        next_point->coords[0] += point_i.coords[0] * weight;
         #pragma acc atomic
-        (*next_point)[1] += point_i[1] * weight;
+        next_point->coords[1] += point_i.coords[1] * weight;
         #pragma acc atomic
-        (*next_point)[2] += point_i[2] * weight;
+        next_point->coords[2] += point_i.coords[2] * weight;
 
         total_weight += weight;
     }

@@ -172,9 +172,9 @@ int main(int argc, char *argv[]) {
         getline(ss, b, ',');
 
         // append each pixel in the dataset
-        lab_point[0] = T(stoi(r));
-        lab_point[1] = T(stoi(g));
-        lab_point[2] = T(stoi(b));
+        lab_point.coords[0] = T(stoi(r));
+        lab_point.coords[1] = T(stoi(g));
+        lab_point.coords[2] = T(stoi(b));
         
         // Store LAB values in the dataset
         copy_point(&lab_point, &dataset[index]);
