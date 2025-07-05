@@ -14,6 +14,7 @@ extern "C" {
 void init_point(Point *p);
 
 // Copies the values from the source point to the destination point
+#pragma acc routine seq
 void copy_point(const Point *source, Point *dest);
 
 // Compares two points for equality within a tolerance

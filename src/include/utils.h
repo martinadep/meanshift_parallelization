@@ -15,6 +15,7 @@ extern "C" {
 #endif
 
 // ------------ src/kernels.c ------------
+#pragma acc routine seq
 T gaussian_kernel(T distance, T bandwidth);
 T uniform_kernel(T distance, T bandwidth);
 T epanechnikov_kernel(T distance, T bandwidth);
@@ -24,6 +25,7 @@ T uniform_kernel_sqrd(T distance_sqrd, T bandwidth_sqrd);
 T epanechnikov_kernel_sqrd(T distance_sqrd, T bandwidth_sqrd);
 
 // ---------- src/distances.c ------------
+#pragma acc routine seq
 T euclidean_distance(const Point *point1, const Point *point2);
 T sqrd_euclidean_distance(const Point *point1, const Point *point2);
 

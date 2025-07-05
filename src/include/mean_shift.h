@@ -42,11 +42,13 @@ extern "C" {
 
 
 // Move a single point towards the maximum density area
+#pragma acc routine seq
 void shift_single_point(const Point *point, Point *next_point,
                               const Point dataset[], unsigned int dataset_size,
                               T bandwidth, T (*kernel_func)(T, T));
 
 // Assign clusters to shifted points
+#pragma acc routine seq
 void assign_clusters(Point *shifted_point, Point cluster_modes[],
                            unsigned int *cluster_count);
 
@@ -56,6 +58,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
                       T (*kernel_func)(T, T), Point cluster_modes[],
                       unsigned int *cluster_count);
 
+#pragma acc routine seq
 unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
                       const Point dataset[], unsigned int dataset_size,
                       T bandwidth, T (*kernel_func)(T, T));
