@@ -80,6 +80,13 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
         iter++;
     }
     copy_point(&prev_point, output_point);
+    #ifdef DEBUG
+    printf("Debug: Point converged after %u iterations\n", iter);
+    printf("inout_point:");
+    print_point(output_point);
+    printf("output_point:");
+    print_point(input_point);
+    #endif
     return iter;
 }
 
