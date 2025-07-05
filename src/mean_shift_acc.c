@@ -15,6 +15,24 @@
 int acc_num_gangs = NUM_GANGS;
 int acc_num_workers = NUM_WORKERS;
 
+// --- Mark required functions as OpenACC routines ---
+#pragma acc routine seq
+T euclidean_distance(const Point *p1, const Point *p2);
+
+#pragma acc routine seq
+void copy_point(const Point *src, Point *dst);
+
+#pragma acc routine seq
+unsigned int shift_point_until_convergence(const Point *input_point, Point *output_point,
+                                          const Point dataset[], unsigned int dataset_size,
+                                          T bandwidth, T (*kernel_func)(T, T));
+
+#pragma acc routine seq
+void shift_single_point(const Point *point, Point *next_point,
+                        const Point dataset[], unsigned int dataset_size,
+                        T bandwidth, T (*kernel_func)(T, T));
+// ---
+
 void print_acc_info() {
     int num_devices = acc_get_num_devices(acc_device_nvidia);
     printf("OpenACC: Found %d NVIDIA device(s)\n", num_devices);
