@@ -7,8 +7,8 @@ for t in "${threads[@]}"; do
     echo "Running SLIC-MeanShift Breakdown with ${t} threads..."    
     # Set OpenMP threads
     export OMP_NUM_THREADS=${t}
-    ./build/breakdown_slic_ms >> ./data/slic_ms_breakdown.txt   
+    ./build/breakdown_slic_ms >> ./data/breakdown_slic_ms.txt   
 done
-
-python ./py_utils/breakdown_plot_slic.py
 echo "SLIC-MeanShift Breakdown completed!"
+echo "Generating SLIC-MeanShift Breakdown plot..."
+python ./py_utils/breakdown_slic.py

@@ -1,14 +1,14 @@
 #!/bin/bash
-
+output_dir="./output/batch_output_omp"
 # Create results directory and output directory
 mkdir -p results_strong_scaling
-mkdir -p ./output
+mkdir -p "$output_dir"
 
 # Define thread counts
 threads=(1 2 4 8 16 32 64 96)
 
 # Find all original csv files
-csv_files=$(find ./data -name "original_*.csv")
+csv_files=$(find ./data/batch -name "original_*.csv")
 
 mkdir -p "results_strong_scaling/slic_ms"
     
@@ -26,16 +26,18 @@ for t in "${threads[@]}"; do
         id=$(echo "$filename" | sed 's/original_\(.*\)\.csv/\1/')
             
         # Create output directory if it doesn't exist
-        mkdir -p "./output/${id}"
+        mkdir -p "./${output_dir}/${id}"
             
         # Output filepath
-        output_path="./output/${id}/slic_ms_${t}_reconstructed.csv"
+        output_path="./${output_dir}/${id}/slic_ms_${t}_reconstructed.csv"
             
         echo "  Processing ${filename} -> ${output_path}..."
             
         ./build/slic_ms -i "${csv_file}" -o "${output_path}" >> "results_strong_scaling/slic_ms/slic_ms_${t}_threads.txt"
     done
 done
-echo "Results for slic_ms saved in results_strong_scaling/slic_ms/"
 
-echo "All SLIC variant tests completed!"
+echo "Batch run completed!"
+
+echo "Execution Results for slic_ms saved in results_strong_scaling/slic_ms/"
+echo "Batch Results saved in ${output_dir}"

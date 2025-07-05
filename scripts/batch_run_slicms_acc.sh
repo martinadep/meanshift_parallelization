@@ -1,9 +1,12 @@
 #!/bin/bash
 
+output_dir="./output/batch_output_acc"
+
 # Create results directory and output directory
-mkdir -p batch_output_acc
+mkdir -p ${output_dir}
+
 # Find all original csv files
-csv_files=$(find ./data -name "original_*.csv")
+csv_files=$(find ./data/batch -name "original_*.csv")
      
 # Set OpenMP threads to 1
 export OMP_NUM_THREADS=1
@@ -15,16 +18,16 @@ for csv_file in $csv_files; do
     id=$(echo "$filename" | sed 's/original_\(.*\)\.csv/\1/')
             
     # Create output directory if it doesn't exist
-    mkdir -p "./batch_output_acc/${id}"
+    mkdir -p "${output_dir}/${id}"
             
     # Output filepath
-    output_path="./batch_output_acc/${id}/mean_shift_acc_reconstructed.csv"
+    output_path="${output_dir}/${id}/mean_shift_acc_reconstructed.csv"
             
     echo "  Processing ${filename} -> ${output_path}..."
             
-    ./build/mean_shift_acc -i "${csv_file}" -o "${output_path}" >> "batch_output_acc/mean_shift_acc.txt"
+    ./build/mean_shift_acc -i "${csv_file}" -o "${output_path}" >> "${output_dir}/mean_shift_acc.txt"
 done
 
-echo "Results for mean_shift_acc saved in batch_output_acc"
+echo "Batch run completed!"
 
-echo "All batch images completed!"
+echo "Batch Results saved in ${output_dir}"

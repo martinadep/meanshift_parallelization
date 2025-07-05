@@ -3,7 +3,7 @@ in_img_path = "./examples/sample_flower.jpg"
 original_csv_path = "./data/original.csv"
 modified_csv_path = "./data/modified.csv"
 out_img_path = "./data/reconstructed.jpg"
-metrics_path = "./data/perf_results.txt"
+metrics_path = "./data/metrics_mean_shift.txt"
 
 # Results directories
 strong_scaling_dir = 'results_strong_scaling'

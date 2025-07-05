@@ -28,8 +28,8 @@ int main(int argc, char *argv[]) {
     T bandwidth = BANDWIDTH;
     const char *input_csv_path = CSV_IN;
     const char *output_csv_path = CSV_OUT;
-    const char *output_slic_path = "./data/slic_output.csv";
     #ifdef PREPROCESSING
+    const char *output_slic_path = "./data/slic_output.csv";
     unsigned int superpixels = 0;
     float m = 10.0;
     #endif

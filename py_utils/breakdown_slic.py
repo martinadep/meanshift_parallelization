@@ -6,7 +6,7 @@ import os
 print("Importing libraries...")
 
 # Input file
-input_file = "./data/slic_ms_breakdown.txt"
+input_file = "./data/breakdown_slic_ms.txt"
 
 # Check if file exists
 if not os.path.exists(input_file):

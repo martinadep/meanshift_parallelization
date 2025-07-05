@@ -43,7 +43,7 @@ echo "Installing required packages..."
 # Check Python version and install compatible packages
 if [[ $(echo "$PYTHON_VERSION < 3.11" | bc) -eq 1 ]]; then
     echo "Detected Python $PYTHON_VERSION - Installing compatible versions"
-    pip install numpy pandas pillow matplotlib==3.7.2 networkx==3.1
+    pip install matplotlib==3.7.2 networkx==3.1
 else
     echo "Installing packages from requirements.txt"
     pip install -r requirements.txt
@@ -52,20 +52,6 @@ fi
 # 5. Convert example images
 echo "Converting example images to CSV format..."
 $PYTHON_CMD ./py_utils/img_to_csv.py
-# Process sample images from examples directory
-# example_images=$(find ./examples -type f -name "*.jpg")
-
-# for img_path in $example_images; do
-#     echo "Processing: $img_path"
-#     # Extract filename without extension
-#     filename=$(basename "$img_path")
-#     filename_no_ext="${filename%.*}"
-    
-#     # Convert to CSV
-#     $PYTHON_CMD ./py_utils/img_to_csv.py -i "$img_path" -o "./data/original.csv"
-    
-#     echo "\"$img_path\" converted to ./data/original.csv"
-# done
 
 echo ""
 echo "=== Setup Complete ==="

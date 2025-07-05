@@ -34,7 +34,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     }
 
     METRICS_STOP_TIMER();
-    METRICS_WRITE_TO_FILE("./data/perf_results.txt", dataset_size, bandwidth, CLUSTER_EPSILON, EPSILON, TYPENAME);
+    METRICS_WRITE_TO_FILE("./data/metrics_mean_shift.txt", dataset_size, bandwidth, CLUSTER_EPSILON, EPSILON, TYPENAME);
     free(point_iterations);
 }
 

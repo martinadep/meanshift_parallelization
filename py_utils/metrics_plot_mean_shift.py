@@ -37,8 +37,7 @@ def parse_perf_file(filename):
             continue
     return data
 
-# Modifica qui il path al perf_results.txt che vuoi analizzare
-perf_path = "./data/perf_results.txt"
+perf_path = "./data/metrics_mean_shift.txt"
 
 # Carica tutte le run
 all_data = parse_perf_file(perf_path)

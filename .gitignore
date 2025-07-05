@@ -26,6 +26,7 @@ test/
 data/*
 !data/.gitkeep
 !data/original_*.csv
+!data/batch
 *.exe
 *.o
 *.a

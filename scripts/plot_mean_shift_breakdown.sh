@@ -5,6 +5,8 @@ export OMP_NUM_THREADS=1
 
 echo "Running mean-shift breakdown..."
 ./build/breakdown_mean_shift 
+echo "Mean-shift breakdown completed!"
 
-python ./py_utils/breakdown_plot_mean_shift.py
-echo "Mean-shift Breakdown completed!"
+echo "Generating breakdown plot..."
+python ./py_utils/breakdown_mean_shift.py
+echo "Breakdown plot generated!"
