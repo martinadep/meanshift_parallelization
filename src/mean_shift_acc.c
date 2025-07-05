@@ -39,7 +39,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         #pragma acc parallel loop num_gangs(acc_num_gangs) num_workers(acc_num_workers)
         for (int i = 0; i < dataset_size; i++) {
             shift_point_until_convergence_acc(&dataset[i], &shifted_dataset[i],
-                                        dataset, dataset_size, bandwidth, gaussian_kernel);
+                                        dataset, dataset_size, bandwidth);
         }
         #pragma acc update self(shifted_dataset[0:dataset_size])
 	}
