@@ -21,10 +21,10 @@ def extract_times_from_thread_file(file_path):
                     continue
                 
                 # Estrai il nome dell'immagine
-                image_match = re.search(r"Dataset: \[\.\/data\/original_(\d+)\.csv\]", execution)
+                image_match = re.search(r"Dataset: \[\.\/data\/batch\/original_(\d+)\.csv\]", execution)
                 if not image_match:
                     # Prova il pattern Windows con backslash
-                    image_match = re.search(r"Dataset: \[\.\\data\\original_(\d+)\.csv\]", execution)
+                    image_match = re.search(r"Dataset: \[\.\\data\\batch\\original_(\d+)\.csv\]", execution)
                 
                 if image_match:
                     current_image = image_match.group(1)
@@ -61,7 +61,7 @@ def extract_times_from_thread_file(file_path):
         print(f"Errore durante la lettura del file {file_path}: {e}")
         return {}
 
-def extract_times_from_acc_file(file_path):
+def extract_times_from_slic_ms_acc_file(file_path):
     """Estrae i tempi di esecuzione dal file OpenACC specificato."""
     results = {}
     
@@ -77,7 +77,11 @@ def extract_times_from_acc_file(file_path):
                     continue
                 
                 # Estrai il nome dell'immagine
-                image_match = re.search(r"Dataset: \[\.\/data\/original_(\d+)\.csv\]", execution)
+                image_match = re.search(r"Dataset: \[\.\/data\/batch\/original_(\d+)\.csv\]", execution)
+                if not image_match:
+                    # Prova il pattern Windows con backslash
+                    image_match = re.search(r"Dataset: \[\.\\data\\batch\\original_(\d+)\.csv\]", execution)
+                
                 if image_match:
                     image_id = image_match.group(1)
                     
@@ -100,7 +104,7 @@ def extract_times_from_acc_file(file_path):
         print(f"Errore durante la lettura del file OpenACC {file_path}: {e}")
         return {}
 
-def extract_times_from_batch_file(file_path):
+def extract_times_from_faster_ms(file_path):
     """Estrae i tempi di esecuzione dal file batch."""
     results = {}
     
@@ -133,7 +137,7 @@ def extract_times_from_batch_file(file_path):
 
 def main():
     # Definisci il percorso alla directory results_strong_scaling
-    results_dir = "results_strong_scaling"
+    results_dir = "output"
     
     # Verifica che la directory esista
     if not os.path.exists(results_dir):
@@ -174,10 +178,10 @@ def main():
         return
     
     # Leggi il file OpenACC
-    acc_file_path = os.path.join(results_dir, "slic_ms_OpenACC.txt")
+    acc_file_path = os.path.join(results_dir, "slic_ms_acc.txt")
     print(f"Lettura del file OpenACC {acc_file_path}...")
     if os.path.exists(acc_file_path):
-        acc_results = extract_times_from_acc_file(acc_file_path)
+        acc_results = extract_times_from_slic_ms_acc_file(acc_file_path)
         if not acc_results:
             print("Nessun dato estratto dal file OpenACC.")
     else:
@@ -185,10 +189,10 @@ def main():
         acc_results = {}
     
     # Leggi il file batch
-    batch_file_path = os.path.join(results_dir, "results_batch.txt")
+    batch_file_path = os.path.join(results_dir, "faster_ms.txt")
     print(f"Lettura del file batch {batch_file_path}...")
     if os.path.exists(batch_file_path):
-        batch_results = extract_times_from_batch_file(batch_file_path)
+        batch_results = extract_times_from_faster_ms(batch_file_path)
         if not batch_results:
             print("Nessun dato estratto dal file batch.")
     else:
@@ -249,6 +253,24 @@ def main():
             ax.text(i + width, acc_time + 0.1, f"{acc_time:.2f}s", 
                     ha='center', va='bottom', fontsize=8)
     
+    mean_batch = np.mean([t for t in batch_times if t > 0]) if any(t > 0 for t in batch_times) else 0
+    mean_openmp = np.mean([t for t in best_times if t > 0]) if any(t > 0 for t in best_times) else 0
+    mean_openacc = np.mean([t for t in acc_times if t > 0]) if any(t > 0 for t in acc_times) else 0
+
+    # Add horizontal lines for means
+    if mean_batch > 0:
+        ax.axhline(y=mean_batch, color='C0', linestyle='--', alpha=0.7)
+        ax.text(len(image_ids) - 1, mean_batch, f"Mean: {mean_batch:.2f}s", ha='left', va='bottom', color='C0')
+
+    if mean_openmp > 0:
+        ax.axhline(y=mean_openmp, color='C1', linestyle='--', alpha=0.7)
+        ax.text(len(image_ids) - 1, mean_openmp, f"Mean: {mean_openmp:.2f}s", ha='left', va='bottom', color='C1')
+
+    if mean_openacc > 0:
+        ax.axhline(y=mean_openacc, color='C2', linestyle='--', alpha=0.7)
+        ax.text(len(image_ids) - 1, mean_openacc, f"Mean: {mean_openacc:.2f}s", ha='left', va='bottom', color='C2')
+    
+
     # Salva e mostra il grafico
     plt.savefig('implementation_comparison.png')
     plt.show()

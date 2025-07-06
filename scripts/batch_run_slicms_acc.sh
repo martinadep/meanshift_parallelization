@@ -1,9 +1,11 @@
 #!/bin/bash
 
-output_dir="./output/batch_output_acc"
+OUTPUT_DIR="./output"
+OUTPUT_BATCH_DIR="./output/batch_output_acc"
 
 # Create results directory and output directory
-mkdir -p ${output_dir}
+rm -rf "${OUTPUT_BATCH_DIR}"
+mkdir -p "${OUTPUT_BATCH_DIR}" 
 
 # Find all original csv files
 csv_files=$(find ./data/batch -name "original_*.csv")
@@ -18,16 +20,16 @@ for csv_file in $csv_files; do
     id=$(echo "$filename" | sed 's/original_\(.*\)\.csv/\1/')
             
     # Create output directory if it doesn't exist
-    mkdir -p "${output_dir}/${id}"
+    mkdir -p "${OUTPUT_BATCH_DIR}/${id}"
             
     # Output filepath
-    output_path="${output_dir}/${id}/mean_shift_acc_reconstructed.csv"
+    output_path="${OUTPUT_BATCH_DIR}/${id}/slic_ms_acc_reconstructed.csv"
             
     echo "  Processing ${filename} -> ${output_path}..."
             
-    ./build/mean_shift_acc -i "${csv_file}" -o "${output_path}" >> "${output_dir}/mean_shift_acc.txt"
+    ./build/slic_ms_acc -i "${csv_file}" -o "${output_path}" >> "${OUTPUT_DIR}/slic_ms_acc.txt"
 done
 
 echo "Batch run completed!"
-
-echo "Batch Results saved in ${output_dir}"
+echo "Batch Results saved in ${OUTPUT_BATCH_DIR}"
+echo "Execution outputs for slic_ms_acc saved in ${OUTPUT_DIR}"

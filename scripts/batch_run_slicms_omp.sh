@@ -1,17 +1,18 @@
 #!/bin/bash
-output_dir="./output/batch_output_omp"
+OUTPUT_DIR="./output"
+OUTPUT_BATCH_DIR="./output/batch_output_omp"
+
 # Create results directory and output directory
-mkdir -p results_strong_scaling
-mkdir -p "$output_dir"
+rm -rf "${OUTPUT_BATCH_DIR}"
+mkdir -p "${OUTPUT_DIR}"
+mkdir -p "${OUTPUT_BATCH_DIR}" 
 
 # Define thread counts
-threads=(1 2 4 8 16 32 64 96)
+threads=(1 2 4 8) #16 32 64 96)
 
 # Find all original csv files
 csv_files=$(find ./data/batch -name "original_*.csv")
 
-mkdir -p "results_strong_scaling/slic_ms"
-    
 # For each thread count
 for t in "${threads[@]}"; do
     echo "Running slic_ms with ${t} threads..."
@@ -26,18 +27,17 @@ for t in "${threads[@]}"; do
         id=$(echo "$filename" | sed 's/original_\(.*\)\.csv/\1/')
             
         # Create output directory if it doesn't exist
-        mkdir -p "./${output_dir}/${id}"
+        mkdir -p "${OUTPUT_BATCH_DIR}/${id}"
             
         # Output filepath
-        output_path="./${output_dir}/${id}/slic_ms_${t}_reconstructed.csv"
+        output_path="${OUTPUT_BATCH_DIR}/${id}/slic_ms_${t}_reconstructed.csv"
             
         echo "  Processing ${filename} -> ${output_path}..."
             
-        ./build/slic_ms -i "${csv_file}" -o "${output_path}" >> "results_strong_scaling/slic_ms/slic_ms_${t}_threads.txt"
+        ./build/slic_ms -i "${csv_file}" -o "${output_path}" >> "${OUTPUT_DIR}/slic_ms_${t}_threads.txt"
     done
 done
 
 echo "Batch run completed!"
-
-echo "Execution Results for slic_ms saved in results_strong_scaling/slic_ms/"
-echo "Batch Results saved in ${output_dir}"
+echo "Batch Results saved in ${OUTPUT_BATCH_DIR}"
+echo "Execution outputs for slic_ms saved in ${OUTPUT_DIR}"
