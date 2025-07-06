@@ -103,6 +103,49 @@ def extract_times_from_slic_ms_acc_file(file_path):
     except Exception as e:
         print(f"Errore durante la lettura del file OpenACC {file_path}: {e}")
         return {}
+    
+def extract_times_from_slic_ms_blas_file(file_path):
+    """Estrae i tempi di esecuzione dal file OpenBLAS specificato."""
+    results = {}
+    
+    try:
+        with open(file_path, 'r') as f:
+            content = f.read()
+            
+            # Trova tutte le esecuzioni nel file
+            executions = content.split("=============================================================")
+            
+            for execution in executions:
+                if not execution.strip():
+                    continue
+                
+                # Estrai il nome dell'immagine
+                image_match = re.search(r"Dataset: \[\.\/data\/batch\/original_(\d+)\.csv\]", execution)
+                if not image_match:
+                    # Prova il pattern Windows con backslash
+                    image_match = re.search(r"Dataset: \[\.\\data\\batch\\original_(\d+)\.csv\]", execution)
+                
+                if image_match:
+                    image_id = image_match.group(1)
+                    
+                    # Estrai i tempi di esecuzione
+                    slic_time_match = re.search(r"slic execution time: (\d+\.\d+)", execution)
+                    ms_time_match = re.search(r"mean_shift execution time: (\d+\.\d+)", execution)
+                    
+                    if slic_time_match and ms_time_match:
+                        slic_time = float(slic_time_match.group(1))
+                        ms_time = float(ms_time_match.group(1))
+                        total_time = slic_time + ms_time
+                        
+                        results[image_id] = {
+                            'slic_time': slic_time,
+                            'ms_time': ms_time,
+                            'total_time': total_time
+                        }
+        return results
+    except Exception as e:
+        print(f"Errore durante la lettura del file OpenBLAS {file_path}: {e}")
+        return {}
 
 def extract_times_from_faster_ms(file_path):
     """Estrae i tempi di esecuzione dal file batch."""
@@ -187,16 +230,26 @@ def main():
     else:
         print(f"File OpenACC {acc_file_path} non trovato.")
         acc_results = {}
+
+    blas_file_path = os.path.join(results_dir, "slic_ms_blas.txt")
+    print(f"Lettura del file OpenACC {blas_file_path}...")
+    if os.path.exists(blas_file_path):
+        blas_results = extract_times_from_slic_ms_blas_file(blas_file_path)
+        if not blas_results:
+            print("Nessun dato estratto dal file OpenBLAS.")
+    else:
+        print(f"File OpenBLAS {blas_file_path} non trovato.")
+        blas_results = {}
     
     # Leggi il file batch
-    batch_file_path = os.path.join(results_dir, "faster_ms.txt")
-    print(f"Lettura del file batch {batch_file_path}...")
-    if os.path.exists(batch_file_path):
-        batch_results = extract_times_from_faster_ms(batch_file_path)
+    faster_ms_file_path = os.path.join(results_dir, "faster_ms.txt")
+    print(f"Lettura del file batch {faster_ms_file_path}...")
+    if os.path.exists(faster_ms_file_path):
+        batch_results = extract_times_from_faster_ms(faster_ms_file_path)
         if not batch_results:
             print("Nessun dato estratto dal file batch.")
     else:
-        print(f"File batch {batch_file_path} non trovato.")
+        print(f"File batch {faster_ms_file_path} non trovato.")
         batch_results = {}
     
     # Trova la configurazione migliore per ogni immagine
@@ -217,6 +270,7 @@ def main():
     best_threads = [best_configs[img_id]['threads'] for img_id in image_ids]
     batch_times = [batch_results.get(img_id, 0) for img_id in image_ids]
     acc_times = [acc_results.get(img_id, {'total_time': 0})['total_time'] for img_id in image_ids]
+    blas_times = [blas_results.get(img_id, {'total_time': 0})['total_time'] for img_id in image_ids]
     
     # Crea il grafico
     fig, ax = plt.subplots(figsize=(16, 8))
@@ -227,6 +281,7 @@ def main():
     batch_bars = ax.bar(x - width, batch_times, width, label='Faster MeanShift Euc')
     best_bars = ax.bar(x, best_times, width, label='SLIC + Mean Shift (OpenMP)')
     acc_bars = ax.bar(x + width, acc_times, width, label='SLIC + Mean Shift (OpenACC)')
+    blas_bars = ax.bar(x + 2 * width, blas_times, width, label='SLIC + Matrix Mean Shift (OpenBLAS)')
     
     ax.set_xlabel('Image')
     ax.set_ylabel('Execution Time (seconds)')
@@ -239,7 +294,7 @@ def main():
     plt.tight_layout()
     
     # Aggiungi le etichette di tempo
-    for i, (batch_time, best_time, acc_time) in enumerate(zip(batch_times, best_times, acc_times)):
+    for i, (batch_time, best_time, acc_time, blas_time) in enumerate(zip(batch_times, best_times, acc_times, blas_times)):
         if batch_time > 0:
             ax.text(i - width, batch_time + 0.1, f"{batch_time:.2f}s", 
                     ha='center', va='bottom', fontsize=8)
@@ -252,10 +307,15 @@ def main():
         if acc_time > 0:
             ax.text(i + width, acc_time + 0.1, f"{acc_time:.2f}s", 
                     ha='center', va='bottom', fontsize=8)
+        if blas_time > 0:
+
+            ax.text(i + 2 * width, blas_time + 0.1, f"{blas_time:.2f}s", 
+                    ha='center', va='bottom', fontsize=8)
     
     mean_batch = np.mean([t for t in batch_times if t > 0]) if any(t > 0 for t in batch_times) else 0
     mean_openmp = np.mean([t for t in best_times if t > 0]) if any(t > 0 for t in best_times) else 0
     mean_openacc = np.mean([t for t in acc_times if t > 0]) if any(t > 0 for t in acc_times) else 0
+    mean_openblas = np.mean([t for t in blas_times if t > 0]) if any(t > 0 for t in blas_times) else 0
 
     # Add horizontal lines for means
     if mean_batch > 0:
@@ -269,6 +329,10 @@ def main():
     if mean_openacc > 0:
         ax.axhline(y=mean_openacc, color='C2', linestyle='--', alpha=0.7)
         ax.text(len(image_ids) - 1, mean_openacc, f"Mean: {mean_openacc:.2f}s", ha='left', va='bottom', color='C2')
+    
+    if mean_openblas > 0:
+        ax.axhline(y=mean_openblas, color='C3', linestyle='--', alpha=0.7)
+        ax.text(len(image_ids) - 1, mean_openblas, f"Mean: {mean_openblas:.2f}s", ha='left', va='bottom', color='C3')
     
 
     # Salva e mostra il grafico
