@@ -34,8 +34,8 @@ int compare_points(const Point *p1, const Point *p2) {
 #pragma acc routine seq
 void divide_point(Point *p, double scalar) {
     if (scalar == 0) {
-        fprintf(stderr, "Error: Division by zero\n");
-        exit(EXIT_FAILURE);
+        printf("Error: Division by zero\n");
+        return;
     }
     for (unsigned int i = 0; i < DIM; i++) {
         p->coords[i] /= scalar;
