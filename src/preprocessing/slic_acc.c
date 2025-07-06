@@ -35,8 +35,11 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
     unsigned int num_centers = 0;
     initialize_centers(dataset, width, height, S, num_superpixels, superpixel_dataset, center_x, center_y, &num_centers);
 
-    // Initialize labels and distances (infinite)
-    reset_labels_and_distances(dataset_size, dataset_labels, distances);
+    // Initialize labels and distances (infinite) on the host before data region
+    for (int i = 0; i < dataset_size; i++) {
+        dataset_labels[i] = -1;
+        distances[i] = DBL_MAX;
+    }
 
     Point *new_centers = malloc(num_superpixels * sizeof(Point));
     unsigned int *counts = malloc(num_superpixels * sizeof(unsigned int));
@@ -110,15 +113,6 @@ void initialize_centers(const Point dataset[], unsigned int width, unsigned int 
     *num_centers = count;
 }
 
-void reset_labels_and_distances(int dataset_size, int labels[], T distances[])
-{
-    #pragma acc parallel loop present(labels[0:dataset_size], distances[0:dataset_size])
-    for (int i = 0; i < dataset_size; i++)
-    {
-        labels[i] = -1;
-        distances[i] = DBL_MAX;
-    }
-}
 
 void reset_new_centers(int num_centers, Point new_centers[], int counts[], int sum_x[], int sum_y[])
 {
