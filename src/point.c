@@ -5,6 +5,7 @@
 #include "include/point.h"
 
 // Initializes a point by setting all dimensions to 0.0
+#pragma acc routine seq
 void init_point(Point *p) {
     for (unsigned int i = 0; i < DIM; i++) {
         p->coords[i] = 0.0;
@@ -12,6 +13,7 @@ void init_point(Point *p) {
 }
 
 // Copies the values from the source point to the destination point
+#pragma acc routine seq
 void copy_point(const Point *source, Point *dest) {
     for (unsigned int i = 0; i < DIM; i++) {
         dest->coords[i] = source->coords[i];
@@ -29,6 +31,7 @@ int compare_points(const Point *p1, const Point *p2) {
 }
 
 // Divides each dimension of a point by a scalar
+#pragma acc routine seq
 void divide_point(Point *p, double scalar) {
     if (scalar == 0) {
         fprintf(stderr, "Error: Division by zero\n");
