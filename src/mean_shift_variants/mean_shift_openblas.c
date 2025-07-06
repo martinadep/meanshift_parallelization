@@ -3,6 +3,7 @@
 #include "../include/mean_shift.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> // Added for memcpy
 #include <math.h>
 #include <omp.h>
 #include <cblas.h>
@@ -14,9 +15,12 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
                      unsigned int* cluster_count)
 {
     printf("OpenBLAS Mean shift\n");
-    exit(0);
     const unsigned int N = dataset_size;
     const unsigned int D = DIM;
+    const unsigned int MAX_ITER = 50;
+    const T TOLERANCE = 1e-3;
+    T shift_norm = INFINITY;
+    unsigned int iter = 0;
 
     T* distances = (T*)malloc(N * N * sizeof(T));
     T* weights = (T*)malloc(N * N * sizeof(T));
@@ -33,14 +37,9 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     #pragma omp parallel for
     for (unsigned int i = 0; i < N; i++)
         for (unsigned int d = 0; d < D; d++)
-            flat_points[i * D + d] = dataset[i][d];
+            flat_points[i * D + d] = dataset[i].coords[d];
 
     memcpy(shifted_dataset, dataset, N * sizeof(Point)); // Initial copy
-
-    const unsigned int MAX_ITER = 50;
-    const T TOLERANCE = 1e-3;
-    T shift_norm = INFINITY;
-    unsigned int iter = 0;
 
     while (iter < MAX_ITER && shift_norm > TOLERANCE) {
         // 1. Compute pairwise distances
@@ -49,7 +48,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
             for (unsigned int j = 0; j < N; j++) {
                 T dist = 0.0;
                 for (unsigned int d = 0; d < D; d++) {
-                    T diff = shifted_dataset[i][d] - shifted_dataset[j][d];
+                    T diff = shifted_dataset[i].coords[d] - shifted_dataset[j].coords[d];
                     dist += diff * diff;
                 }
                 distances[i * N + j] = sqrt(dist);
@@ -64,15 +63,27 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         // 3. Compute row-wise sum of weights (W1)
         #pragma omp parallel for
         for (unsigned int i = 0; i < N; i++) {
-            weight_sums[i] = cblas_dasum(N, &weights[i * N], 1); // sum of row i
+            // Use appropriate BLAS function based on T type
+            #if defined(T) && T == float
+                weight_sums[i] = cblas_sasum(N, &weights[i * N], 1);
+            #else
+                weight_sums[i] = cblas_dasum(N, (const double*)&weights[i * N], 1);
+            #endif
         }
 
         // 4. Matrix multiplication: new_points = weights @ flat_points
         // weights: [N x N], flat_points: [N x D], result: flat_new_points [N x D]
-        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
-                    N, D, N,
-                    1.0, weights, N, flat_points, D,
-                    0.0, flat_new_points, D);
+        #if defined(T) && T == float
+            cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                        N, D, N,
+                        1.0f, (const float*)weights, N, (const float*)flat_points, D,
+                        0.0f, (float*)flat_new_points, D);
+        #else
+            cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                        N, D, N,
+                        1.0, (const double*)weights, N, (const double*)flat_points, D,
+                        0.0, (double*)flat_new_points, D);
+        #endif
 
         // 5. Normalize rows by weight_sums
         #pragma omp parallel for
@@ -102,7 +113,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         #pragma omp parallel for
         for (unsigned int i = 0; i < N; i++)
             for (unsigned int d = 0; d < D; d++)
-                shifted_dataset[i][d] = flat_points[i * D + d];
+                shifted_dataset[i].coords[d] = flat_points[i * D + d];
 
         iter++;
 #ifdef DEBUG
@@ -133,7 +144,6 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
     int c = 0;
     for (; c < *cluster_count; c++)
     {
-
         T distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
 
         if (distance_from_cluster <= CLUSTER_EPSILON)
