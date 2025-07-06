@@ -27,7 +27,7 @@ for csv_file in $csv_files; do
             
     echo "  Processing ${filename} -> ${output_path}..."
             
-    ./build/slic_ms_blas -i "${csv_file}" -o "${output_path}" >> "${OUTPUT_DIR}/slic_ms_blas.txt"
+    ./build/slic_ms_openblas -i "${csv_file}" -o "${output_path}" >> "${OUTPUT_DIR}/slic_ms_blas.txt"
 done
 
 echo "Batch run completed!"
