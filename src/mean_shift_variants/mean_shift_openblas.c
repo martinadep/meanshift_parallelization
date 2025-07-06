@@ -1,6 +1,6 @@
-#include "include/point.h"
-#include "include/utils.h"
-#include "include/mean_shift.h"
+#include "../include/point.h"
+#include "../include/utils.h"
+#include "../include/mean_shift.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
