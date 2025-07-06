@@ -36,3 +36,5 @@ data/*
 *.png
 scripts_local/
 results_*/
+old_output/
+output/

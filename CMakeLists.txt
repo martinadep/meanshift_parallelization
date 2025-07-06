@@ -73,6 +73,9 @@ function(add_mean_shift_target TARGET_NAME MS_TYPE)
             list(APPEND TARGET_DEFINITIONS MATRIX)
         elseif(MS_TYPE STREQUAL "MATRIX_BLOCK")
             list(APPEND TARGET_SOURCES src/mean_shift_variants/mean_shift_matrix_block.c)
+        elseif(MS_TYPE STREQUAL "OPENBLAS")
+            list(APPEND TARGET_SOURCES src/mean_shift_variants/mean_shift_openblas.c)
+            list(APPEND TARGET_DEFINITIONS MATRIX)
         endif()
     endif()
 
@@ -91,6 +94,13 @@ function(add_mean_shift_target TARGET_NAME MS_TYPE)
 
     add_executable(${TARGET_NAME} ${TARGET_SOURCES})
     target_compile_definitions(${TARGET_NAME} PRIVATE ${TARGET_DEFINITIONS})
+
+    if(MS_TYPE STREQUAL "OPENBLAS")
+        find_package(BLAS REQUIRED)
+        message(${BLAS_LIBRARIES})
+        target_link_libraries(${TARGET_NAME} PRIVATE ${BLAS_LIBRARIES})
+    endif()
+
 endfunction()
 
 # ===================================================
@@ -105,6 +115,15 @@ add_mean_shift_target(slic_ms BASIC PREPROCESSING)
 add_mean_shift_target(slic_ms_sqrd SQRD PREPROCESSING)
 add_mean_shift_target(slic_ms_matrix MATRIX PREPROCESSING)
 add_mean_shift_target(slic_ms_matrix_block MATRIX_BLOCK PREPROCESSING)
+
+find_package(BLAS QUIET)
+# Only add OpenBLAS targets if BLAS is found
+if(BLAS_FOUND)
+    message(STATUS "BLAS found, building OpenBLAS targets")
+    add_mean_shift_target(slic_ms_openblas OPENBLAS PREPROCESSING)
+else()
+    message(STATUS "BLAS not found, skipping OpenBLAS targets")
+endif()
 
 add_mean_shift_target(breakdown_mean_shift BASIC BREAKDOWN)
 add_mean_shift_target(metrics_mean_shift BASIC METRICS)
