@@ -1,0 +1,14 @@
+variables:
+  image: ["original_12003.csv"] # data/batch   # This is a directory; each file name will be used as a value
+  nCPUs: [1, 2]
+  program: ["slic_ms"]
+  kernel: ["gaussian", "epanechnikov"]
+
+# Top-level commands
+command: ./build/{program} -i "data/batch/{image}" -o "output/{program}__{image}" -k {kernel}
+
+jobs:
+  - config: "{nCPUs}cpu" # Dynamically generate the configuration name
+    # Uses the global command and variables
+    config_jobs:
+      - tag: "{program}__{kernel}"

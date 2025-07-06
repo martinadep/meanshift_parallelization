@@ -3,6 +3,7 @@
 .vscode/
 
 # CMake
+CMakeFiles/
 cmake-build-debug/
 build/
 
@@ -17,6 +18,7 @@ dataset/*
 # Python
 venv/
 .venv/
+*__pycache__
 
 run_experiments.*
 # dataset_weak_scaling/
@@ -36,3 +38,7 @@ data/*
 *.png
 scripts_local/
 results_*/
+output/
+
+# SbatchMan
+SbatchMan/

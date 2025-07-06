@@ -213,3 +213,31 @@ The parallel version of the algorithm offers significant performance improvement
 | ...        | x.xx seconds      | x.xx seconds    | x.xx    |
 | ...        | x.xx seconds      | x.xx seconds    | x.xx    |
 | ...        | x.xx seconds      | x.xx seconds    | x.xx    |
+
+
+## Evaluation with SbatchMan
+
+Please read SbatchMan documentation at [https://sbatchman.readthedocs.io/en/latest/](https://sbatchman.readthedocs.io/en/latest/).
+
+In summary from the root of the project (either locally or on a remote cluster), run:
+
+```bash
+# Run these commands, only the first time
+sbatchman set-cluster-name <your_cluster_name>
+sbatchman init
+sbatchman configure --file sbatchman_configs.yaml
+```
+
+To run experiments:
+
+```bash
+sbatchman launch --file sbatchman_launch_all.yaml
+# To check jobs status
+sbatchman status
+```
+
+Generating plots:
+
+```bash
+python3 py_utils/strong_scaling_all_plot_sbatchman.py
+```
