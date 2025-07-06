@@ -167,8 +167,8 @@ void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
                              int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[])
 {
     #pragma acc parallel loop present(dataset[0:dataset_size], labels[0:dataset_size], \
-                                     new_centers[0:MAX_SUPERPIXELS], counts[0:MAX_SUPERPIXELS], \
-                                     sum_x[0:MAX_SUPERPIXELS], sum_y[0:MAX_SUPERPIXELS])
+                                     new_centers[0:num_centers], counts[0:num_centers], \
+                                     sum_x[0:num_centers], sum_y[0:num_centers])
     for (int i = 0; i < dataset_size; i++)
     {
         int c = labels[i];
