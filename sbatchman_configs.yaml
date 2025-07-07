@@ -1,3 +1,7 @@
+variables:
+  partition: ["short", "edu-short"]
+  ncpus: [1, 2, 4]
+
 baldo:
   scheduler: slurm
 
@@ -8,28 +12,14 @@ baldo:
     gpus: 0
 
   configs:
-    - name: 1cpu
+    - name: "{ncpus}cpu_{partition}"
       env:
-        - "OMP_NUM_THREADS=1"
-      cpus-per-task: 1
-    - name: 2cpu
-      env:
-        - "OMP_NUM_THREADS=2"
-      cpus-per-task: 2
-    - name: 4cpu
-      env:
-        - "OMP_NUM_THREADS=4"
-      cpus-per-task: 4
+        - "OMP_NUM_THREADS={ncpus}"
+      cpus-per-task: "{ncpus}"
 
 local:
   scheduler: local
   configs:
-    - name: 1cpu
+    - name: "{ncpus}cpu"
       env:
-        - "OMP_NUM_THREADS=1"
-    - name: 2cpu
-      env:
-        - "OMP_NUM_THREADS=2"
-    - name: 4cpu
-      env:
-        - "OMP_NUM_THREADS=4"
+        - "OMP_NUM_THREADS={ncpus}"
