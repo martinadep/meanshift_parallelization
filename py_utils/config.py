@@ -29,7 +29,7 @@ timing_colors = {
     "coords_update": "blue",
     "kernel": "orange",
     "distance_shift": "red",
-    "distance_mode_find": "green",
+    "distance_kernel": "green",
     "distance_cluster": "purple",
     "slic_distance_calc": "blue",
     "assignment_op": "orange",

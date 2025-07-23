@@ -11,7 +11,7 @@
     TIMER_SUM_DEF(kernel)
     TIMER_SUM_DEF(distance_shift)
     TIMER_SUM_DEF(coords_update)
-    TIMER_SUM_DEF(distance_mode_find)
+    TIMER_SUM_DEF(distance_kernel)
     TIMER_SUM_DEF(distance_cluster)
 #endif
 
