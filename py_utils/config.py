@@ -26,11 +26,13 @@ implementations = [
 
 # Color mapping for timing components
 timing_colors = {
-    "coords_update": "blue",
+    # Mean Shift components
+    "coords_update": "blue", 
     "kernel": "orange",
     "distance_shift": "red",
     "distance_kernel": "green",
-    "distance_cluster": "purple",
+    "distance_cluster": "purple", 
+    # SLIC components
     "slic_distance_calc": "blue",
     "assignment_op": "orange",
     "center_init": "green",

@@ -3,7 +3,7 @@ python ./py_utils/img_to_csv.py
 
 export OMP_NUM_THREADS=1
 
-bandwidths=(0.5 2.0 5.0)
+bandwidths=(0.5 2.0 5.0 7.0)
 for bandwidth in "${bandwidths[@]}"; do
     echo "Running mean-shift with bandwidth: $bandwidth"
     ./build/breakdown_mean_shift -k gaussian -b $bandwidth >> ./results.txt

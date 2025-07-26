@@ -75,9 +75,9 @@ for line in lines:
         if time_match and current_kernel is not None and current_bandwidth is not None:
             data[current_kernel][current_bandwidth][label] = float(time_match.group(1))
 # Genera un unico grafico
-plt.figure(figsize=(14, 12))  # Increased size for better readability
-fig, ax = plt.subplots(figsize=(14, 12))
-bar_width = 0.2
+plt.figure(figsize=(18, 12))  # Increased size for better readability
+fig, ax = plt.subplots(figsize=(20, 12))
+bar_width = 0.15
 
 # If only one kernel, place it in the middle
 y = np.arange(len(kernels))
@@ -106,22 +106,22 @@ for i, bw in enumerate(bandwidths):
         for j, kernel in enumerate(kernels):
             # Position the text at the very beginning of the bar
             ax.text(0.06, y[j] + offset + y_offset, f"bw={bw}", 
-                    ha="left", va="center", fontsize=14, color="white", 
+                    ha="left", va="center", fontsize=15, color="white", 
                     weight="bold", alpha=0.7)
 
 # Configura il grafico
-if multiple_bandwidths:
-    title = "Execution Time Breakdown by Kernel and Bandwidth"
-else:
-    title = f"Execution Time Breakdown for {kernels[0]} kernel (bw={bandwidths[0]})"
+# if multiple_bandwidths:
+#     title = "Execution Time Breakdown by Kernel and Bandwidth"
+# else:
+#     title = f"Execution Time Breakdown for {kernels[0]} kernel (bw={bandwidths[0]})"
     
-ax.set_title(title, fontsize=18)
-ax.set_ylabel("Kernel", fontsize=16)
-ax.set_xlabel("Execution Time (s)", fontsize=16)
+# ax.set_title(title, fontsize=18)
+ax.set_ylabel("Kernel", fontsize=18)
+ax.set_xlabel("Execution Time (s)", fontsize=18)
 ax.set_yticks(y + y_offset)
-ax.set_yticklabels(kernels, fontsize=14)
-ax.tick_params(axis='x', labelsize=14)
-ax.legend(loc="upper right", bbox_to_anchor=(1, 0.5), fontsize=12)
+ax.set_yticklabels(kernels, fontsize=16)
+ax.tick_params(axis='x', labelsize=16)
+ax.legend(loc="upper right", bbox_to_anchor=(1, 0.5), fontsize=16)
 ax.grid(axis="x", linestyle="--", alpha=0.7)
 
 # Adjust layout to avoid warnings
@@ -131,6 +131,6 @@ output_dir = "./"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     
-plt.savefig(f"{output_dir}/breakdown_meanshift.png")
-print(f"Plot saved to {output_dir}/breakdown_meanshift.png")
+plt.savefig(f"{output_dir}/breakdown_meanshift.pdf")
+print(f"Plot saved to {output_dir}/breakdown_meanshift.pdf")
 plt.close()

@@ -5,10 +5,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef TIMING_BREAKDOWN
+static unsigned int total_shift_calls = 0;
+#endif
+
 // Move a single point towards the maximum density area
 void shift_single_point(const Point *point, Point *next_point,
                               const Point dataset[], unsigned int dataset_size,
                               T bandwidth, T (*kernel_func)(T, T)) {
+
+#ifdef TIMING_BREAKDOWN
+    total_shift_calls++;
+#endif
+
     T total_weight = 0;
     Point point_i;
     init_point(&point_i); // xi
@@ -127,6 +136,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     }
     
 #ifdef TIMING_BREAKDOWN
+    printf("shift_single_point total calls: %u\n", total_shift_calls);
     TIMER_SUM_PRINT(coords_update)
     TIMER_SUM_PRINT(kernel)
     TIMER_SUM_PRINT(distance_shift)
