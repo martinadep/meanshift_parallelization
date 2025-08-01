@@ -24,20 +24,20 @@ implementations = [
     {"name": "slic_ms_matrix_block", "color": "#1BBA13", "folder": "slic_ms_matrix_block"} 
 ]
 
-# Color mapping for timing components
+# Color mapping for timing components - using provided palette
 timing_colors = {
-    # Mean Shift components
-    "coords_update": "blue", 
-    "kernel": "orange",
-    "distance_shift": "red",
-    "distance_kernel": "green",
-    "distance_cluster": "purple", 
+    # Mean Shift components - using palette: 2f4858, 33658a, 86bbd8, f6ae2d, f26419
+    "coords_update": "#2f4858",  # Dark blue-gray
+    "distance_cluster": "#3976A5",         # Medium blue
+    "distance_shift": "#86bbd8", # Light blue
+    "distance_kernel": "#f6ae2d", # Yellow
+    "kernel": "#f26419", # Orange
     # SLIC components
-    "slic_distance_calc": "blue",
-    "assignment_op": "orange",
-    "center_init": "green",
-    "center_update": "red",
-    "cluster_accumulate": "purple"
+    "slic_distance_calc": "#2f4858",
+    "assignment_op": "#33658a",
+    "center_init": "#86bbd8",
+    "center_update": "#f6ae2d",
+    "cluster_accumulate": "#f26419"
 }
 
 # SLIC to mean_shift implementation mapping for colors
