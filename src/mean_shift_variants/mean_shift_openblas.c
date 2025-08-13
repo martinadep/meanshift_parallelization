@@ -123,7 +123,6 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     }
 
     // Cluster assignment
-    #pragma omp parallel for
     for (int i = 0; i < N; i++) {
         assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
     }

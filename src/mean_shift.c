@@ -11,8 +11,9 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
                 unsigned int *cluster_count)
 {
     *cluster_count = 0;
-// Phase 1: Independent point shifting - parallelizable   
-#pragma omp parallel
+    
+    // Phase 1: Independent point shifting   
+    #pragma omp parallel
     {
         #pragma omp master
         {
@@ -23,23 +24,12 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
         for (int i = 0; i < dataset_size; i++) {
             shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
                                         dataset, dataset_size, bandwidth, kernel_func);
-            // #ifdef DEBUG
-            // #pragma omp critical
-            // {
-            //     if (i % 500 == 0)
-            //         printf("Thread %d: Shifted %d/%d points...\n", 
-            //                omp_get_thread_num(), i, dataset_size);
-            // }
-            // #endif
         }
-    }
+    } // End parallel region
 
-    // Phase 2: Cluster assignment - requires synchronization
+    // Phase 2: Cluster assignment
     for (int i = 0; i < dataset_size; i++) {
-        #pragma omp critical
-        {
-            assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
-        }
+        assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
     }
 }
 
