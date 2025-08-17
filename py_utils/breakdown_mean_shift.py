@@ -125,11 +125,11 @@ for i, kernel in enumerate(kernels):
 #     title = f"Execution Time Breakdown for {kernels[0]} kernel"
     
 # ax.set_title(title, fontsize=18)
-ax.set_ylabel("Bandwidth", fontsize=27)
-ax.set_xlabel("Execution Time (s)", fontsize=27)
+ax.set_ylabel("Bandwidth", fontsize=32)
+ax.set_xlabel("Execution Time (s)", fontsize=32)
 ax.set_yticks(y + y_offset)
-ax.set_yticklabels([f"{bw}" for bw in bandwidths], fontsize=22)
-ax.tick_params(axis='x', labelsize=24)
+ax.set_yticklabels([f"{bw}" for bw in bandwidths], fontsize=25)
+ax.tick_params(axis='x', labelsize=27)
 
 # Calcola il massimo tempo totale
 max_total_time = 0

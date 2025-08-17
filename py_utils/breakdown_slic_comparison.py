@@ -2,10 +2,19 @@ import os
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 from utils import try_read_file
-from config import timing_colors
+from config import FONT_TITLE, LANDSCAPE_INCHES, FONT_AXES, FONT_LEGEND, FONT_TICKS, timing_colors
 
 print("Importing libraries...")
+# Set Times New Roman font globally and font sizes
+rcParams['font.family'] = 'Times New Roman'
+# rcParams['font.size'] = 22
+rcParams['axes.titlesize'] = FONT_AXES
+rcParams['axes.labelsize'] = FONT_AXES
+rcParams['xtick.labelsize'] = FONT_TICKS
+rcParams['ytick.labelsize'] = FONT_TICKS
+rcParams['legend.fontsize'] = FONT_TICKS
 
 # Input files
 input_file1 = "./breakdown_slic_naive.txt"
@@ -20,9 +29,9 @@ for file in [input_file1, input_file2]:
 # Timing labels
 timing_labels = [
     "slic_distance_calc",
-    "assignment_op",
     "center_init", 
     "center_update",
+    "assignment_op",
     "cluster_accumulate"
 ]
 
@@ -103,7 +112,7 @@ if not has_data:
     exit(1)
 
 # Create the stacked bar chart
-fig, ax = plt.subplots(figsize=(14, 8))
+fig, ax = plt.subplots(figsize=LANDSCAPE_INCHES)
 
 # Width and positioning
 bar_width = 0.35
@@ -130,11 +139,11 @@ for i, thread in enumerate(all_thread_counts):
     if thread in timing_data1:
         total1 = sum(timing_data1[thread].values())
         ax.text(x[i] - bar_width/2, total1 + 0.05, f"{total1:.2f}s", 
-                ha='center', va='bottom', fontsize=9)
+                ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
     if thread in timing_data2:
         total2 = sum(timing_data2[thread].values())
         ax.text(x[i] + bar_width/2, total2 + 0.05, f"{total2:.2f}s", 
-                ha='center', va='bottom', fontsize=9)
+                ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
 
 # Create custom legend elements
 legend_elements = []
@@ -151,17 +160,18 @@ legend_elements.append(plt.Rectangle((0,0), 1, 1, fill=False, edgecolor='black',
                                      hatch='///', label='modified SLIC (hatched bars)'))
 
 # Configure the chart
-ax.set_title("SLIC Execution Time Comparison by Thread Count")
+# ax.set_title("SLIC Execution Time Comparison by Thread Count")
 ax.set_xlabel("Number of Threads")
 ax.set_ylabel("Execution Time (seconds)")
 ax.set_xticks(x)
 ax.set_xticklabels(all_thread_counts)
-ax.legend(handles=legend_elements, loc="upper right", fontsize=9)
+ax.tick_params(axis='y')
+ax.legend(handles=legend_elements, loc="upper left")
 ax.grid(axis="y", linestyle="--", alpha=0.7)
 
 # Add a better title with file information
-plt.suptitle(f"SLIC Implementation Comparison\n{os.path.basename(input_file1)} vs {os.path.basename(input_file2)}", 
-             fontsize=14, fontweight='bold', y=0.98)
+# plt.suptitle(f"SLIC Implementation Comparison\n{os.path.basename(input_file1)} vs {os.path.basename(input_file2)}", 
+#            fontsize=28, fontweight='bold', y=0.98, fontname='Times New Roman')
 
 plt.tight_layout()
 plt.savefig("./slic_comparison_performance.png")

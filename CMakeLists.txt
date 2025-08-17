@@ -120,6 +120,7 @@ find_package(BLAS QUIET)
 # Only add OpenBLAS targets if BLAS is found
 if(BLAS_FOUND)
     message(STATUS "BLAS found, building OpenBLAS targets")
+    add_mean_shift_target(mean_shift_openblas OPENBLAS)
     add_mean_shift_target(slic_ms_openblas OPENBLAS PREPROCESSING)
 else()
     message(STATUS "BLAS not found, skipping OpenBLAS targets")

@@ -5,10 +5,22 @@ from PIL import Image
 from skimage import color  # per conversione LAB
 from config import in_img_path, original_csv_path
 
-def image_to_csv(input_img_path, output_csv_path):
+
+def image_to_csv(input_img_path, output_csv_path, resize=None):
+    """
+    Converte un'immagine in CSV (spazio colore LAB), con resize opzionale.
+
+    :param input_img_path: Path immagine input
+    :param output_csv_path: Path CSV di output
+    :param resize: tuple (width, height) oppure None per mantenere dimensioni originali
+    """
     # Load the image
-    image = Image.open(input_img_path)
-    image = image.convert("RGB")
+    image = Image.open(input_img_path).convert("RGB")
+
+    # Resize se richiesto
+    if resize is not None:
+        image = image.resize(resize, Image.LANCZOS)
+
     width, height = image.size
 
     # Convert image to LAB
@@ -30,14 +42,12 @@ def image_to_csv(input_img_path, output_csv_path):
     df = pd.DataFrame(data)
     df.to_csv(output_csv_path, index=False, header=False)
 
-    # Print the result
-    print(f"\"{input_img_path}\" converted in LAB at \"{output_csv_path}\" - size: {width}x{height}")
+    print(f"\"{input_img_path}\" converted to LAB at \"{output_csv_path}\" - size: {width}x{height}")
+
 
 def main():
-    # Set up argument parser
-    parser = argparse.ArgumentParser(description="Convert image to CSV (LAB color space).")
+    parser = argparse.ArgumentParser(description="Convert image to CSV (LAB color space) with optional resize.")
 
-    # Argument for input image path
     parser.add_argument(
         '--input', '-i',
         type=str,
@@ -45,19 +55,25 @@ def main():
         help=f"Path to the input image (default: {in_img_path})"
     )
 
-    # Argument for output CSV file path
     parser.add_argument(
         '--output', '--csv', '-o',
         type=str,
         default=original_csv_path,
         help=f"Path to save the output CSV (default: {original_csv_path})"
     )
+#90	60 o 128 85
+    parser.add_argument(
+        '--resize', '-r',
+        type=int,
+        nargs=2,
+        metavar=('WIDTH', 'HEIGHT'),
+        help="Resize image to WIDTH HEIGHT before processing (default: original size)"
+    )
 
-    # Parse the arguments
     args = parser.parse_args()
 
-    # Call the function with the user-provided or default paths
-    image_to_csv(args.input, args.output)
+    image_to_csv(args.input, args.output, resize=tuple(args.resize) if args.resize else None)
+
 
 if __name__ == "__main__":
     main()
