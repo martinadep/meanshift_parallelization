@@ -18,7 +18,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     const unsigned int N = dataset_size;
     const unsigned int D = DIM;
     const unsigned int MAX_ITER = 50;
-    const T TOLERANCE = 1e-3;
+    const T TOLERANCE = EPSILON;
     T shift_norm = INFINITY;
     unsigned int iter = 0;
 
@@ -31,6 +31,15 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     if (!distances || !weights || !weight_sums || !flat_points || !flat_new_points) {
         fprintf(stderr, "Error: Memory allocation failed in mean_shift_blas\n");
         goto cleanup;
+    }
+
+        // Report thread count
+    #pragma omp parallel
+    {
+        #pragma omp master
+        {
+            printf("Running with %d threads\n", omp_get_num_threads());
+        }
     }
 
     // Flatten dataset into row-major matrix [N x D]
@@ -121,6 +130,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
             printf("Iteration %d, shift_norm: %f\n", iter, shift_norm);
 #endif
     }
+    printf("Iterations completed: %d\n", iter);
 
     // Cluster assignment
     for (int i = 0; i < N; i++) {

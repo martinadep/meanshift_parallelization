@@ -27,7 +27,7 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     {
         #pragma omp master
         {
-            printf("Running matrix implementation with %d threads\n", omp_get_num_threads());
+            printf("Running with %d threads\n", omp_get_num_threads());
         }
     }
 
