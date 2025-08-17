@@ -178,7 +178,7 @@ add_compile_definitions(
     CSV_IN="./data/original.csv"
     CSV_OUT="./data/modified.csv"
     CSV_OUT_SLIC="./data/modified_slic.csv"
-    KERNEL="gaussian"
+    KERNEL="epanechnikov"
     DIM=3
     T=float
     TYPENAME="float"
