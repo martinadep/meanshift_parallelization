@@ -8,7 +8,7 @@ mkdir -p "${OUTPUT_DIR}"
 mkdir -p "${OUTPUT_BATCH_DIR}" 
 
 # Define thread counts
-threads=(1 2 4 8) #16 32 64 96)
+threads=(1 2 4 8 16 32) # 64 96)
 
 # Find all original csv files
 csv_files=$(find ./data/batch -name "original_*.csv")

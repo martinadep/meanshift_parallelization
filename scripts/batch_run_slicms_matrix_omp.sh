@@ -15,7 +15,7 @@ csv_files=$(find ./data/batch -name "original_*.csv")
 
 # For each thread count
 for t in "${threads[@]}"; do
-    echo "Running slic_ms with ${t} threads..."
+    echo "Running slic_ms_matrix with ${t} threads..."
         
     # Set OpenMP threads
     export OMP_NUM_THREADS=${t}
@@ -30,11 +30,11 @@ for t in "${threads[@]}"; do
         mkdir -p "${OUTPUT_BATCH_DIR}/${id}"
             
         # Output filepath
-        output_path="${OUTPUT_BATCH_DIR}/${id}/slic_ms_${t}_reconstructed.csv"
+        output_path="${OUTPUT_BATCH_DIR}/${id}/slic_ms_matrix_${t}_reconstructed.csv"
             
         echo "  Processing ${filename} -> ${output_path}..."
             
-        ./build/slic_ms -i "${csv_file}" -o "${output_path}" >> "${OUTPUT_DIR}/slic_ms_${t}_threads.txt"
+        ./build/slic_ms_matrix -i "${csv_file}" -o "${output_path}" >> "${OUTPUT_DIR}/slic_ms_matrix_${t}_threads.txt"
     done
 done
 
