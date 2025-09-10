@@ -1,6 +1,6 @@
 #!/bin/bash
 OUTPUT_DIR="./output"
-OUTPUT_BATCH_DIR="./output/batch_output_omp"
+OUTPUT_BATCH_DIR="./output/batch_output_matrix_omp"
 
 # Create results directory and output directory
 rm -rf "${OUTPUT_BATCH_DIR}"

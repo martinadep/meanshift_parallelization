@@ -135,15 +135,15 @@ for label in timing_labels:
     bottom2 += values
 
 # Add total time labels on top of each bar
-for i, thread in enumerate(all_thread_counts):
-    if thread in timing_data1:
-        total1 = sum(timing_data1[thread].values())
-        ax.text(x[i] - bar_width/2, total1 + 0.05, f"{total1:.2f}s", 
-                ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
-    if thread in timing_data2:
-        total2 = sum(timing_data2[thread].values())
-        ax.text(x[i] + bar_width/2, total2 + 0.05, f"{total2:.2f}s", 
-                ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
+# for i, thread in enumerate(all_thread_counts):
+#     if thread in timing_data1:
+#         total1 = sum(timing_data1[thread].values())
+#         ax.text(x[i] - bar_width/2, total1 + 0.05, f"{total1:.2f}s", 
+#                 ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
+#     if thread in timing_data2:
+#         total2 = sum(timing_data2[thread].values())
+#         ax.text(x[i] + bar_width/2, total2 + 0.05, f"{total2:.2f}s", 
+#                 ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
 
 # Create custom legend elements
 legend_elements = []
@@ -161,8 +161,8 @@ legend_elements.append(plt.Rectangle((0,0), 1, 1, fill=False, edgecolor='black',
 
 # Configure the chart
 # ax.set_title("SLIC Execution Time Comparison by Thread Count")
-ax.set_xlabel("Number of Threads")
-ax.set_ylabel("Execution Time (seconds)")
+ax.set_xlabel("Number of Threads", fontsize=12, fontname='Times New Roman')
+ax.set_ylabel("Execution Time (seconds)", fontsize=12, fontname='Times New Roman')
 ax.set_xticks(x)
 ax.set_xticklabels(all_thread_counts)
 ax.tick_params(axis='y')
@@ -174,5 +174,5 @@ ax.grid(axis="y", linestyle="--", alpha=0.7)
 #            fontsize=28, fontweight='bold', y=0.98, fontname='Times New Roman')
 
 plt.tight_layout()
-plt.savefig("./slic_comparison_performance.png")
-print("\nPlot saved as 'slic_comparison_performance.png'")
+plt.savefig("./slic_comparison_performance.pdf")
+print("\nPlot saved as 'slic_comparison_performance.pdf'")

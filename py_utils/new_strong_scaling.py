@@ -57,8 +57,8 @@ plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman"],
 })
-plt.rc('axes', titlesize=FONT_AXES)     # fontsize of the axes title
-plt.rc('axes', labelsize=FONT_AXES)     # fontsize of the x and y labels
+plt.rc('axes', titlesize=FONT_LEGEND)     # fontsize of the axes title
+plt.rc('axes', labelsize=FONT_LEGEND)     # fontsize of the x and y labels
 plt.rc('xtick', labelsize=FONT_TICKS)   # fontsize of the tick labels
 plt.rc('ytick', labelsize=FONT_TICKS)   # fontsize of the tick labels
 plt.rc('legend', fontsize=FONT_LEGEND)  # legend fontsize
@@ -72,10 +72,11 @@ for impl in implementations:
     plt.plot(threads, all_mean_times[name], marker='o', markersize=3, label=name, color=color)
 plt.xlabel("OpenMP threads")
 plt.ylabel("Average execution time (s)")
-plt.yscale('log')
+# plt.yscale('log')
 plt.xticks(threads)
 
 
+plt.legend()
 plt.grid(True, which="both", ls="--", lw=0.5)
 plt.tight_layout()
 plt.savefig("ms_strong_scaling.pdf")

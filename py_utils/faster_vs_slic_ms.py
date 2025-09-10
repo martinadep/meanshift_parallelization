@@ -3,6 +3,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
+from config import FONT_AXES, FONT_TICKS, FONT_LEGEND, FONT_TITLE, LANDSCAPE_INCHES, strong_scaling_dir, implementations as all_implementations, threads
 
 def extract_times_from_thread_file(file_path):
     """Estrae i tempi di esecuzione dal file di thread specificato."""
@@ -261,6 +262,37 @@ def main():
         print("Nessun dato estratto dai file di thread blas.")
         return
     
+    # MATRIX
+    thread_matrix_files = glob.glob(os.path.join(results_dir, "slic_ms_matrix_*_threads*"))
+    if not thread_matrix_files:
+        print(f"Nessun file di thread trovato in {results_dir}")
+        return
+
+    thread_matrix_counts = []
+    for file_path in thread_matrix_files:
+        file_name = os.path.basename(file_path)
+        thread_matrix_match = re.search(r"slic_ms_matrix_(\d+)_threads.txt", file_name)
+        if thread_matrix_match:
+            thread_matrix_counts.append(int(thread_matrix_match.group(1)))
+
+    thread_matrix_results = {}
+    for thread_matrix_count in sorted(thread_matrix_counts):
+        file_path = os.path.join(results_dir, f"slic_ms_matrix_{thread_matrix_count}_threads.txt")
+        print(f"Lettura del file {file_path}...")
+        if os.path.exists(file_path):
+            results_matrix = extract_times_from_thread_blas_file(file_path)
+            for image_id, data_matrix in results_matrix.items():
+                if image_id not in thread_matrix_results:
+                    thread_matrix_results[image_id] = []
+                thread_matrix_results[image_id].append(data_matrix)
+        else:
+            print(f"File {file_path} non trovato.")
+    
+    # Verifica se abbiamo dati
+    if not thread_matrix_results:
+        print("Nessun dato estratto dai file di thread matrix.")
+        return
+    
     # Leggi il file OpenACC
     acc_file_path = os.path.join(results_dir, "slic_ms_acc.txt")
     print(f"Lettura del file OpenACC {acc_file_path}...")
@@ -307,76 +339,148 @@ def main():
         print("Nessuna configurazione migliore trovata per OPENBLAS.")
         return
     
+    # OPENBLAS
+    best_configs_matrix = {}
+    for image_id, executions in thread_matrix_results.items():
+        if executions:
+            best_exec_matrix = min(executions, key=lambda x: x['total_time'])
+            best_configs_matrix[image_id] = best_exec_matrix
+
+    # Verifica se abbiamo dati validi
+    if not best_configs_matrix:
+        print("Nessuna configurazione migliore trovata per matrix.")
+        return
+    
     # Prepara i dati per il grafico
     image_ids = sorted(best_configs.keys())
     best_times = [best_configs[img_id]['total_time'] for img_id in image_ids]
     best_times_blas = [best_configs_blas[img_id]['total_time'] for img_id in image_ids]
+    best_times_matrix = [best_configs_matrix[img_id]['total_time'] for img_id in image_ids]
     best_threads = [best_configs[img_id]['threads'] for img_id in image_ids]
     best_threads_blas = [best_configs_blas[img_id]['threads'] for img_id in image_ids]
+    best_threads_matrix = [best_configs_matrix[img_id]['threads'] for img_id in image_ids]
     batch_times = [faster_ms_results.get(img_id, 0) for img_id in image_ids]
     acc_times = [acc_results.get(img_id, {'total_time': 0})['total_time'] for img_id in image_ids]
     
+    plt.rcParams.update({
+        "text.usetex": False,
+        "font.family": "serif",
+        "font.serif": ["Times New Roman"],
+    })
     # Crea il grafico
-    fig, ax = plt.subplots(figsize=(16, 8))
+    fig, ax = plt.subplots(figsize=LANDSCAPE_INCHES)
 
     x = np.arange(len(image_ids))
-    width = 0.2  # Narrower width for 4 bars
+    bar_width = 0.12  # Narrower width for 4 bars
+    bar_space = 0.2
 
-    # Use separate x-positions for all four implementations
-    faster_ms_bars = ax.bar(x - 1.5*width, batch_times, width, label='Faster MeanShift Euc') 
-    best_blas_bars = ax.bar(x - 0.5*width, best_times_blas, width, label='SLIC + Mean Shift (OpenBLAS)')
-    best_bars = ax.bar(x + 0.5*width, best_times, width, label='SLIC + Mean Shift (OpenMP)')
-    acc_bars = ax.bar(x + 1.5*width, acc_times, width, label='SLIC + Mean Shift (OpenACC)')
+    from config import implementations
+    impl_colors = {impl["name"]: impl["color"] for impl in implementations}
 
-    ax.set_xlabel('Image')
-    ax.set_ylabel('Execution Time (seconds)')
-    ax.set_title('Comparison of MeanShift Implementations with Means')
+    # Line plot per implementazione
+    ax.plot(x, batch_times, marker='o', markersize=3, label='Faster MeanShift Euc', color="#858585")
+    ax.plot(x, acc_times, marker='o', markersize=3, label='SLIC + Mean Shift (OpenACC)', color="#f6ae2d")
+    ax.plot(x, best_times, marker='o', markersize=3, label='SLIC + Mean Shift (OpenMP)', color=impl_colors.get('SLIC + MS (OpenMP)', '#f26419'))
+    ax.plot(x, best_times_matrix, marker='o', markersize=3, label='SLIC + Mean Shift Matrix (OpenMP)', color=impl_colors.get('SLIC + MS Matrix (OpenMP)', '#4581af'))
+    ax.plot(x, best_times_blas, marker='o', markersize=3, label='SLIC + Mean Shift Matrix (OpenMP + OpenBLAS)', color=impl_colors.get('SLIC + MS Matrix (OpenMP + OpenBLAS)', '#2f4858'))
+
+    ax.set_xlabel('Image', fontsize=12)
+    ax.set_ylabel('Execution Time (seconds)', fontsize=12)
+    # ax.set_title('Comparison of MeanShift Implementations with Means')
     ax.set_xticks(x)
     ax.set_xticklabels([f"{img_id}" for img_id in image_ids])
     ax.legend()
-    
+
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
-    
-    # Aggiungi le etichette di tempo
-    for i, (batch_time, best_time, acc_time, blas_time) in enumerate(zip(batch_times, best_times, acc_times, best_times_blas)):
-        if batch_time > 0:
-            ax.text(i - 1.5*width, batch_time + 0.05, f"{batch_time:.2f}s", 
-                    ha='center', va='bottom', fontsize=8)
-        if acc_time > 0:
-            ax.text(i + 1.5*width, acc_time + 0.05, f"{acc_time:.2f}s", 
-                    ha='center', va='bottom', fontsize=8)
-            
-        if best_time > 0:
-            ax.text(i + 0.5*width, best_time + 0.05, f"{best_time:.2f}s", 
-                    ha='center', va='bottom', fontsize=8)
-        if blas_time > 0:
-            ax.text(i - 0.5*width, blas_time + 0.05, f"{blas_time:.2f}s", 
-                    ha='center', va='bottom', fontsize=8)
-        
-    mean_faster_ms = np.mean([t for t in batch_times if t > 0]) if any(t > 0 for t in batch_times) else 0
-    mean_openmp = np.mean([t for t in best_times if t > 0]) if any(t > 0 for t in best_times) else 0
-    mean_openacc = np.mean([t for t in acc_times if t > 0]) if any(t > 0 for t in acc_times) else 0
-    mean_openblas = np.mean([t for t in best_times_blas if t > 0]) if any(t > 0 for t in best_times_blas) else 0
-
-    # Add horizontal lines for means
-    if mean_faster_ms > 0:
-        ax.axhline(y=mean_faster_ms, color='C0', linestyle='--', alpha=0.7)
-
-    if mean_openblas > 0:
-        ax.axhline(y=mean_openblas, color='C1', linestyle='--', alpha=0.7)
-    
-    if mean_openmp > 0:
-        ax.axhline(y=mean_openmp, color='C2', linestyle='--', alpha=0.7)
-
-    if mean_openacc > 0:
-        ax.axhline(y=mean_openacc, color='C3', linestyle='--', alpha=0.7)
-
-    # Salva e mostra il grafico
-    plt.savefig('implementation_comparison_mean_all.png')
+    plt.savefig('implementation_comparison_all.pdf')
     plt.show()
+
+    # box_data = [
+    #         [t for t in batch_times if t > 0],
+    #         [t for t in acc_times if t > 0],
+    #         [t for t in best_times if t > 0],
+    #         [t for t in best_times_matrix if t > 0],
+    #         [t for t in best_times_blas if t > 0]
+    #     ]
+    # box_labels = [
+    #         'Faster MeanShift Euc',
+    #         'SLIC + Mean Shift (OpenACC)',
+    #         'SLIC + Mean Shift (OpenMP)',
+    #         'SLIC + Mean Shift Matrix (OpenMP)',
+    #         'SLIC + Mean Shift Matrix (OpenMP + OpenBLAS)'
+    #     ]
+
+    # fig_box, ax_box = plt.subplots(figsize=(10, 6))
+    # bplot = ax_box.boxplot(box_data, patch_artist=True, labels=box_labels)
+
+    # # Colori coerenti con il grafico precedente
+    # box_colors = ["#858585", "#f6ae2d", impl_colors.get('SLIC + MS (OpenMP)', '#f26419'), impl_colors.get('SLIC + MS Matrix (OpenMP)', '#4581af'), impl_colors.get('SLIC + MS Matrix (OpenMP + OpenBLAS)', '#2f4858')]
+    # for patch, color in zip(bplot['boxes'], box_colors):
+    #     patch.set_facecolor(color)
+
+    # ax_box.set_ylabel('Execution Time (seconds)', fontsize=12)
+    # ax_box.set_title('Execution Time Distribution per Implementation (Best Thread Config)', fontsize=14)
+    # plt.xticks(rotation=20, ha='right')
+    # # plt.yscale('log')  # Log scale for better visibility of distributions
+    # plt.tight_layout()
+    # plt.savefig('implementation_comparison_boxplot.pdf')
+    # plt.show()
     
-    # Stampa un riepilogo
+    # Stampa tabella statistica per ogni implementazione
+    print("\nStatistiche per implementazione (solo best thread per immagine):")
+    print("=" * 140)
+    print(f"{'Implementazione':<35} {'Varianza':<12} {'Std Dev':<12} {'Img Min':<10} {'Tempo Min':<12} {'Threads Min':<12} {'Img Max':<10} {'Tempo Max':<12} {'Threads Max':<12}")
+    print("=" * 140)
+
+    stats_data = [
+        ("Faster MeanShift Euc", batch_times, None),
+        ("SLIC + Mean Shift (OpenACC)", acc_times, None),
+        ("SLIC + Mean Shift (OpenMP)", best_times, best_threads),
+        ("SLIC + Mean Shift Matrix (OpenMP)", best_times_matrix, best_threads_matrix),
+        ("SLIC + Mean Shift Matrix (BLAS)", best_times_blas, best_threads_blas)
+    ]
+
+    for label, times, threads_list in stats_data:
+        arr = np.array(times)
+        valid = arr > 0
+        arr_filt = arr[valid]
+        imgs_filt = np.array(image_ids)[valid]
+        threads_filt = np.array(threads_list)[valid] if threads_list is not None else None
+        if arr_filt.size > 0:
+            var = np.var(arr_filt)
+            std = np.std(arr_filt)
+            min_idx = np.argmin(arr_filt)
+            max_idx = np.argmax(arr_filt)
+            img_min = imgs_filt[min_idx]
+            img_max = imgs_filt[max_idx]
+            tempo_min = arr_filt[min_idx]
+            tempo_max = arr_filt[max_idx]
+            threads_min = str(threads_filt[min_idx]) if threads_list is not None else ""
+            threads_max = str(threads_filt[max_idx]) if threads_list is not None else ""
+            print(f"{label:<35} {var:<12.4f} {std:<12.4f} {img_min:<10} {tempo_min:<12.4f} {threads_min:<12} {img_max:<10} {tempo_max:<12.4f} {threads_max:<12}")
+        else:
+            print(f"{label:<35} {'-':<12} {'-':<12} {'-':<10} {'-':<12} {'':<12} {'-':<10} {'-':<12} {'':<12}")
+
+    print("=" * 140)
+
+    # Stampa la media delle best run per ogni implementazione
+    print("\nMedia delle best run per ogni implementazione:")
+    print("=" * 60)
+    print(f"{'Implementazione':<35} {'Media (s)':<12}")
+    print("=" * 60)
+    for label, times, _ in stats_data:
+        arr = np.array(times)
+        valid = arr > 0
+        arr_filt = arr[valid]
+        if arr_filt.size > 0:
+            mean_val = np.mean(arr_filt)
+            print(f"{label:<35} {mean_val:<12.4f}")
+        else:
+            print(f"{label:<35} {'-':<12}")
+    print("=" * 60)
+
+    # Stampa un riepilogo dettagliato per ogni immagine
     print("\nRiepilogo delle configurazioni per immagine:")
     print("=" * 100)
     print(f"{'Immagine':<10} {'OpenMP Threads':<15} {'OpenMP Totale':<15} {'OpenMP SLIC':<15} {'OpenMP MS':<15} "

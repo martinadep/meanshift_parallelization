@@ -6,7 +6,7 @@ out_img_path = "./data/reconstructed.jpg"
 metrics_path = "./data/metrics_mean_shift.txt"
 
 # Results directories
-strong_scaling_dir = 'results_strong_scaling1'
+strong_scaling_dir = 'results_strong_scaling'
 weak_scaling_dir = 'results_weak_scaling'
 
 # Common thread counts for scaling tests
@@ -14,18 +14,22 @@ threads = [1, 2, 4, 8, 16, 32, 64, 96]
 
 # Implementations configuration with colors for plotting
 implementations = [
-    {"name": "mean_shift", "color": "#BC1957", "folder": "mean_shift"},  
-    {"name": "mean_shift_sqrd", "color": "#D85A1A", "folder": "mean_shift_sqrd"},    
-    {"name": "mean_shift_matrix", "color": "#FFAA00DA", "folder": "mean_shift_matrix"}, 
-    {"name": "mean_shift_matrix_block", "color": "#FFD900", "folder": "mean_shift_matrix_block"}, 
-    {"name": "slic_ms", "color": "#1B529F", "folder": "slic_ms"},               
-    {"name": "slic_ms_sqrd", "color": "#38A5D0", "folder": "slic_ms_sqrd"},
-    {"name": "slic_ms_matrix", "color": "#2A7709", "folder": "slic_ms_matrix"},
-    {"name": "slic_ms_matrix_block", "color": "#1BBA13", "folder": "slic_ms_matrix_block"},
+    # {"name": "mean_shift", "color": "#BC1957", "folder": "mean_shift"},  
+    # {"name": "mean_shift_sqrd", "color": "#D85A1A", "folder": "mean_shift_sqrd"},    
+    # {"name": "mean_shift_matrix", "color": "#FFAA00DA", "folder": "mean_shift_matrix"}, 
+    # {"name": "mean_shift_matrix_block", "color": "#FFD900", "folder": "mean_shift_matrix_block"}, 
+    # {"name": "slic_ms", "color": "#1B529F", "folder": "slic_ms"},               
+    # {"name": "slic_ms_sqrd", "color": "#38A5D0", "folder": "slic_ms_sqrd"},
+    # {"name": "slic_ms_matrix", "color": "#2A7709", "folder": "slic_ms_matrix"},
+    # {"name": "slic_ms_matrix_block", "color": "#1BBA13", "folder": "slic_ms_matrix_block"},
     {"name": "MeanShift (OpenMP)", "color": "#f26419", "folder": "mean_shift"},
     {"name": "MeanShift Matrix (OpenMP)", "color": "#4581af", "folder": "mean_shift_matrix"},
-    {"name": "MeanShift Matrix (OpenMP + OpenBLAS)", "color": "#2f4858", "folder": "mean_shift_openblas"}
+    {"name": "MeanShift Matrix (OpenMP + OpenBLAS)", "color": "#2f4858", "folder": "mean_shift_openblas"},
+    {"name": "SLIC + MS (OpenMP)", "color": "#f26419", "folder": "slic_ms"},
+    {"name": "SLIC + MS Matrix (OpenMP)", "color": "#4581af", "folder": "slic_ms_matrix"},
+    {"name": "SLIC + MS Matrix (OpenMP + OpenBLAS)", "color": "#2f4858", "folder": "slic_ms_openblas"}
 ]
+
 
 # Color mapping for timing components - using provided palette
 timing_colors = {
