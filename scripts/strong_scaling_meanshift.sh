@@ -4,7 +4,7 @@
 mkdir -p results_strong_scaling
 
 # Define implementation types for mean_shift variants
-implementations=("mean_shift" "mean_shift_matrix" "mean_shift_openblas")
+implementations=("mean_shift" "mean_shift_matrix" "mean_shift_matrix_blas")
 csv_files=$(find ./data/resized_batch/ -name "resized_*.csv")
 
 # Define thread counts

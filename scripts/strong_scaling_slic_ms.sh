@@ -4,8 +4,8 @@
 mkdir -p results_strong_scaling
 
 # Define implementation types for SLIC variants
-implementations=("slic_ms" "slic_ms_sqrd" "slic_ms_matrix" "slic_ms_matrix_block" )
-
+implementations=("slic_ms" "slic_ms_matrix" "slic_ms_matrix_block" )
+    
 # Define thread counts
 threads=(1 2 4 8 16 32 64 96)
 
