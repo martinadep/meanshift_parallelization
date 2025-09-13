@@ -17,9 +17,6 @@ void init_point(Point *p);
 #pragma acc routine seq
 void copy_point(const Point *source, Point *dest);
 
-// Compares two points for equality within a tolerance
-int compare_points(const Point *p1, const Point *p2);
-
 // Divides each dimension of a point by a scalar
 void divide_point(Point *p, double scalar);
 

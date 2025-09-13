@@ -19,30 +19,6 @@ TIMER_SUM_DEF(center_update)
 TIMER_SUM_DEF(cluster_accumulate)
 #endif
 
-/*
-
-dataset[dataset_size] contiene i pixel del dataset
-dataset_labels[dataset_size] contiene le label assegnate ad ogni pixel
-superpixel_dataset[num_superpixels] contiene i centri di ogni superpixel
-superpixel_labels[num_superpixels] contiene le label assegnate ad ogni superpixel (num label = num superpixels)
-
-mean_shift() su superpixels_dataset[] --> ritorna shifted_superpixels[]
-Ogni pixel prenderà il valore del superpixel a cui appartiene (check tramite le labels)
-
------
-se ad esempio il 15esimo pixel con valori [12,5,203] 
-viene assegnato al secondo superpixel con label 3 e valore [10,7,203]:
-- dataset[15] = [12,5,203]
-- dataset_labels[15] = 3
-- superpixel_labels[2] = 3
-
-
-eseguo mean_shift() su superpixel_dataset[], supponendo che 
-superpixel_dataset[2] diventerà [15,2,200]:
-- dataset[15] = [15,2,200] perchè dataset_labels[15] = 3 e il superpixel
-con label 3 è diventato [15,2,200]
-
-*/
 unsigned int preprocess_dataset(unsigned int dataset_size,
                         const Point dataset[], int dataset_labels[], Point superpixel_dataset[],
                         unsigned int width, unsigned int height, unsigned int num_superpixels, T m)
@@ -78,7 +54,7 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
 
 
     for (int iter = 0; iter < MAX_ITER; iter++) {
-        // Assignment step --- PARALLELIZABLE over pixels
+        
 #ifdef TIMING_BREAKDOWN
         TIMER_START(assignment_op);
 #endif
@@ -87,10 +63,8 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
         TIMER_SUM(assignment_op);
 #endif
 
-        // Reset new centers
         reset_new_centers(num_centers, new_centers, counts, sum_x, sum_y);
 
-        // Sum pixels in each cluster -- PARALLELIZABLE (attention to race condition)
 #ifdef TIMING_BREAKDOWN
         TIMER_START(cluster_accumulate);
 #endif
@@ -99,7 +73,7 @@ unsigned int preprocess_dataset(unsigned int dataset_size,
         TIMER_SUM(cluster_accumulate);
 #endif
 
-        // Update centers -- PARALLELIZABLE over clusters
+
 #ifdef TIMING_BREAKDOWN
         TIMER_START(center_update);
 #endif
@@ -171,7 +145,7 @@ void update_centers(int num_centers, Point centers[], int center_x[], int center
 void accumulate_cluster_sums(const Point dataset[], int dataset_size, int width,
                                     int labels[], Point new_centers[], int counts[], int sum_x[], int sum_y[])
 {
-    // Using OpenMP with private arrays for reduction
+    // Private arrays for reduction
     int local_counts[MAX_SUPERPIXELS] = {0};
     int local_sum_x[MAX_SUPERPIXELS] = {0};
     int local_sum_y[MAX_SUPERPIXELS] = {0};

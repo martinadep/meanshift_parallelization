@@ -20,16 +20,6 @@ void copy_point(const Point *source, Point *dest) {
     }
 }
 
-// Compares two points for equality within a tolerance
-int compare_points(const Point *p1, const Point *p2) {
-    for (unsigned int i = 0; i < DIM; i++) {
-        if (fabs(p1->coords[i] - p2->coords[i] > 0.001)) {
-            return 0; // Points are not equal
-        }
-    }
-    return 1; // Points are equal
-}
-
 // Divides each dimension of a point by a scalar
 #pragma acc routine seq
 void divide_point(Point *p, double scalar) {

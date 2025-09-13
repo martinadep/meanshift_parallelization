@@ -20,14 +20,14 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
             printf("Running with %d threads\n", omp_get_num_threads());
         }
 
-        #pragma omp for schedule(dynamic, 64)
+        #pragma omp for schedule(dynamic)
         for (int i = 0; i < dataset_size; i++) {
             shift_point_until_convergence(&dataset[i], &shifted_dataset[i],
                                         dataset, dataset_size, bandwidth, kernel_func);
         }
     } // End parallel region
 
-    // Phase 2: Cluster assignment
+    // Phase 2: sequential Cluster Assignment
     for (int i = 0; i < dataset_size; i++) {
         assign_clusters(&shifted_dataset[i], cluster_modes, cluster_count);
     }
@@ -45,7 +45,6 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
 
     copy_point(input_point, &prev_point);
 
-    // Shift until convergence
     while (!stop_moving)
     {
         shift_single_point(&prev_point, &next_point, dataset, dataset_size, bandwidth, kernel_func);
@@ -63,7 +62,7 @@ unsigned int shift_point_until_convergence(const Point *input_point, Point *outp
     return iter;
 }
 
-// Move a single point towards the maximum density area
+// Single shift towards the densest area
 void shift_single_point(const Point *point, Point *next_point,
                         const Point dataset[], unsigned int dataset_size,
                         T bandwidth, T (*kernel_func)(T, T))
@@ -75,24 +74,22 @@ void shift_single_point(const Point *point, Point *next_point,
 
     for (int i = 0; i < dataset_size; i++)
     {
-        copy_point(&dataset[i], &point_i);                     // xi = dataset[i]
-        T distance = euclidean_distance(point, &point_i); // x - xi
+        copy_point(&dataset[i], &point_i);
+        T distance = euclidean_distance(point, &point_i); 
+        T weight = kernel_func(distance, bandwidth); 
 
-        T weight = kernel_func(distance, bandwidth); // K(x - xi / h)
-
-        // x' = x' + xi * K(x - xi / h)
         for (int j = 0; j < DIM; j++)
         {
             next_point->coords[j] += point_i.coords[j] * weight;
         }
 
-        total_weight += weight; // total weight of all points with respect to [point]
+        total_weight += weight; 
     }
 
+    // normalization
     if (total_weight > 0)
     {
-        // normalization
-        divide_point(next_point, total_weight); // x' = x' / sum(K(x - xi / h))
+        divide_point(next_point, total_weight); 
     } else {
         fprintf(stderr, "Error: total_weight == 0, couldn't normalize.\n");
     }
@@ -105,7 +102,6 @@ void assign_clusters(Point *shifted_point, Point cluster_modes[],
     int c = 0;
     for (; c < *cluster_count; c++)
     {
-
         T distance_from_cluster = euclidean_distance(shifted_point, &cluster_modes[c]);
 
         if (distance_from_cluster <= CLUSTER_EPSILON)

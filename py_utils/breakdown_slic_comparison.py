@@ -112,61 +112,33 @@ if not has_data:
     exit(1)
 
 # Create the stacked bar chart
-fig, ax = plt.subplots(figsize=LANDSCAPE_INCHES)
 
-# Width and positioning
+# Create the bar chart for total execution time only
+fig, ax = plt.subplots(figsize=LANDSCAPE_INCHES)
 bar_width = 0.35
 x = np.arange(len(all_thread_counts))
 
-# Build the stacked bars for file 1
-bottom1 = np.zeros(len(all_thread_counts))
-for label in timing_labels:
-    values = [timing_data1.get(t, {}).get(label, 0) for t in all_thread_counts]
-    ax.bar(x - bar_width/2, values, bar_width, bottom=bottom1, 
-           color=timing_colors[label], label=f"{label} (1)" if label == timing_labels[0] else "")
-    bottom1 += values
+# Total times for each thread count
 
-# Build the stacked bars for file 2
-bottom2 = np.zeros(len(all_thread_counts))
-for label in timing_labels:
-    values = [timing_data2.get(t, {}).get(label, 0) for t in all_thread_counts]
-    ax.bar(x + bar_width/2, values, bar_width, bottom=bottom2, 
-           color=timing_colors[label], hatch="///", label=f"{label} (2)" if label == timing_labels[0] else "")
-    bottom2 += values
+# Total times for each thread count
+total_times1 = [sum(timing_data1.get(t, {}).values()) for t in all_thread_counts]
+total_times2 = [sum(timing_data2.get(t, {}).values()) for t in all_thread_counts]
 
-# Add total time labels on top of each bar
-# for i, thread in enumerate(all_thread_counts):
-#     if thread in timing_data1:
-#         total1 = sum(timing_data1[thread].values())
-#         ax.text(x[i] - bar_width/2, total1 + 0.05, f"{total1:.2f}s", 
-#                 ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
-#     if thread in timing_data2:
-#         total2 = sum(timing_data2[thread].values())
-#         ax.text(x[i] + bar_width/2, total2 + 0.05, f"{total2:.2f}s", 
-#                 ha='center', va='bottom', fontsize=FONT_TICKS, fontname='Times New Roman')
+# Plot bars
 
-# Create custom legend elements
-legend_elements = []
-for label in timing_labels:
-    legend_elements.append(plt.Rectangle((0,0), 1, 1, color=timing_colors[label], label=label))
-
-# Add separator in the legend
-legend_elements.append(plt.Line2D([0], [0], color='none', label=''))
-
-# Add clearer dataset indicators
-legend_elements.append(plt.Rectangle((0,0), 1, 1, fill=False, edgecolor='black', 
-                                     label='standard SLIC (solid bars)'))
-legend_elements.append(plt.Rectangle((0,0), 1, 1, fill=False, edgecolor='black', 
-                                     hatch='///', label='modified SLIC (hatched bars)'))
+# Plot bars with new colors and no labels on top
+bar1 = ax.bar(x - bar_width/2, total_times1, bar_width, color='red', label='Standard SLIC')
+bar2 = ax.bar(x + bar_width/2, total_times2, bar_width, color='green', label='Optimized SLIC')
 
 # Configure the chart
-# ax.set_title("SLIC Execution Time Comparison by Thread Count")
-ax.set_xlabel("Number of Threads", fontsize=12, fontname='Times New Roman')
-ax.set_ylabel("Execution Time (seconds)", fontsize=12, fontname='Times New Roman')
+
+
+ax.set_xlabel("Number of Threads", fontsize=15, fontname='Times New Roman')
+ax.set_ylabel("Total Execution Time (seconds)", fontsize=15, fontname='Times New Roman')
 ax.set_xticks(x)
-ax.set_xticklabels(all_thread_counts)
-ax.tick_params(axis='y')
-ax.legend(handles=legend_elements, loc="upper left")
+ax.set_xticklabels(all_thread_counts, fontsize=13, fontname='Times New Roman')
+ax.tick_params(axis='y', labelsize=13)
+ax.legend(loc="upper left", fontsize=13)
 ax.grid(axis="y", linestyle="--", alpha=0.7)
 
 # Add a better title with file information
@@ -174,5 +146,5 @@ ax.grid(axis="y", linestyle="--", alpha=0.7)
 #            fontsize=28, fontweight='bold', y=0.98, fontname='Times New Roman')
 
 plt.tight_layout()
-plt.savefig("./slic_comparison_performance.pdf")
-print("\nPlot saved as 'slic_comparison_performance.pdf'")
+plt.savefig("./slic_comparison_performance.png", dpi=300)
+print("\nPlot saved as 'slic_comparison_performance.png'")

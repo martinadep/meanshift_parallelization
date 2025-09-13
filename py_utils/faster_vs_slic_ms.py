@@ -196,7 +196,7 @@ def extract_times_from_faster_ms(file_path):
 
 def main():
     # Definisci il percorso alla directory results_strong_scaling
-    results_dir = "output"
+    results_dir = "output_pptx\output"
     
     # Verifica che la directory esista
     if not os.path.exists(results_dir):
