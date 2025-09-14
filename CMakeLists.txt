@@ -43,7 +43,7 @@ set(COMMON_SOURCES
     src/point.c)
 
 add_compile_definitions(
-    BANDWIDTH=3.0
+    BANDWIDTH=9.0
     CSV_IN="./data/original.csv"
     CSV_OUT="./data/modified.csv"
     CSV_OUT_SLIC="./data/modified_slic.csv"

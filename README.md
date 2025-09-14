@@ -1,19 +1,23 @@
+# Mean Shift Parallelization
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Prerequisites](#prerequisites)
+3. [Complete Workflow - Example](#complete-workflow---example)
+4. [Complete Workflow - Custom](#complete-workflow---custom)
+5. [Performance](#performance)
+
 ## Introduction
 
 This repository is part of my B.Sc. Thesis, which focuses on the 
 **parallelization of the Mean Shift algorithm** for modern high-performance 
 computing architectures.  
 
-Mean Shift is a **density-based clustering method** which is able to 
-create clusters based on the density distribution of data, and, most 
-importantly, without prior knowledge of the number of clusters and 
-without constraining their shapes. This makes it particularly attractive 
-for **image segmentation** tasks, where boundaries and groupings must 
-be derived directly from the data.  
+Mean Shift is a **density-based clustering method** which is particularly attractive for its capability of allowing flexible identification of clusters without extensive manual tuning of parameters. Unlike other clustering methods, it can discover clusters directly from the data without explicitly setting the number of groups or constraining their shapes. This makes it one of the most widely used algorithms for **image segmentation**, where boundaries and groupings can vary greatly depending on the input.
 
-However, Mean Shift suffers from **quadratic computational complexity**, 
-which limits its scalability to large datasets and high-resolution images.  
-To address this, the project explores 4 different parallel implementations:  
+However, this comes at the cost of a **quadratic computational complexity**, which limits its scalability to large datasets and high-resolution images.  
+
+Therefore, leveraging the inherently **independent operations** of Mean Shift, the project explores **four** different **parallel implementations**:  
 
 - **OpenMP** over naive Mean Shift 
 - **OpenMP** over matrix-based Mean Shift
@@ -27,22 +31,24 @@ this projects extends the sequential SLIC-Mean Shift approach by providing:
 
 where SLIC is parallelized using both **OpenMP** and **OpenACC**.
 
-#### Examples
-![asto](examples/sample_astro.jpg)
-![astoB10](docs/astro_B10.jpg)
-![astoB30](docs/astro_B30.jpg)
-![flower](examples/sample_flower.jpg)
-![flowerB10](docs/flower_B10.jpg)
-![flowerB40](docs/flower_B40.jpg)
 
-## Table of Contents
+### Examples
+Samples images from BSDS300 dataset, using different bandwidth values:
 
-1. [Introduction](#introduction)
-2. [Examples](#examples)
-3. [Prerequisites](#prerequisites)
-4. [Complete Workflow - Example](#complete-workflow---example)
-5. [Complete Workflow - Custom](#complete-workflow---custom)
-6. [Performance](#performance)
+
+<table>
+  <tr>
+    <td align="center"><img src="dataset/12003.jpg" width="230" alt="Original 12003"><br>Original</td>
+    <td align="center"><img src="docs/12003_b13.jpg" width="230" alt="12003 b=13"><br>bw=13</td>
+    <td align="center"><img src="docs/12003_b20.jpg" width="230" alt="12003 b=20"><br>bw=20</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="dataset/140075.jpg" width="230" alt="Original 140075"><br>Original</td>
+    <td align="center"><img src="docs/140075_b9.jpg" width="230" alt="140075 b=9"><br>bw=9</td>
+    <td align="center"><img src="docs/140075_b15.jpg" width="230" alt="140075 b=15"><br>bw=15</td>
+  </tr>
+</table>
+
 
 ## Prerequisites
 - C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
@@ -68,6 +74,8 @@ where SLIC is parallelized using both **OpenMP** and **OpenACC**.
 ## Complete Workflow - example
 The following steps use default example configurations defined in `config.py`.
 However, arguments can be configured to customize the execution as shown [below](#complete-workflow---custom).
+
+Note that OpenACC is **not** enabled by default. If you want to use the OpenACC implementation, please see [recommandations](#recommandations).
 
 1. **Clone** the repository:
 
@@ -205,4 +213,20 @@ Considering 481x321 images from BDSD300 dataset:
 | slic_ms | 4.98 s       | 0.74 s     | **6.72**   |
 | slic_ms_matrix | 5.43 s       | 0.68 s     | **7.99**    |
 | slic_ms_matrix_blas | 5.63 s       | 0.65 s     | **8.66**    |
-| slic_ms_acc | 4.98 s       | 0.24 s     | 20.75    |
+| slic_ms_acc | 4.98 s       | 0.24 s     | **20.75**    |
+
+## Recommandations
+#### Enabling OpenACC (disabled by default)
+OpenACC is NOT enabled automatically. You must turn it on at configure time:
+
+```bash
+cmake -B build -DENABLE_OPENACC=ON
+cmake --build build 
+```
+
+#### Kernel
+You can choose between three different Kernels: *gaussian*, *uniform* and *epanechnikov*, through the `--kernel | -k` flag via CLI. 
+The Gaussian is the most accurate, while the Epanechnikov allows for faster executions.
+
+#### Bandwidth
+Recommended bandwidth values for image segmentation are typically **between 10 and 20**. Set it via the CLI with the `--bandwidth | -b` flag. 

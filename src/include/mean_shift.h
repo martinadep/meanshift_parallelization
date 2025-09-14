@@ -16,24 +16,17 @@
 #endif
 
 #ifndef BANDWIDTH
-    #define BANDWIDTH 10
-#endif
-#ifndef EPSILON
-#ifdef PREPROCESSING
-    #define EPSILON 0.5
-#else
-    #define EPSILON 2.0
-#endif
+#define BANDWIDTH 15
 #endif
 
+#ifndef EPSILON
+#define EPSILON (BANDWIDTH * 0.01)
+#endif
 
 #ifndef CLUSTER_EPSILON
-#ifdef PREPROCESSING
-    #define CLUSTER_EPSILON 4.5
-#else
-    #define CLUSTER_EPSILON 20 // suggested: bandwidth * 1.5
+#define CLUSTER_EPSILON (BANDWIDTH * 1.2)
 #endif
-#endif
+
 #define MAX_CLUSTERS 1000 // maximum number of clusters
 
 #ifdef __cplusplus
