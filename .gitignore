@@ -13,6 +13,7 @@ dataset/*
 !dataset/65010.jpg
 !dataset/118035.jpg
 !dataset/124084.jpg
+!dataset/140075.jpg
 
 # Python
 venv/
