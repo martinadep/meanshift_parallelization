@@ -1,4 +1,7 @@
 .vscode/
+
+# CMake
+CMakeFiles/
 cmake-build-debug/
 build/
 CMakeFiles/
@@ -35,5 +38,9 @@ results_strong_scaling/
 *.png
 *.txt
 !requirements.txt
+!CMakeLists.txt
+# SbatchMan
+SbatchMan/
+
 
 

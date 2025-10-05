@@ -1,0 +1,25 @@
+variables:
+  partition: ["short", "edu-short"]
+  ncpus: [1, 2, 4]
+
+baldo:
+  scheduler: slurm
+
+  default_conf:
+    partition: edu-short
+    nodes: 1
+    ntasks: 1
+    gpus: 0
+
+  configs:
+    - name: "{ncpus}cpu_{partition}"
+      env:
+        - "OMP_NUM_THREADS={ncpus}"
+      cpus-per-task: "{ncpus}"
+
+local:
+  scheduler: local
+  configs:
+    - name: "{ncpus}cpu"
+      env:
+        - "OMP_NUM_THREADS={ncpus}"

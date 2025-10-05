@@ -260,3 +260,30 @@ Considering 481x321 images from BDSD300 dataset:
 | slic_ms_matrix | 5.43 s       | 0.68 s     | **7.99**    |
 | slic_ms_matrix_blas | 5.63 s       | 0.65 s     | **8.66**    |
 | slic_ms_acc | 4.98 s       | 0.24 s     | **20.75**    |
+
+## Evaluation with SbatchMan
+
+Please read SbatchMan documentation at [https://sbatchman.readthedocs.io/en/latest/](https://sbatchman.readthedocs.io/en/latest/).
+
+In summary from the root of the project (either locally or on a remote cluster), run:
+
+```bash
+# Run these commands, only the first time
+sbatchman set-cluster-name <your_cluster_name>
+sbatchman init
+sbatchman configure --file sbatchman_configs.yaml
+```
+
+To run experiments:
+
+```bash
+sbatchman launch --file sbatchman_launch_all.yaml
+# To check jobs status
+sbatchman status
+```
+
+Generating plots:
+
+```bash
+python3 plots/strong_scaling_all_plot_sbatchman.py
+```
