@@ -2,9 +2,9 @@
 
 OUTPUT_DIR="./batch_output"
 BASE_OUTPUT_DIR="./batch_output"
-threads=(1 2 4 8 16 32)
+threads=(1 2 4 8 16 32 64 96)
 
-# Program configurations: name -> [executable, uses_threads, output_suffix]
+# Program configurations: name -> [executable, activate_omp_threads, output_suffix]
 declare -A PROGRAMS=(
     ["omp"]="slic_ms:true:omp"
     ["acc"]="slic_ms_acc:false:acc" 
@@ -20,37 +20,38 @@ usage() {
 }
 
 run_program() {
-    local prog_key=$1
-    local config=(${PROGRAMS[$prog_key]//:/ })
+    local impl=$1
+    local config=(${PROGRAMS[$impl]//:/ })
     local executable=${config[0]}
-    local uses_threads=${config[1]}
+    local activate_omp_threads=${config[1]}
     local output_suffix=${config[2]}
     
     local output_batch_dir="${BASE_OUTPUT_DIR}/batch_output_${output_suffix}"
     
-    echo "=== Running ${prog_key} version (${executable}) ==="
+    echo "=== Running ${impl} version (${executable}) ==="
+    ./scripts/compile_variant.sh "$executable"
     rm -rf "${output_batch_dir}"
     mkdir -p "${OUTPUT_DIR}" "${output_batch_dir}"
     
-    if [[ "$uses_threads" == "true" ]]; then
+    if [[ "$activate_omp_threads" == "true" ]]; then
         # Multi-threaded version
         for t in "${threads[@]}"; do
             echo "Running ${executable} with ${t} threads..."
             export OMP_NUM_THREADS=${t}
             
             for csv_file in $csv_files; do
-                process_file "$csv_file" "$output_batch_dir" "${prog_key}_${t}" "${executable}" "${prog_key}_${t}_threads.txt"
+                process_file "$csv_file" "$output_batch_dir" "${impl}_${t}" "${executable}" "${impl}_${t}_threads.txt"
             done
         done
     else
         # Single-threaded version
         export OMP_NUM_THREADS=1
         for csv_file in $csv_files; do
-            process_file "$csv_file" "$output_batch_dir" "${prog_key}" "${executable}" "${prog_key}.txt"
+            process_file "$csv_file" "$output_batch_dir" "${impl}" "${executable}" "${impl}.txt"
         done
     fi
     
-    echo "${prog_key} version completed! Results saved in ${output_batch_dir}"
+    echo "${impl} version completed! Results saved in ${output_batch_dir}"
 }
 
 process_file() {

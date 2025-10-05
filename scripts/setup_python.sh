@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# setup.sh - Setup script for Mean-Shift Segmentation environment
-
 echo "=== Mean-Shift Segmentation Setup ==="
 
 # 1. Check if Python is available
@@ -39,8 +37,6 @@ fi
 
 # 4. Install dependencies with version constraints compatible with Python 3.10
 echo "Installing required packages..."
-
-# Check Python version and install compatible packages
 if [[ $(echo "$PYTHON_VERSION < 3.11" | bc) -eq 1 ]]; then
     echo "Detected Python $PYTHON_VERSION - Installing compatible versions"
     pip install matplotlib==3.7.2 networkx==3.1
@@ -51,7 +47,7 @@ fi
 
 # 5. Convert example images
 echo "Converting example images to CSV format..."
-$PYTHON_CMD ./py_utils/img_to_csv.py
+$PYTHON_CMD ./plots/img_to_csv.py
 
 echo ""
 echo "=== Setup Complete ==="
@@ -61,4 +57,4 @@ echo "  cmake --build build"
 echo "  ./build/mean_shift"
 echo ""
 echo "After processing, convert back to images with:"
-echo "  python ./py_utils/csv_to_img.py"
+echo "  python ./plots/csv_to_img.py"

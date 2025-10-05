@@ -3,9 +3,13 @@
 
 1. [Introduction](#introduction)
 2. [Prerequisites](#prerequisites)
-3. [Complete Workflow - Example](#complete-workflow---example)
-4. [Complete Workflow - Custom](#complete-workflow---custom)
-5. [Performance](#performance)
+3. [Quick Start](#quick-start)
+4. [Complete Workflow - Example](#complete-workflow---example)
+5. [Complete Workflow - Custom](#complete-workflow---custom)
+6. [Useful Scripts](#useful-scripts)
+7. [Recommandations](#recommandations)
+8. [Performance](#performance)
+
 
 ## Introduction
 
@@ -70,6 +74,35 @@ Samples images from BSDS300 dataset, using different bandwidth values:
     ```bash
     pip install -r requirements.txt
     ```
+## Quick Start
+To try it immediately you can run the automated demo script:
+
+```bash
+# Clone the repository
+git clone https://github.com/martinadep/meanshift_parallelization
+cd meanshift_parallelization
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Run the plug-and-play demo for Mean Shift
+./mean_shift_demo.sh 
+```
+or
+
+```bash
+# Run the plug-and-play demo for SLIC - Mean Shift
+./slic_ms_demo.sh 
+```
+
+This script will:
+1. Convert the sample image to CSV format
+2. Build the Mean Shift / SLIC Mean Shift implementation
+3. Run the algorithm with optimal settings
+4. Convert the result back to an image
+5. Show you the segmented output
+
+Your segmented image will be saved as `data/demo_segmented_result.jpg`.
 
 ## Complete Workflow - example
 The following steps use default example configurations defined in `config.py`.
@@ -84,32 +117,25 @@ Note that OpenACC is **not** enabled by default. If you want to use the OpenACC 
    cd meanshift_parallelization
    ```
 
-2. **Convert input image to CSV** format:
-   
-
-   ```bash
-   python ./py_utils/img_to_csv.py
-   ```
-  
-   This will generate a CSV file that will be processed by the C++ program.
-
-3. **Run the Mean-Shift algorithm**:
+2. **Run the Mean-Shift algorithm**:
 
       On Windows (MinGW):
      ```bash
      cmake -B build
-     cmake --build build
-     ./build/mean_shift
+     cmake --build build --target mean_shift
+     ./build/mean_shift -i ./data/example_90x60.csv
      ```
 
       On Linux/macOS:
      ```bash
      cmake -B build
-     cmake --build build
-     ./build/mean_shift
+     cmake --build build --target mean_shift
+     ./build/mean_shift -i ./data/example_90x60.csv
      ```
 
    This will process the CSV file and generate a new output CSV file.
+
+   You can also repeat this process adding the target `slic_ms`, and executing it using `./data/example_481x321` as input image.
 
 4. **Convert the output CSV** back to an image:
 
@@ -191,6 +217,26 @@ SLIC - Mean Shift:
 
    This will transform the processed data back into your ***segmented image***.
 
+## Useful Scripts
+Several scripts are provided into `scripts` directory which enable different analysis on both Mean Shift and SLIC, including strong scaling, breakdowns and profiling.
+
+
+## Recommandations
+#### Enabling OpenACC (disabled by default)
+OpenACC is NOT enabled automatically. You must turn it on at configure time:
+
+```bash
+cmake -B build -DENABLE_OPENACC=ON
+cmake --build build 
+```
+
+#### Kernel
+You can choose between three different Kernels: *gaussian*, *uniform* and *epanechnikov*, through the `--kernel | -k` flag via CLI. 
+The Gaussian is the most accurate, while the Epanechnikov allows for faster executions.
+
+#### Bandwidth
+Recommended bandwidth values for image segmentation are typically **between 10 and 20**. Set it via the CLI with the `--bandwidth | -b` flag. 
+
 ## Performance
 
 ### Mean Shift
@@ -214,19 +260,3 @@ Considering 481x321 images from BDSD300 dataset:
 | slic_ms_matrix | 5.43 s       | 0.68 s     | **7.99**    |
 | slic_ms_matrix_blas | 5.63 s       | 0.65 s     | **8.66**    |
 | slic_ms_acc | 4.98 s       | 0.24 s     | **20.75**    |
-
-## Recommandations
-#### Enabling OpenACC (disabled by default)
-OpenACC is NOT enabled automatically. You must turn it on at configure time:
-
-```bash
-cmake -B build -DENABLE_OPENACC=ON
-cmake --build build 
-```
-
-#### Kernel
-You can choose between three different Kernels: *gaussian*, *uniform* and *epanechnikov*, through the `--kernel | -k` flag via CLI. 
-The Gaussian is the most accurate, while the Epanechnikov allows for faster executions.
-
-#### Bandwidth
-Recommended bandwidth values for image segmentation are typically **between 10 and 20**. Set it via the CLI with the `--bandwidth | -b` flag. 

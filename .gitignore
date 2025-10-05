@@ -1,12 +1,9 @@
-# IDEs
-.idea/
 .vscode/
-
-# CMake
 cmake-build-debug/
 build/
+CMakeFiles/
+local/
 
-results/
 dataset/*
 !dataset/12003.jpg
 !dataset/35010.jpg
@@ -18,25 +15,25 @@ dataset/*
 # Python
 venv/
 .venv/
-
-run_experiments.*
-# dataset_weak_scaling/
+plots/__pycache__/
 
 # Output files
-test/
 data/*
-!data/.gitkeep
-!data/original_*.csv
+!data/original.csv
+!data/example_481x321.csv
+!data/example_90x60.csv
 !data/batch
+!data/resized_batch
+!data/plots
+output/
+results_strong_scaling/
+
 *.exe
 *.o
 *.a
-*.txt
-.pdf
-!requirements.txt
-*.ps1
+*.pdf
 *.png
-scripts_local/
-results_*/
-old_output/
-output/
+*.txt
+!requirements.txt
+
+
