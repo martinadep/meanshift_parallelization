@@ -28,8 +28,9 @@ int main(int argc, char *argv[]) {
     T bandwidth = BANDWIDTH;
     const char *input_csv_path = CSV_IN;
     const char *output_csv_path = CSV_OUT;
+
     #ifdef PREPROCESSING
-    const char *output_slic_path = "./data/slic_output.csv";
+    const char *output_slic_path = CSV_OUT_SLIC;
     unsigned int superpixels = 0;
     float m = 10.0;
     #endif
@@ -52,7 +53,7 @@ int main(int argc, char *argv[]) {
     for (int i = 1; i < argc; i += 2) {
         string key = argv[i];
         if (short_to_long.find(key) != short_to_long.end()) {
-            key = short_to_long[key]; // Convert short option to long option
+            key = short_to_long[key]; 
         }
         if (i + 1 < argc) {
             args[key] = argv[i + 1];
@@ -109,7 +110,7 @@ int main(int argc, char *argv[]) {
 
     // Validate kernel name
     if (kernel_map.find(kernel) == kernel_map.end()) {
-        cerr << "Invalid kernel name. Available options: gaussian, uniform, epanechnikov" << endl;
+        cerr << "Invalid kernel name. Available options: 'gaussian', 'uniform', 'epanechnikov'" << endl;
         return 1;
     }
 
@@ -134,17 +135,15 @@ int main(int argc, char *argv[]) {
     unsigned int width = stoi(width_str);
     unsigned int height = stoi(height_str);
     unsigned int pixel_count = width * height;
-
-    // if (pixel_count > MAX_PIXEL_COUNT) {
-    //     cerr << "Error: The image has too many pixels (" << pixel_count << "). Maximum allowed is " << MAX_PIXEL_COUNT << "." << endl;
-    //     return 1;
-    // }
-
+    if (pixel_count > 100000000) {
+        std::cout << "### Warning: The input image is very large (" << pixel_count << " pixels). The program may take a long time to complete or run out of memory. ###" << endl;
+        std::cout << "### Consider reducing the resolution. ###" << endl;
+    }
     getline(filein, line); // skip the third line "L,A,B"
 
-    // static Point dataset [MAX_PIXEL_COUNT]; // dataset to store LAB values
+    
     Point* dataset = (Point*) malloc(pixel_count * sizeof(Point));
-    Point* shifted_dataset = (Point*) malloc(pixel_count * sizeof(Point)); // dataset to store shifted LAB values
+    Point* shifted_dataset = (Point*) malloc(pixel_count * sizeof(Point)); 
     Point cluster_modes[1000]; 
     unsigned int clusters_count = 0; // number of clusters
     #ifdef PREPROCESSING     
@@ -172,9 +171,9 @@ int main(int argc, char *argv[]) {
         getline(ss, b, ',');
 
         // append each pixel in the dataset
-        lab_point[0] = T(stoi(r));
-        lab_point[1] = T(stoi(g));
-        lab_point[2] = T(stoi(b));
+        lab_point.coords[0] = T(stoi(r));
+        lab_point.coords[1] = T(stoi(g));
+        lab_point.coords[2] = T(stoi(b));
         
         // Store LAB values in the dataset
         copy_point(&lab_point, &dataset[index]);

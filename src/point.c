@@ -8,7 +8,7 @@
 #pragma acc routine seq
 void init_point(Point *p) {
     for (unsigned int i = 0; i < DIM; i++) {
-        (*p)[i] = 0.0;
+        p->coords[i] = 0.0;
     }
 }
 
@@ -16,18 +16,8 @@ void init_point(Point *p) {
 #pragma acc routine seq
 void copy_point(const Point *source, Point *dest) {
     for (unsigned int i = 0; i < DIM; i++) {
-        (*dest)[i] = (*source)[i];
+        dest->coords[i] = source->coords[i];
     }
-}
-
-// Compares two points for equality within a tolerance
-int compare_points(const Point *p1, const Point *p2) {
-    for (unsigned int i = 0; i < DIM; i++) {
-        if (fabs((*p1)[i] - (*p2)[i]) > 0.001) {
-            return 0; // Points are not equal
-        }
-    }
-    return 1; // Points are equal
 }
 
 // Divides each dimension of a point by a scalar
@@ -38,7 +28,7 @@ void divide_point(Point *p, double scalar) {
         return;
     }
     for (unsigned int i = 0; i < DIM; i++) {
-        (*p)[i] /= scalar;
+        p->coords[i] /= scalar;
     }
 }
 
@@ -46,7 +36,7 @@ void divide_point(Point *p, double scalar) {
 #pragma acc routine seq
 void print_point(const Point *p) {
     for (unsigned int i = 0; i < DIM; i++) {
-        printf("%9.5f ", (*p)[i]);
+        printf("%9.5f ", p->coords[i]);
     }
     printf("\n");
 }
@@ -54,7 +44,7 @@ void print_point(const Point *p) {
 // Writes a point to a file in a comma-separated format
 void write_point_to_file(const Point *p, FILE *file) {
     for (unsigned int i = 0; i < DIM; i++) {
-        fprintf(file, "%d", (int)(*p)[i]);
+        fprintf(file, "%d", (int)p->coords[i]);
         if (i < DIM - 1) {
             fprintf(file, ",");
         }

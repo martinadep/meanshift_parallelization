@@ -1,40 +1,63 @@
-# Mean-Shift Parallelization
-A parallel implementation of the Mean-Shift algorithm applied 
-to image segmentation. This project optimizes the performance 
-of the Mean-Shift algorithm through parallelization techniques, 
-enabling more efficient and scalable image segmentation.
-
-#### Technical Background
-Mean-Shift is a non-parametric density-based clustering algorithm 
-used in computer vision and machine learning. In this project, the 
-algorithm is applied to image segmentation, a process that divides 
-an image into multiple uniform regions, making the image easier to analyze.
-
-The parallel version implemented in this project leverages 
-modern multi-core architectures to significantly accelerate 
-processing while maintaining the quality of segmentation results.
-
-#### Examples
-![asto](examples/sample_astro.jpg)
-![astoB10](docs/astro_B10.jpg)
-![astoB30](docs/astro_B30.jpg)
-![flower](examples/sample_flower.jpg)
-![flowerB10](docs/flower_B10.jpg)
-![flowerB40](docs/flower_B40.jpg)
-
+# Mean Shift Parallelization
 ## Table of Contents
 
-1. [Introduction](#mean-shift-parallelization)
+1. [Introduction](#introduction)
 2. [Prerequisites](#prerequisites)
-3. [Complete Workflow - Example](#complete-workflow---example)
-4. [Complete Workflow - Custom](#complete-workflow---custom)
-5. [Project Structure](#project-structure)
-6. [Performance](#performance)
+3. [Quick Start](#quick-start)
+4. [Complete Workflow - Example](#complete-workflow---example)
+5. [Complete Workflow - Custom](#complete-workflow---custom)
+6. [Useful Scripts](#useful-scripts)
+7. [Recommandations](#recommandations)
+8. [Performance](#performance)
+
+
+## Introduction
+
+This repository is part of my B.Sc. Thesis, which focuses on the 
+**parallelization of the Mean Shift algorithm** for modern high-performance 
+computing architectures.  
+
+Mean Shift is a **density-based clustering method** which is particularly attractive for its capability of allowing flexible identification of clusters without extensive manual tuning of parameters. Unlike other clustering methods, it can discover clusters directly from the data without explicitly setting the number of groups or constraining their shapes. This makes it one of the most widely used algorithms for **image segmentation**, where boundaries and groupings can vary greatly depending on the input.
+
+However, this comes at the cost of a **quadratic computational complexity**, which limits its scalability to large datasets and high-resolution images.  
+
+Therefore, leveraging the inherently **independent operations** of Mean Shift, the project explores **four** different **parallel implementations**:  
+
+- **OpenMP** over naive Mean Shift 
+- **OpenMP** over matrix-based Mean Shift
+- **OpenMP + OpenBLAS** over matrix-based Mean Shift
+- **OpenACC** over naive Mean Shift
+
+Additionally, based on the existing integration with **Simple Linear Iterative Clustering (SLIC)** for superpixel generation,
+this projects extends the sequential SLIC-Mean Shift approach by providing:
+
+- A fully parallel **SLIC–Mean Shift pipeline** 
+
+where SLIC is parallelized using both **OpenMP** and **OpenACC**.
+
+
+### Examples
+Samples images from BSDS300 dataset, using different bandwidth values:
+
+
+<table>
+  <tr>
+    <td align="center"><img src="dataset/12003.jpg" width="230" alt="Original 12003"><br>Original</td>
+    <td align="center"><img src="docs/12003_b13.jpg" width="230" alt="12003 b=13"><br>bw=13</td>
+    <td align="center"><img src="docs/12003_b20.jpg" width="230" alt="12003 b=20"><br>bw=20</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="dataset/140075.jpg" width="230" alt="Original 140075"><br>Original</td>
+    <td align="center"><img src="docs/140075_b9.jpg" width="230" alt="140075 b=9"><br>bw=9</td>
+    <td align="center"><img src="docs/140075_b15.jpg" width="230" alt="140075 b=15"><br>bw=15</td>
+  </tr>
+</table>
+
 
 ## Prerequisites
 - C++ compiler compatible with C++11 or higher (GCC, Clang, or MSVC)
 - [CMake](https://cmake.org/download/) (version 3.10 or higher), optional but highly recommended
-- Python 3.12 with required packages (NumPy, pandas, and pillow)
+- Python 3.12
   - Create and activate a virtual environment (optional but recommended):
     ```bash
     python -m venv venv
@@ -51,10 +74,41 @@ processing while maintaining the quality of segmentation results.
     ```bash
     pip install -r requirements.txt
     ```
+## Quick Start
+To try it immediately you can run the automated demo script:
+
+```bash
+# Clone the repository
+git clone https://github.com/martinadep/meanshift_parallelization
+cd meanshift_parallelization
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Run the plug-and-play demo for Mean Shift
+./mean_shift_demo.sh 
+```
+or
+
+```bash
+# Run the plug-and-play demo for SLIC - Mean Shift
+./slic_ms_demo.sh 
+```
+
+This script will:
+1. Convert the sample image to CSV format
+2. Build the Mean Shift / SLIC Mean Shift implementation
+3. Run the algorithm with optimal settings
+4. Convert the result back to an image
+5. Show you the segmented output
+
+Your segmented image will be saved as `data/demo_segmented_result.jpg`.
 
 ## Complete Workflow - example
 The following steps use default example configurations defined in `config.py`.
 However, arguments can be configured to customize the execution as shown [below](#complete-workflow---custom).
+
+Note that OpenACC is **not** enabled by default. If you want to use the OpenACC implementation, please see [recommandations](#recommandations).
 
 1. **Clone** the repository:
 
@@ -63,40 +117,25 @@ However, arguments can be configured to customize the execution as shown [below]
    cd meanshift_parallelization
    ```
 
-2. **Convert input image to CSV** format:
-   
+2. **Run the Mean-Shift algorithm**:
 
-   ```bash
-   python ./py_utils/img_to_csv.py
-   ```
-  
-   This will generate a CSV file that will be processed by the C++ program.
-
-3. **Run the Mean-Shift algorithm**:
-   - **Using GCC from command line**:
-      
-     ```bash
-     g++ src/main.cpp -o mean_shift
-     ./mean_shift
-     ```
-
-   - **Using CMake from command line**:
-      
       On Windows (MinGW):
      ```bash
-     cmake -G "MinGW Makefiles" -B build
-     cmake --build build
-     ./build/main
+     cmake -B build
+     cmake --build build --target mean_shift
+     ./build/mean_shift -i ./data/example_90x60.csv
      ```
 
       On Linux/macOS:
      ```bash
      cmake -B build
-     cmake --build build
-     ./build/main
+     cmake --build build --target mean_shift
+     ./build/mean_shift -i ./data/example_90x60.csv
      ```
 
    This will process the CSV file and generate a new output CSV file.
+
+   You can also repeat this process adding the target `slic_ms`, and executing it using `./data/example_481x321` as input image.
 
 4. **Convert the output CSV** back to an image:
 
@@ -104,11 +143,24 @@ However, arguments can be configured to customize the execution as shown [below]
    python ./py_utils/csv_to_img.py
    ```
 
-   This will transform the processed data back into a ***segmented image***.
+   This will transform the processed data back into a **segmented image**.
 
 
 ## Complete Workflow - custom
-The following steps allows to configure the input image path and enables Mean-Shift bandwidth and kernel selection
+The following steps allows to configure the input image path and enables Mean-Shift bandwidth and kernel selection, as well as using other variants.
+
+Mean Shift: 
+- `mean_shift`
+- `mean_shift_matrix`
+- `mean_shift_matrix_blas`
+- `mean_shift_acc`
+
+SLIC - Mean Shift:
+- `slic_ms`
+- `slic_ms_matrix`
+- `slic_ms_matrix_blas`
+- `slic_ms_acc`
+
 
 1. **Clone** the repository:
 
@@ -128,18 +180,7 @@ The following steps allows to configure the input image path and enables Mean-Sh
    This will generate a CSV file that will be processed by the C++ program.
 
 3. **Run the Mean-Shift algorithm**:
-   - **Using GCC from command line**:
-      
-     ```bash
-     g++ src/main.cpp -o mean_shift
-     ./mean_shift
-     ```
 
-      You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
-      ```bash
-      ./mean_shift [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]
-      ```
-   - **Using CMake from command line**:
       
       On Windows using MinGW:
      ```bash
@@ -155,13 +196,13 @@ The following steps allows to configure the input image path and enables Mean-Sh
 
       You can specify the bandwidth, and the input and output CSV file paths, by providing arguments in the command line:
       ```bash
-      ./build/main [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv]
+      ./build/mean_shift [--kernel | -k kernel_name] [--bandwidth | -b bandwidth] [--input | -i input_csv] [--output | -o output_csv] [--superpixels | -s num_superpixels]
       ```
    **Example**
    
    Selecting kernel function and bandwidth
    ```bash
-   ./build/main -k gaussian -b 20
+   ./build/mean_shift -k gaussian -b 20
    ```
    
    This will process the CSV file and generate a new output CSV file.
@@ -176,40 +217,46 @@ The following steps allows to configure the input image path and enables Mean-Sh
 
    This will transform the processed data back into your ***segmented image***.
 
-## Project Structure
+## Useful Scripts
+Several scripts are provided into `scripts` directory which enable different analysis on both Mean Shift and SLIC, including strong scaling, breakdowns and profiling.
 
+
+## Recommandations
+#### Enabling OpenACC (disabled by default)
+OpenACC is NOT enabled automatically. You must turn it on at configure time:
+
+```bash
+cmake -B build -DENABLE_OPENACC=ON
+cmake --build build 
 ```
-.
-├── CMakeLists.txt
-├── src/
-│   ├── include/
-│   │    ├── point.hpp
-│   │    ├── cluster.hpp
-│   │    └── mean_shift.hpp
-│   └── main.cpp
-├── examples/
-│   ├── sample_flower.jpg
-│   └── sample_astro.jpg
-├── py_utils/
-│   ├── config.py
-│   ├── csv_to_img.py
-│   └── img_to_csv.py
-├── data/
-├── docs/
-│   ├── astro_B10.jpg
-│   ├── astro_B30.jpg
-│   ├── flower_B10.jpg
-│   └── flower_B40.jpg
-├── requirements.txt
-└── README.md
-```
+
+#### Kernel
+You can choose between three different Kernels: *gaussian*, *uniform* and *epanechnikov*, through the `--kernel | -k` flag via CLI. 
+The Gaussian is the most accurate, while the Epanechnikov allows for faster executions.
+
+#### Bandwidth
+Recommended bandwidth values for image segmentation are typically **between 10 and 20**. Set it via the CLI with the `--bandwidth | -b` flag. 
 
 ## Performance
 
-The parallel version of the algorithm offers significant performance improvements over the sequential version, especially for large images:
+### Mean Shift
 
-| Image Size | Sequential Version | Parallel Version | Speedup |
-|------------|-------------------|-----------------|---------|
-| ...        | x.xx seconds      | x.xx seconds    | x.xx    |
-| ...        | x.xx seconds      | x.xx seconds    | x.xx    |
-| ...        | x.xx seconds      | x.xx seconds    | x.xx    |
+Considering 128x85 resized images from BDSD300 dataset:
+
+| Variant | Sequential Version | Parallel Version | Speedup |
+|---------|--------------------|------------------|---------|
+| mean_shift | 4.08 s       | 0.07 s     | **58.29**    |
+| mean_shift_matrix | 4.13 s       | 0.09 s     | **45.89**    |
+| mean_shift_matrix_blas | 36.59 s       | 1.56 s     | **23.45**   |
+| mean_shift_acc | 4.08 s      | ---      | ---    |
+
+### SLIC - Mean Shift 
+
+Considering 481x321 images from BDSD300 dataset:
+
+| Variant | Sequential Version | Parallel Version | Speedup |
+|---------|--------------------|------------------|---------|
+| slic_ms | 4.98 s       | 0.74 s     | **6.72**   |
+| slic_ms_matrix | 5.43 s       | 0.68 s     | **7.99**    |
+| slic_ms_matrix_blas | 5.63 s       | 0.65 s     | **8.66**    |
+| slic_ms_acc | 4.98 s       | 0.24 s     | **20.75**    |

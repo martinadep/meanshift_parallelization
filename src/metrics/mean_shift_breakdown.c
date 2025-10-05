@@ -5,10 +5,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef TIMING_BREAKDOWN
+static unsigned int total_shift_calls = 0;
+#endif
+
 // Move a single point towards the maximum density area
 void shift_single_point(const Point *point, Point *next_point,
                               const Point dataset[], unsigned int dataset_size,
                               T bandwidth, T (*kernel_func)(T, T)) {
+
+#ifdef TIMING_BREAKDOWN
+    total_shift_calls++;
+#endif
+
     T total_weight = 0;
     Point point_i;
     init_point(&point_i); // xi
@@ -17,11 +26,11 @@ void shift_single_point(const Point *point, Point *next_point,
     for (int i = 0; i < dataset_size; i++) {
         copy_point(&dataset[i], &point_i); // xi = dataset[i]
 #ifdef TIMING_BREAKDOWN
-        TIMER_START(distance_mode_find)
+        TIMER_START(distance_kernel)
 #endif
         T distance = euclidean_distance(point, &point_i); // x - xi
 #ifdef TIMING_BREAKDOWN
-        TIMER_SUM(distance_mode_find)
+        TIMER_SUM(distance_kernel)
         TIMER_START(kernel)
 #endif
         T weight = kernel_func(distance, bandwidth); // K(x - xi / h)
@@ -31,7 +40,7 @@ void shift_single_point(const Point *point, Point *next_point,
 #endif
         // x' = x' + xi * K(x - xi / h)
         for (int j = 0; j < DIM; j++) {
-            (*next_point)[j] += point_i[j] * weight;
+            next_point->coords[j] += point_i.coords[j] * weight;
         }
 #ifdef TIMING_BREAKDOWN
         TIMER_SUM(coords_update)
@@ -127,10 +136,11 @@ void mean_shift(unsigned int dataset_size, const Point dataset[],
     }
     
 #ifdef TIMING_BREAKDOWN
+    printf("shift_single_point total calls: %u\n", total_shift_calls);
     TIMER_SUM_PRINT(coords_update)
     TIMER_SUM_PRINT(kernel)
     TIMER_SUM_PRINT(distance_shift)
-    TIMER_SUM_PRINT(distance_mode_find)
+    TIMER_SUM_PRINT(distance_kernel)
     TIMER_SUM_PRINT(distance_cluster)
 #endif
 }
