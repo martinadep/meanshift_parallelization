@@ -285,5 +285,5 @@ sbatchman status
 Generating plots:
 
 ```bash
-python3 plots/strong_scaling_all_plot_sbatchman.py
+python3 plots/strong_scaling_sbatchman.py
 ```
