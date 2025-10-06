@@ -29,6 +29,13 @@ if [[ ! -f "CMakeLists.txt" ]]; then
 fi
 
 
+echo "Setting up Python environment and dependencies..."
+./scripts/setup_python.sh
+if [[ $? -ne 0 ]]; then
+    echo "Error: Python setup failed"
+    exit 1
+fi
+
 echo "Setting up directories..."
 mkdir -p data
 mkdir -p data/plots
