@@ -1,5 +1,6 @@
 import re
 import numpy as np
+import matplotlib.pyplot as plt
 
 # File reading utilities
 def try_read_file(filepath):
@@ -95,3 +96,43 @@ def parse_perf_file(filename):
             print(f"Skipping a run due to parse error: {e}")
             continue
     return data
+
+    
+def create_scaling_bar_chart(implementations, threads, times_dict, 
+                           title, ylabel, filename, log_scale=False):
+    """Create bar chart for scaling data with multiple implementations."""
+    plt.rcParams.update({'font.size': 14})
+    fig, ax = plt.subplots(figsize=(14, 8))
+    
+    # Setup
+    bar_width = 0.11
+    index = np.arange(len(threads))
+    
+    # Plot each implementation as a set of bars
+    for i, impl in enumerate(implementations):
+        impl_name = impl["name"]
+        color = impl["color"]
+        times = times_dict[impl_name]
+        
+        # Position the bars
+        position = index + (i - len(implementations)/2 + 0.5) * bar_width
+        ax.bar(position, times, bar_width, color=color, label=impl_name)
+    
+    # Configure the chart
+    ax.set_xlabel('Number of Threads', fontsize=16)
+    ax.set_ylabel(ylabel, fontsize=16)
+    ax.set_title(title, fontsize=18)
+    ax.set_xticks(index)
+    ax.set_xticklabels([str(t) for t in threads], fontsize=14)
+    if log_scale:
+        ax.set_yscale('log')
+    
+    # Add grid and legend
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+    ax.legend(fontsize=12)
+    
+    plt.tight_layout()
+    plt.savefig(filename)
+    print(f"Plot saved as '{filename}'")
+    
+    return fig, ax
